@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Cartridge
 {
-    public class ROMOnlyCartridge : ICartridge
+    public class MBC0 : ICartridge
     {
-        public ROMOnlyCartridge(byte[] _bytecode)
+        public MBC0(byte[] _bytecode)
         {
             this._bytecode = _bytecode;
         }

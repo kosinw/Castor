@@ -13,8 +13,7 @@ namespace Castor.Emulator.Memory
 
         public BootROM()
         {
-            // TODO: Define this file in the assembly info
-            _bytecode = File.ReadAllBytes(@"C:\Users\Owner\Documents\GameboyEmulator\GameboyEmulator\ROMs\DMG_ROM.bin");
+            _bytecode = Castor.Properties.Resources.DMG_ROM;
         }
 
         public int Count() => _bytecode.Length;

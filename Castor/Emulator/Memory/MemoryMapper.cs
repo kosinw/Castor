@@ -47,7 +47,7 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF0F:
-                            return _system.CPU.IF;
+                            return _system.IRC.IF;
                         default:
                             return 0;
                     }
@@ -57,7 +57,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     return _internalRam2[idx - 0xFF80];
                 else if (idx == 0xFFFF)
-                    return _system.CPU.IE;
+                    return _system.IRC.IE;
 
                 throw new Exception("You may not read to this memory location.");
             }
@@ -88,7 +88,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _internalRam2[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _system.CPU.IE = value;                
+                    _system.IRC.IE = value;                
             }
         }
     }

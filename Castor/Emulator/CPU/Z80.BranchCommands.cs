@@ -14,14 +14,16 @@ namespace Castor.Emulator.CPU
         {
             if (condition)
             {
-                PC = (ushort)(PC + relativeValue);
+                JumpRelative(relativeValue);
                 _cyclesToWait += 4; // action was taken
             }
         }
-
+      
         private bool IsZero() => ((byte)StatusFlags.ZeroFlag & F) == (byte)StatusFlags.ZeroFlag;
 
+        private void JumpRelative(sbyte relativeValue) => PC = (ushort)(PC + relativeValue);
         private void JumpRelativeIfNotZero() => JumpRelativeIfCondition((sbyte)ReadByte(), !IsZero());
+        private void JumpRelativeIfZero() => JumpRelativeIfCondition((sbyte)ReadByte(), IsZero());
 
         private void CallSubroutine(ushort immediateValue)
         {

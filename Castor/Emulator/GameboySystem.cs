@@ -14,6 +14,7 @@ namespace Castor.Emulator
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
+        public InterruptController IRC;
 
         private Timer _timer;
 
@@ -23,6 +24,7 @@ namespace Castor.Emulator
             MMU = new MemoryMapper(this);
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
             GPU = new VideoController(this);
+            IRC = new InterruptController(this);
 
             _timer = new Timer();
         }
@@ -40,14 +42,15 @@ namespace Castor.Emulator
 
         public void Restart()
         {
-            CPU.PC = 0;
+            CPU.PC = 0;            
         }
 
-        public void OnClockCycle(object sender, EventArgs e) // just to 1171 ticks per event
+        public void OnClockCycle(object sender, EventArgs e)
         {
             _timer.Stop(); // make sure the timer doesn't trigger another event
 
-            for (int i = 0; i < 66_666; ++i) // cycles = clock speed in Hz / required fps
+            // According to Pan Docs, it takes 70224 cycles to complete screen refresh
+            for (int i = 0; i < 70_224; ++i) 
                 CPU.Step();
             
             _timer.Start(); // restart the timer in order to start triggering events agains

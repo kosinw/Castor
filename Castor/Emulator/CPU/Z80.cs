@@ -53,8 +53,8 @@ namespace Castor.Emulator.CPU
             get => Convert.ToUInt16(H << 8 | L);
             set
             {
-                B = value.MostSignificantByte();
-                C = value.LeastSignificantByte();
+                H = value.MostSignificantByte();
+                L = value.LeastSignificantByte();
             }
         }
         public ushort SP;
@@ -89,7 +89,8 @@ namespace Castor.Emulator.CPU
 
         private byte ReadByte()
         {            
-            byte ret = _system.MMU[++PC];
+            byte ret = _system.MMU[PC + 1];
+            PC++;
             return ret;
         }
         
@@ -113,6 +114,9 @@ namespace Castor.Emulator.CPU
         {
             switch (opcode)
             {
+                case 0x04:
+                    IncrementREG(ref B);
+                    return 4;
                 case 0x05:
                     DecrementR8(ref B);
                     return 4;
@@ -120,7 +124,10 @@ namespace Castor.Emulator.CPU
                     LoadIntoBRegister(ReadByte());
                     return 8;
                 case 0x0C:
-                    IncrementR8(ref C);
+                    IncrementREG(ref C);
+                    return 4;
+                case 0x0D:
+                    DecrementR8(ref C);
                     return 4;
                 case 0x0E:
                     LoadIntoCRegister(ReadByte());
@@ -137,6 +144,9 @@ namespace Castor.Emulator.CPU
                 case 0x1A:
                     LoadValueDEIntoA();
                     return 8;
+                case 0x18:
+                    JumpRelative((sbyte)ReadByte());
+                    return 12;
                 case 0x20:
                     JumpRelativeIfNotZero();
                     return 8;
@@ -149,6 +159,12 @@ namespace Castor.Emulator.CPU
                 case 0x23:
                     IncrementHL();
                     return 8;
+                case 0x28:
+                    JumpRelativeIfZero();
+                    return 8;
+                case 0x2E:
+                    LoadIntoLRegister(ReadByte());
+                    return 8;
                 case 0x31:
                     LoadIntoSPRegister(ReadUshort());
                     return 12;
@@ -158,8 +174,17 @@ namespace Castor.Emulator.CPU
                 case 0x3E:
                     LoadIntoARegister(ReadByte());
                     return 8;
+                case 0x3D:
+                    DecrementR8(ref A);
+                    return 4;
                 case 0x4F:
-                    LoadIntoARegister(C);
+                    LoadIntoCRegister(A);
+                    return 4;
+                case 0x57:
+                    LoadIntoDERegister(A);
+                    return 4;
+                case 0x67:
+                    LoadIntoHRegister(A);
                     return 4;
                 case 0x77:
                     LoadAIntoHLPointer();
@@ -207,7 +232,9 @@ namespace Castor.Emulator.CPU
                     CompareWithA(ReadByte());
                     return 8;
             }
-            throw new Exception("This opcode is not implemented!");
+
+            string exceptionString = $"This opcode (0x{opcode:X}) is not implemented! PC: 0x{PC:X}";
+            throw new Exception(exceptionString);
         }
     }
 }

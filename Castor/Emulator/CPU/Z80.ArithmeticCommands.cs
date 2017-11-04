@@ -29,7 +29,7 @@ namespace Castor.Emulator.CPU
         private void XOREWithA() => XORNWithA(E);
         private void XORHWithA() => XORNWithA(H);
         private void XORLWithA() => XORNWithA(L);
-        private void XORAWithHLPointer() => XORNWithA(_interconnect.MMU[HL]);
+        private void XORAWithHLPointer() => XORNWithA(_system.MMU[HL]);
         private void XORImmediateWithA(byte imm) => XORNWithA(imm);
         private void DecrementR8(ref byte register)
         {
@@ -48,7 +48,7 @@ namespace Castor.Emulator.CPU
                 F &= (byte)~StatusFlags.HalfCarryFlag;
             
         }
-        private void IncrementR8(ref byte register)
+        private void IncrementREG(ref byte register)
         {
             ++register;
 

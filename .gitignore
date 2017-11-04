@@ -306,3 +306,4 @@ OpenCover/
 
 # Gameboy ROMs
 **/ROMs/
+!DMG_ROM.bin

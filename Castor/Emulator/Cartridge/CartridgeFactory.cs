@@ -15,7 +15,7 @@ namespace Castor.Emulator.Cartridge
             switch (romTypeSelect)
             {
                 case 0x00:
-                    return new ROMOnlyCartridge(bytecode);
+                    return new MBC0(bytecode);
                 default:
                     return null;
             }

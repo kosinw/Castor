@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E40D69BD-816C-42BA-9AE1-45F4AAF3A96C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>GameboyEmulator</RootNamespace>
-    <AssemblyName>GameboyEmulator</AssemblyName>
+    <RootNamespace>Castor</RootNamespace>
+    <AssemblyName>Castor</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -47,7 +47,8 @@
   <ItemGroup>
     <Compile Include="Emulator\Cartridge\CartridgeFactory.cs" />
     <Compile Include="Emulator\Cartridge\ICartridge.cs" />
-    <Compile Include="Emulator\Cartridge\ROMOnlyCartridge.cs" />
+    <Compile Include="Emulator\Cartridge\MBC0.cs" />
+    <Compile Include="Emulator\Memory\InterruptController.cs" />
     <Compile Include="Emulator\Utility\BitFlags.cs" />
     <Compile Include="Emulator\CPU\StatusFlags.cs" />
     <Compile Include="Emulator\CPU\Z80.ArithmeticCommands.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -90,6 +92,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="ROMs\DMG_ROM.bin" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
