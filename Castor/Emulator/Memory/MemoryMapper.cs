@@ -48,6 +48,14 @@ namespace Castor.Emulator.Memory
                     {
                         case 0xFF0F:
                             return _system.IRC.IF;
+                        case 0xFF40:
+                            return _system.GPU.LCDC;
+                        case 0xFF41:
+                            return _system.GPU.STAT;
+                        case 0xFF44:
+                            return _system.GPU.LY;
+                        case 0xFF47:
+                            return _system.GPU.BGP;
                         default:
                             return 0;
                     }
@@ -80,6 +88,26 @@ namespace Castor.Emulator.Memory
                     return;
                 else if (idx < 0xFF4C)
                 {
+                    switch (idx)
+                    {
+                        case 0xFF0F:
+                            _system.IRC.IF = value;
+                            break;
+                        case 0xFF40:
+                            _system.GPU.LCDC = value;
+                            break;
+                        case 0xFF41:
+                            _system.GPU.STAT = value;
+                            break;
+                        case 0xFF44:
+                            _system.GPU.LY = value;
+                            break;
+                        case 0xFF47:
+                            _system.GPU.BGP = value;
+                            break;
+                        default:
+                            return;
+                    }
                 }
                 else if (idx == 0xFF50)
                     _mapFirst256BootROM = false;

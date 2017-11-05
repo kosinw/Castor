@@ -21,6 +21,8 @@ namespace Castor.Emulator.CPU
         private void LoadARegisterIntoCPointer() => _system.MMU[C + 0xFF00] = A;
 
         private void LoadARegisterIntoAddress8(byte a8) => _system.MMU[a8 + 0xFF00] = A;
+        private void LoadAddress8IntoARegister(byte a8) => A = _system.MMU[a8 + 0xFF00];
+
         private void LoadARegisterIntoAddress16(ushort a16) => _system.MMU[a16] = A;
 
         private void LoadValueDEIntoA() { A = _system.MMU[DE]; }        

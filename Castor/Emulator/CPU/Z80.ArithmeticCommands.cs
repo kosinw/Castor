@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Castor.Emulator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace Castor.Emulator.CPU
         private void XORLWithA() => XORNWithA(L);
         private void XORAWithHLPointer() => XORNWithA(_system.MMU[HL]);
         private void XORImmediateWithA(byte imm) => XORNWithA(imm);
-        private void DecrementR8(ref byte register)
+        private void DecrementREG(ref byte register)
         {
             --register;
 
@@ -88,6 +89,32 @@ namespace Castor.Emulator.CPU
                 F |= (byte)StatusFlags.HalfCarryFlag;
             else
                 F &= (byte)~StatusFlags.HalfCarryFlag;                    
+        }
+
+        private void SubtractREG(byte value)
+        {
+            F.SetBit((BitFlags)StatusFlags.SubtractFlag); // always sset subtract flag
+
+            var zeroFlag = (BitFlags)StatusFlags.ZeroFlag;
+            var halfCarryFlag = (BitFlags)StatusFlags.HalfCarryFlag;
+            var carryFlag = (BitFlags)StatusFlags.CarryFlag;
+
+            if (A == value)
+                F.SetBit(zeroFlag);
+            else
+                F.ClearBit(zeroFlag);
+
+            if ((byte)(A - value) % 16 == 0)
+                F.SetBit(halfCarryFlag);
+            else
+                F.ClearBit(halfCarryFlag);
+
+            if (value > A)
+                F.SetBit(carryFlag);
+            else
+                F.ClearBit(carryFlag);
+
+            A -= value;
         }
     }
 }

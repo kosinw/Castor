@@ -50,8 +50,11 @@ namespace Castor.Emulator
             _timer.Stop(); // make sure the timer doesn't trigger another event
 
             // According to Pan Docs, it takes 70224 cycles to complete screen refresh
-            for (int i = 0; i < 70_224; ++i) 
+            for (int i = 0; i < 70_224; ++i)
+            {
                 CPU.Step();
+                GPU.Step();
+            }
             
             _timer.Start(); // restart the timer in order to start triggering events agains
         }

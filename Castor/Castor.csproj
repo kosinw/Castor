@@ -61,6 +61,7 @@
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
     <Compile Include="Emulator\Utility\BytewiseOperations.cs" />
+    <Compile Include="Emulator\Video\PalleteColors.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>

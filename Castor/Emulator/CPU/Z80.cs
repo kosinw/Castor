@@ -118,7 +118,7 @@ namespace Castor.Emulator.CPU
                     IncrementREG(ref B);
                     return 4;
                 case 0x05:
-                    DecrementR8(ref B);
+                    DecrementREG(ref B);
                     return 4;
                 case 0x06:
                     LoadIntoBRegister(ReadByte());
@@ -127,7 +127,7 @@ namespace Castor.Emulator.CPU
                     IncrementREG(ref C);
                     return 4;
                 case 0x0D:
-                    DecrementR8(ref C);
+                    DecrementREG(ref C);
                     return 4;
                 case 0x0E:
                     LoadIntoCRegister(ReadByte());
@@ -146,7 +146,13 @@ namespace Castor.Emulator.CPU
                     return 8;
                 case 0x18:
                     JumpRelative((sbyte)ReadByte());
-                    return 12;
+                    return 12;                
+                case 0x1D:
+                    DecrementREG(ref E);
+                    return 4;
+                case 0x1E:
+                    LoadIntoERegister(ReadByte());
+                    return 8;
                 case 0x20:
                     JumpRelativeIfNotZero();
                     return 8;
@@ -159,6 +165,9 @@ namespace Castor.Emulator.CPU
                 case 0x23:
                     IncrementHL();
                     return 8;
+                case 0x24:
+                    DecrementREG(ref H);
+                    return 4;
                 case 0x28:
                     JumpRelativeIfZero();
                     return 8;
@@ -175,7 +184,7 @@ namespace Castor.Emulator.CPU
                     LoadIntoARegister(ReadByte());
                     return 8;
                 case 0x3D:
-                    DecrementR8(ref A);
+                    DecrementREG(ref A);
                     return 4;
                 case 0x4F:
                     LoadIntoCRegister(A);
@@ -191,6 +200,11 @@ namespace Castor.Emulator.CPU
                     return 8;
                 case 0x7B:
                     LoadIntoARegister(E);
+                    return 4;
+                case 0x7C:
+                    LoadIntoARegister(H);
+                    return 4;
+                case 0x92:
                     return 4;
                 case 0xAF:
                     XORAWithA();
@@ -228,6 +242,9 @@ namespace Castor.Emulator.CPU
                 case 0xEA:
                     LoadARegisterIntoAddress16(ReadUshort());
                     return 16;
+                case 0xF0:
+                    LoadAddress8IntoARegister(ReadByte());
+                    return 12;
                 case 0xFE:
                     CompareWithA(ReadByte());
                     return 8;
