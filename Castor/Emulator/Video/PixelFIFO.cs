@@ -8,23 +8,35 @@ namespace Castor.Emulator.Video
 {
     public class PixelFIFO
     {
-        private LinkedList<PixelMetadata> _pixelFifo;
-        public bool Enabled { get => Count > 8; }
+        private PixelMetadata[] _pixelFifo;
 
-        public int Count { get => _pixelFifo.Count; }
+        private int _elements;
+
+        public bool Enabled { get => Count > 8; }
+        public int Count { get => _pixelFifo.Length; }
+
+        public PixelFIFO()
+        {
+            _pixelFifo = new PixelMetadata[16];
+            _elements = 0;
+        }
 
         /// <summary>
         /// This will be cleared only when it has been switched to window mode.
         /// </summary>
-        public void Clear() => _pixelFifo.Clear();
+        public void Clear()
+        {
+            Array.Clear(_pixelFifo, 0, _pixelFifo.Length);
+            _elements = 0;
+        }
 
         /// <summary>
         /// This is used to enqueue pixels onto the pixel fifo.
         /// </summary>
         /// <param name="metadata"></param>
         public void Enqueue(PixelMetadata metadata)
-        {
-            _pixelFifo.AddLast(metadata);
+        {            
+            _pixelFifo[_elements++] = metadata;
         }
 
 
@@ -34,8 +46,10 @@ namespace Castor.Emulator.Video
         /// <returns></returns>
         public PixelMetadata Dequeue()
         {
-            PixelMetadata metadata = _pixelFifo.ElementAt(0);
-            _pixelFifo.RemoveFirst();
+            if (_elements == 0)
+                throw new IndexOutOfRangeException("FIFO only has 0 elements.");
+
+            PixelMetadata metadata = _pixelFifo.ElementAt(--_elements);            
             return metadata;
         }
     }

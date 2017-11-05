@@ -9,6 +9,7 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController : IAddressableComponent
     {
+        #region Private Members        
         private enum RenderMode : byte
         {
             HBlank = 0,
@@ -17,14 +18,17 @@ namespace Castor.Emulator.Video
             VBlank = 3
         }
 
+        // GPU Data Stuff
         private byte[] _vram;
-        private byte[] _oam;        
+        private byte[] _oam;
         private PalletteData[,] _screenbuffer;
 
+        // Pallette stuff
         private PalletteData[] _bgPallette;
         private PalletteData[] _obPallette0;
         private PalletteData[] _obPallette1;
 
+        // Register stuff
         private byte _stat;
         private byte _lcdc;
         private byte _bgp;
@@ -33,19 +37,23 @@ namespace Castor.Emulator.Video
         private byte _obp0;
         private byte _obp1;
 
+        // Timing stuff
         private RenderMode _mode;
         private int _modeclock;
         private int _line;
 
+        // Pixel Transfer stuff
         private PixelFIFO _fifo;
         private PixelFetcher _fetcher;
 
         private GameboySystem _system;
+        #endregion
 
+        #region IO Registers
         public byte STAT
         {
             get
-            {                
+            {
                 return (byte)((_stat >> 2) << 2 | (byte)_mode); // make sure the last two bits are clear
             }
 
@@ -60,7 +68,7 @@ namespace Castor.Emulator.Video
 
         public byte BGP
         {
-            get =>  _bgp;
+            get => _bgp;
             set
             {
                 _bgp = value;
@@ -105,7 +113,9 @@ namespace Castor.Emulator.Video
             get => _scy;
             set => _scy = value;
         }
+        #endregion
 
+        #region Constructors
         public VideoController(GameboySystem system)
         {
             _vram = new byte[0x2000];
@@ -117,9 +127,11 @@ namespace Castor.Emulator.Video
             _screenbuffer = new PalletteData[160, 144]; // the resolution of GBC is 160x144
 
             _fifo = new PixelFIFO();
-            _fetcher = new PixelFetcher(_system.MMU);
+            _fetcher = new PixelFetcher(_system);
         }
+        #endregion
 
+        #region Memory Mapping
         public byte this[int idx]
         {
             get
@@ -147,43 +159,79 @@ namespace Castor.Emulator.Video
                 }
             }
         }
+        #endregion
+
+        #region LCDC Flags
+        public ushort WindowMapStart
+        {
+            get
+            {
+                if (LCDC.CheckBit(BitFlags.Bit6))
+                    return 0x9C00;
+                return 0x9800;
+            }
+        }
+        public ushort BackgroundTileStart
+        {
+            get
+            {
+                if (LCDC.CheckBit(BitFlags.Bit4))
+                    return 0x8000;
+                return 0x8800;
+            }
+        }
+        public ushort BackgroundMapStart
+        {
+            get
+            {
+                if (LCDC.CheckBit(BitFlags.Bit3))
+                    return 0x9C00;
+                return 0x9800;
+            }
+        }
 
         private bool IsLCDEnabled() => LCDC.CheckBit(BitFlags.Bit7);
-        private bool WindowTileMapDisplay() => LCDC.CheckBit(BitFlags.Bit6);
         private bool IsWindowEnabled() => LCDC.CheckBit(BitFlags.Bit5);
         private bool ShouldShowSprites() => LCDC.CheckBit(BitFlags.Bit1);
         private bool IsBackgroundEnabled() => LCDC.CheckBit(BitFlags.Bit0);
+        #endregion
 
         private void RenderScanline()
         {
             int xPixelsToRemove = _scx;
-            int currentPosition = 0;
+            int currentPosition = 0; // current x position
+            int _scanlineClock = 0; // reset clock for scanline timings
 
             while (true)
             {
-                if (xPixelsToRemove > 0)
-                {
-                    --xPixelsToRemove;
-                    continue;
-                }
-
                 if (currentPosition >= 160) // for 160 pixels
                     break;
+
+                // make sure to scan half the speed to the fifo
+                if (_fetcher.Enabled && _scanlineClock % 6 == 0)
+                {
+                    if (_fifo.Enabled)
+                        _fetcher.Enabled = false;
+                }
 
                 if (_fifo.Enabled) // here is the dequeing routine
                 {
                     PixelMetadata pixel_metadata = _fifo.Dequeue();
-                   
+
                     // set the current x, y position to the color specified in the pallette
                     _screenbuffer[currentPosition, _line] = _bgPallette[pixel_metadata.PalletteData];
+
+                    currentPosition++;
                 }
+
+                ++_scanlineClock;
             }
         }
 
         public void Step()
         {
             // check if lcd is even enabled, if not return
-            if (!_lcdc.CheckBit(BitFlags.Bit7))
+            if (!IsLCDEnabled())
                 return;
 
             ++_modeclock;
