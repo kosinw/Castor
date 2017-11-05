@@ -56,6 +56,10 @@ namespace Castor.Emulator.Memory
                             return _system.GPU.LY;
                         case 0xFF47:
                             return _system.GPU.BGP;
+                        case 0xFF48:
+                            return _system.GPU.OBP0;
+                        case 0xFF49:
+                            return _system.GPU.OBP1;
                         default:
                             return 0;
                     }
@@ -104,6 +108,12 @@ namespace Castor.Emulator.Memory
                             break;
                         case 0xFF47:
                             _system.GPU.BGP = value;
+                            break;
+                        case 0xFF48:
+                            _system.GPU.OBP0 = value;
+                            break;
+                        case 0xFF49:
+                            _system.GPU.OBP1 = value;
                             break;
                         default:
                             return;

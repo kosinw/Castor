@@ -9,22 +9,46 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController : IAddressableComponent
     {
+        private enum RenderMode : byte
+        {
+            HBlank = 0,
+            PixelTransfer = 1,
+            OAMRead = 2,
+            VBlank = 3
+        }
+
         private byte[] _vram;
-        private byte[] _oam;
+        private byte[] _oam;        
+        private PalletteData[,] _screenbuffer;
+
+        private PalletteData[] _bgPallette;
+        private PalletteData[] _obPallette0;
+        private PalletteData[] _obPallette1;
 
         private byte _stat;
         private byte _lcdc;
         private byte _bgp;
+        private byte _scx;
+        private byte _scy;
+        private byte _obp0;
+        private byte _obp1;
 
-        private int _mode;
+        private RenderMode _mode;
         private int _modeclock;
         private int _line;
+
+        private PixelFIFO _fifo;
+        private PixelFetcher _fetcher;
 
         private GameboySystem _system;
 
         public byte STAT
         {
-            get => _stat;
+            get
+            {                
+                return (byte)((_stat >> 2) << 2 | (byte)_mode); // make sure the last two bits are clear
+            }
+
             set => _stat = value;
         }
 
@@ -37,7 +61,31 @@ namespace Castor.Emulator.Video
         public byte BGP
         {
             get =>  _bgp;
-            set => _bgp = value;
+            set
+            {
+                _bgp = value;
+                _bgPallette = value.ToPallette();
+            }
+        }
+
+        public byte OBP0
+        {
+            get => _obp0;
+            set
+            {
+                _obp0 = value;
+                _obPallette0 = value.ToPallette();
+            }
+        }
+
+        public byte OBP1
+        {
+            get => _obp1;
+            set
+            {
+                _obp1 = value;
+                _obPallette0 = value.ToPallette();
+            }
         }
 
         public byte LY
@@ -46,14 +94,30 @@ namespace Castor.Emulator.Video
             set => _line = 0;
         }
 
+        public byte SCX
+        {
+            get => _scx;
+            set => _scx = value;
+        }
+
+        public byte SCY
+        {
+            get => _scy;
+            set => _scy = value;
+        }
+
         public VideoController(GameboySystem system)
         {
             _vram = new byte[0x2000];
             _oam = new byte[0xA0];
             _system = system;
             _line = 0;
-            _mode = 0;
+            _mode = RenderMode.OAMRead;
             _modeclock = 0;
+            _screenbuffer = new PalletteData[160, 144]; // the resolution of GBC is 160x144
+
+            _fifo = new PixelFIFO();
+            _fetcher = new PixelFetcher(_system.MMU);
         }
 
         public byte this[int idx]
@@ -84,9 +148,36 @@ namespace Castor.Emulator.Video
             }
         }
 
+        private bool IsLCDEnabled() => LCDC.CheckBit(BitFlags.Bit7);
+        private bool WindowTileMapDisplay() => LCDC.CheckBit(BitFlags.Bit6);
+        private bool IsWindowEnabled() => LCDC.CheckBit(BitFlags.Bit5);
+        private bool ShouldShowSprites() => LCDC.CheckBit(BitFlags.Bit1);
+        private bool IsBackgroundEnabled() => LCDC.CheckBit(BitFlags.Bit0);
+
         private void RenderScanline()
         {
+            int xPixelsToRemove = _scx;
+            int currentPosition = 0;
 
+            while (true)
+            {
+                if (xPixelsToRemove > 0)
+                {
+                    --xPixelsToRemove;
+                    continue;
+                }
+
+                if (currentPosition >= 160) // for 160 pixels
+                    break;
+
+                if (_fifo.Enabled) // here is the dequeing routine
+                {
+                    PixelMetadata pixel_metadata = _fifo.Dequeue();
+                   
+                    // set the current x, y position to the color specified in the pallette
+                    _screenbuffer[currentPosition, _line] = _bgPallette[pixel_metadata.PalletteData];
+                }
+            }
         }
 
         public void Step()
@@ -100,28 +191,27 @@ namespace Castor.Emulator.Video
             switch (_mode)
             {
                 // OAM read
-                case 2:
+                case RenderMode.OAMRead:
                     if (_modeclock >= 80) // about 77 - 83 clocks (avg = 80)
                     {
                         _modeclock = 0;
-                        _mode = 3;
+                        _mode = RenderMode.PixelTransfer;
                     }
                     break;
 
                 // Pixel transfer mode
-                case 3:
+                case RenderMode.PixelTransfer:
                     if (_modeclock >= 172) // about 169 - 175 clocks (avg = 172)
                     {
                         _modeclock = 0;
-                        _mode = 0; // next hblank mode so techinically this is end of horiz line
+                        _mode = RenderMode.HBlank; // next hblank mode so techinically this is end of horiz line
 
-                        // Time to render scan line
                         RenderScanline();
                     }
                     break;
 
                 // Hblank period
-                case 0:
+                case RenderMode.HBlank:
                     if (_modeclock >= 204) // about 201 - 207 clocks (avg = 204)
                     {
                         _modeclock = 0;
@@ -129,18 +219,18 @@ namespace Castor.Emulator.Video
 
                         if (_line == 143) // if this is last line then enter vblank
                         {
-                            _mode = 1;
+                            _mode = RenderMode.VBlank;
                             // TODO: render framebuffer as this end of the frame
                         }
-                        else // otherwise just ender OAM read
+                        else // otherwise just enter OAM read
                         {
-                            _mode = 2;
+                            _mode = RenderMode.OAMRead;
                         }
                     }
                     break;
 
                 // Vblank period
-                case 1:
+                case RenderMode.VBlank:
                     {
                         if (_modeclock >= 456)
                         {
@@ -152,7 +242,7 @@ namespace Castor.Emulator.Video
                         {
                             _modeclock = 0;
                             _line = 0; // reset line
-                            _mode = 2; // reenter oam read
+                            _mode = RenderMode.OAMRead; // reenter oam read
                         }
                     }
                     break;
