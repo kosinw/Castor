@@ -1,6 +1,8 @@
 ﻿using Castor.Emulator.Utility;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,16 +23,12 @@ namespace Castor.Emulator.Video
         // GPU Data Stuff
         private byte[] _vram;
         private byte[] _oam;
-        private PalletteData[,] _screenbuffer;
-
-        // Pallette stuff
-        private PalletteData[] _bgPallette;
-        private PalletteData[] _obPallette0;
-        private PalletteData[] _obPallette1;
+        private Color[,] _framebuffer;
 
         // Register stuff
-        private byte _stat;
-        private byte _lcdc;
+        private BitFlags _stat;
+        private BitFlags _lcdc;
+
         private byte _bgp;
         private byte _scx;
         private byte _scy;
@@ -42,10 +40,6 @@ namespace Castor.Emulator.Video
         private int _modeclock;
         private int _line;
 
-        // Pixel Transfer stuff
-        private PixelFIFO _fifo;
-        private PixelFetcher _fetcher;
-
         private GameboySystem _system;
         #endregion
 
@@ -54,46 +48,47 @@ namespace Castor.Emulator.Video
         {
             get
             {
-                return (byte)((_stat >> 2) << 2 | (byte)_mode); // make sure the last two bits are clear
+                return (byte)(((byte)_stat >> 2) << 2 | (byte)_mode); // make sure the last two bits are clear
             }
 
-            set => _stat = value;
+            set
+            {
+                byte realValue = (byte)((value >> 2) << 2);
+                _stat = (BitFlags)value;
+            }
         }
 
+        //FF40 - LCDC - LCD Control(R/W)
+        //    Bit 7 - LCD Display Enable(0=Off, 1=On)
+        //    Bit 6 - Window Tile Map Display Select(0=9800-9BFF, 1=9C00-9FFF)
+        //    Bit 5 - Window Display Enable(0=Off, 1=On)
+        //    Bit 4 - BG & Window Tile Data Select(0=8800-97FF, 1=8000-8FFF)
+        //    Bit 3 - BG Tile Map Display Select(0=9800-9BFF, 1=9C00-9FFF)
+        //    Bit 2 - OBJ(Sprite) Size(0=8x8, 1=8x16)
+        //    Bit 1 - OBJ(Sprite) Display Enable(0=Off, 1=On)
+        //    Bit 0 - BG Display(for CGB see below) (0=Off, 1=On)
         public byte LCDC
         {
-            get => _lcdc;
-            set => _lcdc = value;
+            get => (byte)_lcdc;
+            set => _lcdc = (BitFlags)value;
         }
 
         public byte BGP
         {
             get => _bgp;
-            set
-            {
-                _bgp = value;
-                _bgPallette = value.ToPallette();
-            }
+            set => _bgp = value;
         }
 
         public byte OBP0
         {
             get => _obp0;
-            set
-            {
-                _obp0 = value;
-                _obPallette0 = value.ToPallette();
-            }
+            set => _obp0 = value;
         }
 
         public byte OBP1
         {
-            get => _obp1;
-            set
-            {
-                _obp1 = value;
-                _obPallette0 = value.ToPallette();
-            }
+            get => _obp0;
+            set => _obp0 = value;
         }
 
         public byte LY
@@ -124,10 +119,7 @@ namespace Castor.Emulator.Video
             _line = 0;
             _mode = RenderMode.OAMRead;
             _modeclock = 0;
-            _screenbuffer = new PalletteData[160, 144]; // the resolution of GBC is 160x144
-
-            _fifo = new PixelFIFO();
-            _fetcher = new PixelFetcher(_system);
+            _framebuffer = new Color[160, 144];
         }
         #endregion
 
@@ -161,77 +153,55 @@ namespace Castor.Emulator.Video
         }
         #endregion
 
-        #region LCDC Flags
-        public ushort WindowMapStart
-        {
-            get
-            {
-                if (LCDC.CheckBit(BitFlags.Bit6))
-                    return 0x9C00;
-                return 0x9800;
-            }
-        }
-        public ushort BackgroundTileStart
-        {
-            get
-            {
-                if (LCDC.CheckBit(BitFlags.Bit4))
-                    return 0x8000;
-                return 0x8800;
-            }
-        }
-        public ushort BackgroundMapStart
-        {
-            get
-            {
-                if (LCDC.CheckBit(BitFlags.Bit3))
-                    return 0x9C00;
-                return 0x9800;
-            }
-        }
-
-        private bool IsLCDEnabled() => LCDC.CheckBit(BitFlags.Bit7);
-        private bool IsWindowEnabled() => LCDC.CheckBit(BitFlags.Bit5);
-        private bool ShouldShowSprites() => LCDC.CheckBit(BitFlags.Bit1);
-        private bool IsBackgroundEnabled() => LCDC.CheckBit(BitFlags.Bit0);
-        #endregion
-
         private void RenderScanline()
         {
-            int xPixelsToRemove = _scx;
-            int currentPosition = 0; // current x position
-            int _scanlineClock = 0; // reset clock for scanline timings
+            // Check if Bit0 (BG Display Flag) is set
+            if (_lcdc.HasFlag(BitFlags.Bit0))
+                RenderBackground();
+        }
 
-            while (true)
+        private void RenderBackground()
+        {
+            // Find Background Tile Data
+            bool tileDataDisplaySelect = _lcdc.HasFlag(BitFlags.Bit4);
+            ushort tileDataZero = tileDataDisplaySelect ? (ushort)0x8000 : (ushort)0x8800;
+
+            // Find Background Tile Map
+            bool tileMapDisplaySelect = _lcdc.HasFlag(BitFlags.Bit3);
+            ushort tileMapZero = tileMapDisplaySelect ? (ushort)0x9C00 : (ushort)0x9800;
+
+            // Check if the tile map is numbered from 0 to 255 or -127 to 128
+            bool isSigned = !tileMapDisplaySelect;
+
+            int y = _line + _scy;
+
+            // for each tile in this line
+            for (int tile = 0; tile < 20; ++tile)
             {
-                if (currentPosition >= 160) // for 160 pixels
-                    break;
+                // 32x32 bytes for tilemap, 8x8 pixels in one tile
+                int tileIndex = tileMapZero + (y / 8) + tile;
+                sbyte tileID = (sbyte)_system.MMU[tileIndex];
 
-                // make sure to scan half the speed to the fifo
-                if (_fetcher.Enabled && _scanlineClock % 6 == 0)
+                if (isSigned)
                 {
-                    if (_fifo.Enabled)
-                        _fetcher.Enabled = false;
+                    tileID += 127;
                 }
 
-                if (_fifo.Enabled) // here is the dequeing routine
+                byte lsbLine = _system.MMU[tileDataZero + (tileID * 16) + (y % 8)];
+                byte msbLine = _system.MMU[tileDataZero + (tileID * 16) + (y % 8) + 1];
+
+                // For each pixel
+                for (int x = 0; x < 8; ++x)
                 {
-                    PixelMetadata pixel_metadata = _fifo.Dequeue();
-
-                    // set the current x, y position to the color specified in the pallette
-                    _screenbuffer[currentPosition, _line] = _bgPallette[pixel_metadata.PalletteData];
-
-                    currentPosition++;
+                    
                 }
-
-                ++_scanlineClock;
             }
         }
 
         public void Step()
         {
             // check if lcd is even enabled, if not return
-            if (!IsLCDEnabled())
+            if ((_lcdc & BitFlags.Bit7) == BitFlags.Bit7)
                 return;
 
             ++_modeclock;
@@ -269,6 +239,7 @@ namespace Castor.Emulator.Video
                         {
                             _mode = RenderMode.VBlank;
                             // TODO: render framebuffer as this end of the frame
+
                         }
                         else // otherwise just enter OAM read
                         {
@@ -290,7 +261,7 @@ namespace Castor.Emulator.Video
                         {
                             _modeclock = 0;
                             _line = 0; // reset line
-                            _mode = RenderMode.OAMRead; // reenter oam read
+                            _mode = RenderMode.OAMRead; // reenter oam read                            
                         }
                     }
                     break;
