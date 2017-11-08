@@ -23,7 +23,7 @@ namespace Castor.Emulator.Video
         // GPU Data Stuff
         private byte[] _vram;
         private byte[] _oam;
-        private Color[,] _framebuffer;
+        private byte[,] _framebuffer;
 
         // Register stuff
         private BitFlags _stat;
@@ -119,7 +119,7 @@ namespace Castor.Emulator.Video
             _line = 0;
             _mode = RenderMode.OAMRead;
             _modeclock = 0;
-            _framebuffer = new Color[160, 144];
+            _framebuffer = new byte[160 * 3, 144 * 3];
         }
         #endregion
 
@@ -174,28 +174,6 @@ namespace Castor.Emulator.Video
             bool isSigned = !tileMapDisplaySelect;
 
             int y = _line + _scy;
-
-            // for each tile in this line
-            for (int tile = 0; tile < 20; ++tile)
-            {
-                // 32x32 bytes for tilemap, 8x8 pixels in one tile
-                int tileIndex = tileMapZero + (y / 8) + tile;
-                sbyte tileID = (sbyte)_system.MMU[tileIndex];
-
-                if (isSigned)
-                {
-                    tileID += 127;
-                }
-
-                byte lsbLine = _system.MMU[tileDataZero + (tileID * 16) + (y % 8)];
-                byte msbLine = _system.MMU[tileDataZero + (tileID * 16) + (y % 8) + 1];
-
-                // For each pixel
-                for (int x = 0; x < 8; ++x)
-                {
-                    
-                }
-            }
         }
 
         public void Step()
