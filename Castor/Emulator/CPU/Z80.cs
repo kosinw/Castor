@@ -250,8 +250,10 @@ namespace Castor.Emulator.CPU
                     return 8;
             }
 
-            string exceptionString = $"This opcode (0x{opcode:X}) is not implemented! PC: 0x{PC:X}";
-            throw new Exception(exceptionString);
+            //string exceptionString = $"This opcode (0x{opcode:X}) is not implemented! PC: 0x{PC:X}";
+            //throw new Exception(exceptionString);
+
+            return 0;
         }
     }
 }

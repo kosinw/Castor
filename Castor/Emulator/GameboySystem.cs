@@ -21,6 +21,7 @@ namespace Castor.Emulator
 
         public GameboySystem(byte[] bytecode, IVideoOutput videoOutput)
         {
+            Display = videoOutput;
             CPU = new Z80(this);
             MMU = new MemoryMapper(this);
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
