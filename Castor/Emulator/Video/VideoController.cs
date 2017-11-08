@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +10,11 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController : IAddressableComponent
     {
+        #region Consts
+        const int TILES_PER_ROW = 32;
+        const int TILES_PER_COL = 32;
+        #endregion
+
         #region Private Members        
         private enum RenderMode : byte
         {
@@ -23,7 +27,7 @@ namespace Castor.Emulator.Video
         // GPU Data Stuff
         private byte[] _vram;
         private byte[] _oam;
-        private byte[,] _framebuffer;
+        private ColorPallette[,] _framebuffer;
 
         // Register stuff
         private BitFlags _stat;
@@ -87,8 +91,8 @@ namespace Castor.Emulator.Video
 
         public byte OBP1
         {
-            get => _obp0;
-            set => _obp0 = value;
+            get => _obp1;
+            set => _obp1 = value;
         }
 
         public byte LY
@@ -119,7 +123,7 @@ namespace Castor.Emulator.Video
             _line = 0;
             _mode = RenderMode.OAMRead;
             _modeclock = 0;
-            _framebuffer = new byte[160 * 3, 144 * 3];
+            _framebuffer = new ColorPallette[160, 144];
         }
         #endregion
 
@@ -160,26 +164,59 @@ namespace Castor.Emulator.Video
                 RenderBackground();
         }
 
+        private void RenderFramebuffer()
+        {
+            _system.Display.DrawFrame(_framebuffer);
+        }
+
         private void RenderBackground()
         {
             // Find Background Tile Data
-            bool tileDataDisplaySelect = _lcdc.HasFlag(BitFlags.Bit4);
-            ushort tileDataZero = tileDataDisplaySelect ? (ushort)0x8000 : (ushort)0x8800;
+            bool tileMapSelect = _lcdc.HasFlag(BitFlags.Bit4);
+            ushort tileMapZero = tileMapSelect ? (ushort)0x8000 : (ushort)0x8800;
 
             // Find Background Tile Map
-            bool tileMapDisplaySelect = _lcdc.HasFlag(BitFlags.Bit3);
-            ushort tileMapZero = tileMapDisplaySelect ? (ushort)0x9C00 : (ushort)0x9800;
+            bool tileDataSelect = _lcdc.HasFlag(BitFlags.Bit3);
+            ushort tileDataZero = tileDataSelect ? (ushort)0x9C00 : (ushort)0x9800;
 
             // Check if the tile map is numbered from 0 to 255 or -127 to 128
-            bool isSigned = !tileMapDisplaySelect;
+            bool isSigned = !tileMapSelect;
 
-            int y = _line + _scy;
+            // Each tile is 8 pixels high so find tile index by mult. of 8
+            // Integer division always rounds downard
+            int tileY = (_line + _scy) / Tile.TILE_HEIGHT_PX;
+
+            // continue while x position has not gone off screen
+            for (int x = 0; x < 160; ++x)
+            {
+                // Each tile is 8 pixels wide so find tile index by mult. of 8
+                // Integer division always rounds downard
+                int tileX = (_scx + x) / Tile.TILE_WIDTH_PX;
+
+                // The map address for the tile
+                int tileMapAddress = tileMapZero + (TILES_PER_ROW * tileY) + tileX;
+
+                // Find the tile data index
+                byte tileDataIndex = _system.MMU[tileMapAddress];
+
+                // Convert to correct sign byte ordering
+                if (isSigned && tileDataIndex > 127)
+                    tileDataIndex -= 128;
+
+                // Find the tile data and create new Tile object
+                int tileDataAddress = tileDataZero + tileDataIndex;
+
+                // ayy got a tile
+                Tile tile = new Tile(_system.MMU, (ushort)tileDataAddress);
+
+                _framebuffer[x, _line] = Pallette.GetColor(_bgp, tile.GetPixel(x % 8, _line % 8));
+            }
         }
 
         public void Step()
         {
             // check if lcd is even enabled, if not return
-            if ((_lcdc & BitFlags.Bit7) == BitFlags.Bit7)
+            if (!_lcdc.HasFlag(BitFlags.Bit7))
                 return;
 
             ++_modeclock;
@@ -216,7 +253,7 @@ namespace Castor.Emulator.Video
                         if (_line == 143) // if this is last line then enter vblank
                         {
                             _mode = RenderMode.VBlank;
-                            // TODO: render framebuffer as this end of the frame
+                            RenderFramebuffer();
 
                         }
                         else // otherwise just enter OAM read

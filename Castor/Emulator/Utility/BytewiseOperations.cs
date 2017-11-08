@@ -24,5 +24,10 @@ namespace Castor.Emulator.Utility
         public static void SetBit(this byte d8, BitFlags bit) => d8 |= (byte)bit;
         public static void ClearBit(this byte d8, BitFlags bit) => d8 &= (byte)~bit;
         public static void ToggleBit(this byte d8, BitFlags bit) => d8 ^= (byte)bit;
+
+        public static byte BitValue(this byte d8, int index)
+        {
+            return (byte)((d8 >> index) & 1);
+        }
     }
 }

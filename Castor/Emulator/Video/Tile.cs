@@ -1,4 +1,5 @@
 ﻿using Castor.Emulator.Memory;
+using Castor.Emulator.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,29 +10,50 @@ namespace Castor.Emulator.Video
 {
     public class Tile
     {
-        const int TILE_WIDTH_PX = 8;
-        const int TILE_HEIGHT_PX = 8;        
+        public const int TILE_WIDTH_PX = 8;
+        public const int TILE_HEIGHT_PX = 8;
 
-        private ColorPallette[] _buffer;
+        private byte[] _buffer;
 
         public Tile(MemoryMapper mmu, ushort address)
         {
-            _buffer = new ColorPallette[TILE_WIDTH_PX * TILE_HEIGHT_PX];            
+            _buffer = new byte[TILE_WIDTH_PX * TILE_HEIGHT_PX];
 
-            for (int y = 0; y < TILE_HEIGHT_PX; ++y)
+            for (int tileLine = 0; tileLine < TILE_HEIGHT_PX; ++tileLine)
             {
-                (byte, byte) line = GetTileLine(y, mmu, address);
+                int tileIndex = 2 * tileLine; // need to multiply by two as each line is 2 bytes
+                int tileLineAddress = tileIndex + address; // address is offset to index
 
-                for (int x = 0; x < TILE_WIDTH_PX; ++x)
+                byte lsbPixels = mmu[tileLineAddress];
+                byte msbPixels = mmu[tileLineAddress + 1];
+
+                byte[] pixels = GetPixelsInLine(lsbPixels, msbPixels);
+
+                for (int x = 0; x < 8; ++x)
                 {
-                    
+                    _buffer[GetIndex(x, tileLine)] = pixels[x];
                 }
             }
         }
 
-        public (byte, byte) GetTileLine(int lineNumber, MemoryMapper mmu, ushort address)
+        public byte GetPixel(int x, int y) => _buffer[GetIndex(x, y)];
+
+        private byte[] GetPixelsInLine(byte lsb, byte msb)
         {
-            return (0, 0);
+            byte[] buf = new byte[8];
+
+            for (int i = 0; i < 8; ++i)
+            {
+                byte colorValue = (byte)(msb.BitValue(7 - i) << 1 | lsb.BitValue(7 - i));
+                buf[i] = colorValue;
+            }
+
+            return buf;
+        }
+
+        private int GetIndex(int x, int y)
+        {
+            return (TILE_HEIGHT_PX * y) + x;
         }
     }
 }

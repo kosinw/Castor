@@ -15,10 +15,11 @@ namespace Castor.Emulator
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController IRC;
+        public IVideoOutput Display;
 
         private Timer _timer;
 
-        public GameboySystem(byte[] bytecode)
+        public GameboySystem(byte[] bytecode, IVideoOutput videoOutput)
         {
             CPU = new Z80(this);
             MMU = new MemoryMapper(this);

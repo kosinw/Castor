@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Video
 {
-    public enum ColorPallette
+    public interface IVideoOutput
     {
-        White = 0,
-        LightGray = 1,
-        DarkGray = 2,
-        Black = 3
+        void DrawFrame(ColorPallette[,] framebuffer);
     }
 }
