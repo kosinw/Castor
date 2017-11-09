@@ -1,0 +1,24 @@
+﻿<Window x:Class="Castor.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Castor.View"
+        Title="Castor" Height="550" Width="540">
+    <DockPanel Background="Black">
+        <Menu Name="topBar" DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Name="Menu_LoadROM" Header="_Open ROM" Click="Menu_LoadROM_Click"/>
+            </MenuItem>
+        </Menu>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem HorizontalContentAlignment="Left">
+                <TextBlock Text="Now Playing: ">
+                    <TextBlock Text="{Binding Path=Cartridge.Title}"/>
+                </TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+        <Image Name="canvas" RenderOptions.BitmapScalingMode="NearestNeighbor"
+               RenderOptions.EdgeMode="Aliased" Stretch="Uniform"/>
+    </DockPanel>
+</Window>

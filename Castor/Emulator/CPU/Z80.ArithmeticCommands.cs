@@ -11,7 +11,7 @@ namespace Castor.Emulator.CPU
     {
         private void XORNWithA(byte n)
         {
-            A ^= (byte)(n & 0xF);
+            A ^= (byte)(n & 0xFF);
 
             if (A == 0)
                 F |= (byte)StatusFlags.ZeroFlag;

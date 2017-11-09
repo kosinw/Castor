@@ -15,20 +15,23 @@ namespace Castor.Emulator
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController IRC;
-        public IVideoOutput Display;
 
         private Timer _timer;
 
-        public GameboySystem(byte[] bytecode, IVideoOutput videoOutput)
+        public GameboySystem()
         {
-            Display = videoOutput;
             CPU = new Z80(this);
             MMU = new MemoryMapper(this);
-            Cartridge = CartridgeFactory.CreateCartridge(bytecode);
+            Cartridge = null;
             GPU = new VideoController(this);
             IRC = new InterruptController(this);
 
             _timer = new Timer();
+        }
+
+        public void LoadROM(byte[] bytecode)
+        {
+            Cartridge = CartridgeFactory.CreateCartridge(bytecode);
         }
 
         public void Start()
@@ -49,7 +52,7 @@ namespace Castor.Emulator
 
         public void OnClockCycle(object sender, EventArgs e)
         {
-            _timer.Stop(); // make sure the timer doesn't trigger another event
+            _timer.Stop();
 
             // According to Pan Docs, it takes 70224 cycles to complete screen refresh
             for (int i = 0; i < 70_224; ++i)
@@ -57,8 +60,8 @@ namespace Castor.Emulator
                 CPU.Step();
                 GPU.Step();
             }
-            
-            _timer.Start(); // restart the timer in order to start triggering events agains
+
+            _timer.Start();
         }
     }
 }

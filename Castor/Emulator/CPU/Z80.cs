@@ -89,23 +89,21 @@ namespace Castor.Emulator.CPU
 
         private byte ReadByte()
         {            
-            byte ret = _system.MMU[PC + 1];
-            PC++;
+            byte ret = _system.MMU[PC++];
             return ret;
         }
         
         // gameboy is little-endian (reverse order)
         private ushort ReadUshort()
         {            
-            ushort ret = Convert.ToUInt16(_system.MMU[PC + 2] << 8 | _system.MMU[PC + 1]);
+            ushort ret = Convert.ToUInt16(_system.MMU[PC + 1] << 8 | _system.MMU[PC]);
             PC += 2;
             return ret;
         }
 
         private int ExecuteNextInstruction()
         {
-            int cyclesToWait = Execute(_system.MMU[PC]);
-            ++PC;
+            int cyclesToWait = Execute(ReadByte());
 
             return cyclesToWait;
         }

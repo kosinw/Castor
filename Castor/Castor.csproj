@@ -67,13 +67,9 @@
     <Compile Include="Emulator\Memory\BootROM.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
-    <Compile Include="Emulator\Utility\BytewiseOperations.cs" />
+    <Compile Include="Emulator\Utility\Bitwise.cs" />
     <Compile Include="Emulator\Utility\Pallette.cs" />
-    <Compile Include="Emulator\Video\ColorPallette.cs" />
-    <Compile Include="Emulator\Video\IVideoOutput.cs" />
-    <Compile Include="Emulator\Video\Tile.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
