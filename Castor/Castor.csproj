@@ -56,12 +56,7 @@
     <Compile Include="Emulator\Cartridge\ICartridge.cs" />
     <Compile Include="Emulator\Cartridge\MBC0.cs" />
     <Compile Include="Emulator\Memory\InterruptController.cs" />
-    <Compile Include="Emulator\Utility\BitFlags.cs" />
     <Compile Include="Emulator\CPU\StatusFlags.cs" />
-    <Compile Include="Emulator\CPU\Z80.ArithmeticCommands.cs" />
-    <Compile Include="Emulator\CPU\Z80.BitwiseCommands.cs" />
-    <Compile Include="Emulator\CPU\Z80.BranchCommands.cs" />
-    <Compile Include="Emulator\CPU\Z80.LoadCommands.cs" />
     <Compile Include="Emulator\GameboySystem.cs" />
     <Compile Include="Emulator\IAddressableComponent.cs" />
     <Compile Include="Emulator\Memory\BootROM.cs" />

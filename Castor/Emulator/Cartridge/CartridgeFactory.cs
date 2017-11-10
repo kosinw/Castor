@@ -8,14 +8,14 @@ namespace Castor.Emulator.Cartridge
 {
     public static class CartridgeFactory
     {
-        public static ICartridge CreateCartridge(byte[] bytecode)
+        public static ICartridge CreateCartridge(byte[] bytecode, GameboySystem system)
         {
             byte romTypeSelect = bytecode[0x147];
 
             switch (romTypeSelect)
             {
                 case 0x00:
-                    return new MBC0(bytecode);
+                    return new MBC0(bytecode, system);
                 default:
                     return null;
             }

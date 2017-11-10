@@ -74,13 +74,212 @@ namespace Castor.Emulator.CPU
         #endregion
 
         private delegate void Instruction();
-        private Instruction[] _operations;
-        private Instruction[] _bitwiseOperations;
+        private Instruction[] _operations = new Instruction[256];
+        private Instruction[] _bitwiseOperations = new Instruction[256];
 
         public Z80(GameboySystem system)
         {
             _system = system;
-            PC = 0;
+
+            #region Opcode Mappings
+            _operations = new Instruction[256];
+
+#if DEBUG
+            _operations = Enumerable.Repeat<Instruction>(
+                delegate
+                {
+                    throw new Exception($"Instruction (0x{_system.MMU[PC - 1]:X2}) " +
+                        $"not implemented! " +
+                        $"PC = (0x{PC - 1:X2})");
+
+                }, 256).ToArray();
+
+            _bitwiseOperations = Enumerable.Repeat<Instruction>(
+                delegate
+                {
+                    throw new Exception($"Instruction (0xCB 0x{_system.MMU[PC - 1]:X2}) " +
+                        $"not implemented! " +
+                        $"PC = (0x{PC - 2:X2})");
+
+                }, 256).ToArray();
+#endif
+
+            _operations[0x00] = delegate { };       // NOP
+            _operations[0x01] = delegate            // LD BC,d16
+            {
+                BC = ReadUshort(PC);
+            };
+            _operations[0x02] = delegate            // LD (BC),A
+            {
+                _system.MMU[BC] = A;
+            };
+            _operations[0x03] = delegate            // INC BC
+            {
+                BC++;
+            };
+            _operations[0x04] = delegate            // INC B
+            {
+                B++;
+
+                SetFlag(B == 0, StatusFlags.ZeroFlag);
+                SetFlag(false, StatusFlags.SubtractFlag);
+                SetFlag(B % 16 == 0, StatusFlags.HalfCarryFlag);
+            };
+            _operations[0x05] = delegate            // DEC B
+            {
+                B--;
+
+                SetFlag(B == 0, StatusFlags.ZeroFlag);
+                SetFlag(true, StatusFlags.SubtractFlag);
+                SetFlag(B % 16 == 0, StatusFlags.HalfCarryFlag);
+            };
+            _operations[0x06] = delegate            // LD B,d8
+            {
+                B = ReadByte(PC);
+            };
+            _operations[0x0C] = delegate            // INC C
+            {
+                C++;
+
+                SetFlag(C == 0, StatusFlags.ZeroFlag);
+                SetFlag(false, StatusFlags.SubtractFlag);
+                SetFlag(C % 16 == 0, StatusFlags.HalfCarryFlag);
+            };
+            _operations[0x0E] = delegate            // LD C,d8
+            {
+                C = ReadByte(PC);
+            };
+            _operations[0x11] = delegate            // LD DE,d16
+            {
+                DE = ReadUshort(PC);
+            };
+            _operations[0x13] = delegate             // INC DE
+            {
+                DE++;
+            };
+            _operations[0x17] = delegate             // RLA
+            {
+                Bitwise.RotateLeft(ref A, ref F);
+            };
+            _operations[0x1A] = delegate            // LD A,(DE)
+            {
+                A = _system.MMU[DE];
+                _cyclesToWait += 4;
+            };
+            _operations[0x20] = delegate            // JR NZ,r8
+            {
+                sbyte jumpValue = (sbyte)ReadByte(PC);
+                if (!CheckFlag(StatusFlags.ZeroFlag))
+                    JumpRelative(jumpValue);
+            };
+            _operations[0x21] = delegate            // LD HL,d16
+            {
+                HL = ReadUshort(PC);
+            };
+            _operations[0x22] = delegate            // LD (HL+),A
+            {
+                _system.MMU[HL] = A;
+                HL++;
+                _cyclesToWait += 4;
+            };
+            _operations[0x23] = delegate            // INC HL
+            {
+                HL++;
+                _cyclesToWait += 4;
+            };
+            _operations[0x31] = delegate            // LD SP,d16
+            {
+                SP = ReadUshort(PC);
+            };
+            _operations[0x32] = delegate            // LD (HL-),A
+            {
+                _system.MMU[HL] = A;
+                HL--;
+                _cyclesToWait += 4;
+            };
+            _operations[0x4F] = delegate            // LD C,A
+            {
+                C = A;
+            };
+            _operations[0x77] = delegate            // LD (HL),A
+            {
+                _system.MMU[HL] = A;
+                _cyclesToWait += 4;
+            };
+            _operations[0x7B] = delegate            // LD A,E
+            {
+                A = E;
+            };
+            _operations[0x3E] = delegate            // LD A,d8
+            {
+                A = ReadByte(PC);
+            };
+            _operations[0xAF] = delegate            // XOR A
+            {
+                A = (byte)(A ^ A);
+
+                SetFlag(A == 0, StatusFlags.ZeroFlag);
+            };
+            _operations[0xC1] = delegate            // POP BC
+            {
+                BC = PopUshort();
+            };
+            _operations[0xC5] = delegate            // PUSH BC
+            {
+                PushUshort(BC);
+            };
+            _operations[0xC9] = delegate            // RET
+            {
+                PC = PopUshort();
+                _cyclesToWait += 4;
+            };
+            _operations[0xCB] = delegate            // PREFIX CB
+            {
+                _bitwiseOperations[ReadByte(PC)]();
+            };
+            _operations[0xCD] = delegate            // CALL a16
+            {
+                ushort d16 = ReadUshort(PC);
+                PushUshort(PC);
+                PC = d16;
+            };
+            _operations[0xE0] = delegate            // LDH (a8),A
+            {
+                _system.MMU[ReadByte(PC) + 0xFF00] = A;
+                _cyclesToWait += 4;
+            };
+            _operations[0xE2] = delegate            // LD (C),A
+            {
+                _system.MMU[C + 0xFF00] = A;
+                _cyclesToWait += 4;
+            };
+            _operations[0xFE] = delegate            // CP d8
+            {
+                byte d8 = ReadByte(PC);
+
+                SetFlag(d8 == A, StatusFlags.ZeroFlag);
+                SetFlag(true, StatusFlags.SubtractFlag);
+                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
+                SetFlag(d8 > A, StatusFlags.CarryFlag);
+            };
+
+            _bitwiseOperations[0x11] = delegate     // RL C
+            {
+                Bitwise.RotateLeft(ref C, ref F);
+
+                SetFlag(C == 0, StatusFlags.ZeroFlag);
+                SetFlag(false, StatusFlags.SubtractFlag);
+                SetFlag(false, StatusFlags.HalfCarryFlag);
+            };
+            _bitwiseOperations[0x7C] = delegate     // BIT 7,H
+            {
+                int result = H.BitValue(7);
+
+                SetFlag(result == 0, StatusFlags.ZeroFlag);
+                SetFlag(false, StatusFlags.SubtractFlag);
+                SetFlag(true, StatusFlags.HalfCarryFlag);
+            };
+            #endregion
         }
 
         public void Step()
@@ -91,9 +290,7 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                int cyclesToAdd = 0;
                 _operations[ReadByte(PC)]();
-                _cyclesToWait += cyclesToAdd;
             }
         }
 
@@ -101,6 +298,7 @@ namespace Castor.Emulator.CPU
         {
             byte ret = _system.MMU[addr];
             PC++;
+            _cyclesToWait += 4;
             return ret;
         }
 
@@ -108,38 +306,50 @@ namespace Castor.Emulator.CPU
         {
             ushort ret = Convert.ToUInt16(_system.MMU[addr + 1] << 8 | _system.MMU[addr]);
             PC += 2;
+            _cyclesToWait += 8;
             return ret;
         }
 
-        #region Instructions
-        /*
-         * Guide
-         * R8  = 8-bit Register
-         * R16 = 16-bit Register
-         * D8  = Direct-value 8-bit
-         * D16 = Direct-value 16-bit
-         * S8  = Signed-value 8-bit
-         * PR8 = Pointer 8-bit register
-         * PR16 = Pointer 16-bit register
-         * PD16 = Pointer Direct 16-bit register
-         * PD8  = Pointer Direct 8-bit register
-         */        
-        private void OP_LD_R16_D16(ref byte rh, ref byte rl)
+        private void WriteUshort(int addr, ushort value)
         {
-            rl = ReadByte(PC);
-            rh = ReadByte(PC);            
+            byte byte1 = value.MostSignificantByte();
+            byte byte2 = value.LeastSignificantByte();
+
+            _system.MMU[addr] = byte2;
+            _system.MMU[addr + 1] = byte1;
+            _cyclesToWait += 12;
         }
-        private void OP_PR16_R8(ref byte r16_h, ref byte r16_l, ref byte r8)
+
+        private void SetFlag(bool condition, StatusFlags flag)
         {
-            r8 = ReadByte(r16_h << 8 | r16_l);
+            if (condition)
+                F |= (byte)flag;
+            else
+                F &= (byte)~flag;
         }
-        private void OP_INC_R16(ref byte rh, ref byte rl)
+
+        private bool CheckFlag(StatusFlags flag)
         {
-            ushort value = (ushort)(rh << 8 | rl);
-            value++;
-            rh = (byte)((value >> 8) & 0xFF);
-            rl = (byte)((value >> 0) & 0xFF);
+            return (F & (byte)flag) == (byte)flag;
         }
-        #endregion
+
+        private void JumpRelative(sbyte relativeValue)
+        {
+            PC = (ushort)((PC + relativeValue) & 0xFFFF);
+            _cyclesToWait += 4;
+        }
+
+        private void PushUshort(ushort value)
+        {
+            SP -= 2;
+            WriteUshort(SP, value);
+        }
+
+        private ushort PopUshort()
+        {
+            ushort ret = ReadUshort(SP);
+            SP += 2;
+            return ret;
+        }
     }
 }

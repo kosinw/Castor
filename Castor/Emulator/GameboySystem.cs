@@ -27,7 +27,7 @@ namespace Castor.Emulator
 
         public void LoadROM(byte[] bytecode)
         {
-            Cartridge = CartridgeFactory.CreateCartridge(bytecode);
+            Cartridge = CartridgeFactory.CreateCartridge(bytecode, this);
         }
 
         public void Start()
