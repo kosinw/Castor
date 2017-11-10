@@ -1,6 +1,8 @@
 ﻿using Castor.Emulator;
+using Castor.Emulator.Video;
 using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -24,46 +26,79 @@ namespace Castor.View
             // Initialize gameboy subsystem
             _system = new GameboySystem();
 
-            // Set DataContext to gameboy system
-            // Todo Add interface of INotifyPropertyChanged
             this.DataContext = _system;
-
-            // Initailize systemThread but don't start it
-            _systemThread = new Thread(new ThreadStart(_system.Start));
 
             // Add OnRenderEventHandler
             _system.GPU.OnRenderEvent += GPU_OnRenderEvent;
 
             // Initialize writableBuffer and bind to image
-            _writableBuffer = new WriteableBitmap(160, 144, 96, 96, PixelFormats.Gray8, null);
+            _writableBuffer = new WriteableBitmap(VideoController.RENDER_WIDTH,
+                VideoController.RENDER_HEIGHT, 96, 96, PixelFormats.Gray8, null);
+
             canvas.Source = _writableBuffer;
 
             // This will be used whenever the onrender event is triggered
-            _renderingRect = new Int32Rect(0, 0, 160, 144);
+            _renderingRect = new Int32Rect(0, 0, VideoController.RENDER_WIDTH,
+                VideoController.RENDER_HEIGHT);
         }
 
-        private void GPU_OnRenderEvent(byte[] data)
+        private void GPU_OnRenderEvent()
         {
-            Dispatcher.BeginInvoke((Action<byte[]>)Render, data);
-        }
-
-        private void Render(byte[] data)
-        {
-            _writableBuffer.WritePixels(_renderingRect, data, 160, 0);
+            Dispatcher.BeginInvoke((Action)delegate ()
+            {
+                _writableBuffer.WritePixels(_renderingRect, _system.GPU.Screen,
+                    VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT,
+                    _writableBuffer.BackBufferStride);
+            });
         }
 
         private void Menu_LoadROM_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog fd = new OpenFileDialog();
 
-            bool? fileChoosen = fd.ShowDialog();
-
-            if (fileChoosen == true)
+            if (_systemThread != null)
             {
-                _system.LoadROM(File.ReadAllBytes(fd.FileName));                
+                _systemThread.Join(1000);
+
+                _system = new GameboySystem();
+                _system.GPU.OnRenderEvent += GPU_OnRenderEvent;
             }
 
-            _systemThread.Start();
+            OpenFileDialog fd = new OpenFileDialog();
+
+            if (fd?.ShowDialog() == true)
+            {
+                _system.LoadROM(File.ReadAllBytes(fd.FileName));
+
+                _systemThread = new Thread(new ThreadStart(delegate ()
+                {
+                    Stopwatch watch = new Stopwatch();
+                    while (true)
+                    {
+                        watch.Reset();
+                        watch.Start();
+                        _system.Frame();
+                        watch.Stop();
+
+                        if (watch.ElapsedMilliseconds < 16)
+                        {
+                            Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
+                        }
+                    }
+                }))
+                {
+                    Priority = ThreadPriority.Highest
+                };
+
+                _systemThread.Start();
+            }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_systemThread != null)
+            {
+                _systemThread.Abort();
+            }
         }
     }
 }

@@ -22,8 +22,8 @@ namespace Castor.Emulator.CPU
         private bool IsZero() => ((byte)StatusFlags.ZeroFlag & F) == (byte)StatusFlags.ZeroFlag;
 
         private void JumpRelative(sbyte relativeValue) => PC = (ushort)(PC + relativeValue);
-        private void JumpRelativeIfNotZero() => JumpRelativeIfCondition((sbyte)ReadByte(), !IsZero());
-        private void JumpRelativeIfZero() => JumpRelativeIfCondition((sbyte)ReadByte(), IsZero());
+        private void JumpRelativeIfNotZero() => JumpRelativeIfCondition((sbyte)ReadBytePC(), !IsZero());
+        private void JumpRelativeIfZero() => JumpRelativeIfCondition((sbyte)ReadBytePC(), IsZero());
 
         private void CallSubroutine(ushort immediateValue)
         {

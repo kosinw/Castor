@@ -52,6 +52,10 @@ namespace Castor.Emulator.Memory
                             return _system.GPU.LCDC;
                         case 0xFF41:
                             return _system.GPU.STAT;
+                        case 0xFF42:
+                            return _system.GPU.SCY;
+                        case 0xFF43:
+                            return _system.GPU.SCX;
                         case 0xFF44:
                             return _system.GPU.LY;
                         case 0xFF47:
@@ -102,6 +106,12 @@ namespace Castor.Emulator.Memory
                             break;
                         case 0xFF41:
                             _system.GPU.STAT = value;
+                            break;
+                        case 0xFF42:
+                            _system.GPU.SCY = value;
+                            break;
+                        case 0xFF43:
+                            _system.GPU.SCX = value;
                             break;
                         case 0xFF44:
                             _system.GPU.LY = value;

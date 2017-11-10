@@ -3,7 +3,6 @@ using Castor.Emulator.CPU;
 using Castor.Emulator.Memory;
 using System;
 using System.Drawing;
-using Timer = System.Timers.Timer;
 using Castor.Emulator.Video;
 
 namespace Castor.Emulator
@@ -15,8 +14,7 @@ namespace Castor.Emulator
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController IRC;
-
-        private Timer _timer;
+        
 
         public GameboySystem()
         {
@@ -25,8 +23,6 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             IRC = new InterruptController(this);
-
-            _timer = new Timer();
         }
 
         public void LoadROM(byte[] bytecode)
@@ -38,30 +34,20 @@ namespace Castor.Emulator
         {
             // TODO: Add bootup state + boot rom for Gameboy here
             Restart();
-
-            // Set to 60fps in milliseconds
-            _timer.Interval = 1000 / 60;
-            _timer.Elapsed += OnClockCycle;
-            _timer.Enabled = true;
         }
 
         public void Restart()
         {
-            CPU.PC = 0;            
+            CPU.PC = 0;
         }
 
-        public void OnClockCycle(object sender, EventArgs e)
+        public void Frame()
         {
-            _timer.Stop();
-
-            // According to Pan Docs, it takes 70224 cycles to complete screen refresh
-            for (int i = 0; i < 70_224; ++i)
+            for (int _counter = 0; _counter < 70_224; _counter++)
             {
                 CPU.Step();
                 GPU.Step();
-            }
-
-            _timer.Start();
+            }            
         }
     }
 }

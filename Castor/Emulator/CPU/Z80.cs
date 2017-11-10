@@ -20,7 +20,7 @@ namespace Castor.Emulator.CPU
         public byte E;
         public byte H;
         public byte L;
-        
+
         public ushort AF
         {
             get => Convert.ToUInt16(A << 8 | F);
@@ -73,6 +73,10 @@ namespace Castor.Emulator.CPU
         private GameboySystem _system { get; set; }
         #endregion
 
+        private delegate void Instruction();
+        private Instruction[] _operations;
+        private Instruction[] _bitwiseOperations;
+
         public Z80(GameboySystem system)
         {
             _system = system;
@@ -82,176 +86,60 @@ namespace Castor.Emulator.CPU
         public void Step()
         {
             if (_cyclesToWait > 0)
+            {
                 --_cyclesToWait;
+            }
             else
-                _cyclesToWait = ExecuteNextInstruction();
+            {
+                int cyclesToAdd = 0;
+                _operations[ReadByte(PC)]();
+                _cyclesToWait += cyclesToAdd;
+            }
         }
 
-        private byte ReadByte()
-        {            
-            byte ret = _system.MMU[PC++];
+        private byte ReadByte(int addr)
+        {
+            byte ret = _system.MMU[addr];
+            PC++;
             return ret;
         }
-        
-        // gameboy is little-endian (reverse order)
-        private ushort ReadUshort()
-        {            
-            ushort ret = Convert.ToUInt16(_system.MMU[PC + 1] << 8 | _system.MMU[PC]);
+
+        private ushort ReadUshort(int addr)
+        {
+            ushort ret = Convert.ToUInt16(_system.MMU[addr + 1] << 8 | _system.MMU[addr]);
             PC += 2;
             return ret;
         }
 
-        private int ExecuteNextInstruction()
+        #region Instructions
+        /*
+         * Guide
+         * R8  = 8-bit Register
+         * R16 = 16-bit Register
+         * D8  = Direct-value 8-bit
+         * D16 = Direct-value 16-bit
+         * S8  = Signed-value 8-bit
+         * PR8 = Pointer 8-bit register
+         * PR16 = Pointer 16-bit register
+         * PD16 = Pointer Direct 16-bit register
+         * PD8  = Pointer Direct 8-bit register
+         */        
+        private void OP_LD_R16_D16(ref byte rh, ref byte rl)
         {
-            int cyclesToWait = Execute(ReadByte());
-
-            return cyclesToWait;
+            rl = ReadByte(PC);
+            rh = ReadByte(PC);            
         }
-
-        public int Execute(byte opcode)
+        private void OP_PR16_R8(ref byte r16_h, ref byte r16_l, ref byte r8)
         {
-            switch (opcode)
-            {
-                case 0x04:
-                    IncrementREG(ref B);
-                    return 4;
-                case 0x05:
-                    DecrementREG(ref B);
-                    return 4;
-                case 0x06:
-                    LoadIntoBRegister(ReadByte());
-                    return 8;
-                case 0x0C:
-                    IncrementREG(ref C);
-                    return 4;
-                case 0x0D:
-                    DecrementREG(ref C);
-                    return 4;
-                case 0x0E:
-                    LoadIntoCRegister(ReadByte());
-                    return 8;
-                case 0x11:
-                    LoadIntoDERegister(ReadUshort());
-                    return 12;
-                case 0x13:
-                    IncrementDE();
-                    return 8;
-                case 0x17:
-                    BitRotateLeftCarryA();
-                    return 4;
-                case 0x1A:
-                    LoadValueDEIntoA();
-                    return 8;
-                case 0x18:
-                    JumpRelative((sbyte)ReadByte());
-                    return 12;                
-                case 0x1D:
-                    DecrementREG(ref E);
-                    return 4;
-                case 0x1E:
-                    LoadIntoERegister(ReadByte());
-                    return 8;
-                case 0x20:
-                    JumpRelativeIfNotZero();
-                    return 8;
-                case 0x21:
-                    LoadIntoHLRegister(ReadUshort());
-                    return 12;
-                case 0x22:
-                    LoadAIntoHLPointerPostIncrement();
-                    return 8;
-                case 0x23:
-                    IncrementHL();
-                    return 8;
-                case 0x24:
-                    DecrementREG(ref H);
-                    return 4;
-                case 0x28:
-                    JumpRelativeIfZero();
-                    return 8;
-                case 0x2E:
-                    LoadIntoLRegister(ReadByte());
-                    return 8;
-                case 0x31:
-                    LoadIntoSPRegister(ReadUshort());
-                    return 12;
-                case 0x32:
-                    LoadAIntoHLPointerPostDecrement();
-                    return 8;
-                case 0x3E:
-                    LoadIntoARegister(ReadByte());
-                    return 8;
-                case 0x3D:
-                    DecrementREG(ref A);
-                    return 4;
-                case 0x4F:
-                    LoadIntoCRegister(A);
-                    return 4;
-                case 0x57:
-                    LoadIntoDERegister(A);
-                    return 4;
-                case 0x67:
-                    LoadIntoHRegister(A);
-                    return 4;
-                case 0x77:
-                    LoadAIntoHLPointer();
-                    return 8;
-                case 0x7B:
-                    LoadIntoARegister(E);
-                    return 4;
-                case 0x7C:
-                    LoadIntoARegister(H);
-                    return 4;
-                case 0x92:
-                    return 4;
-                case 0xAF:
-                    XORAWithA();
-                    return 4;
-                case 0xC1:
-                    PopBCOffStack();
-                    return 12;
-                case 0xC5:
-                    PushPairOntoStack(BC);
-                    return 16;
-                case 0xC9:
-                    ReturnSubroutine();
-                    return 16;
-                case 0xCB:
-                    int nextOpcode = ReadByte();
-                    switch (nextOpcode)
-                    {
-                        case 0x11:
-                            BitRotateLeftCarryC();
-                            return 8;
-                        case 0x7C:
-                            CheckBIT(7, H);
-                            return 8;
-                    }
-                    return 4;
-                case 0xCD:
-                    CallSubroutine(ReadUshort());
-                    return 12;
-                case 0xE0:
-                    LoadARegisterIntoAddress8(ReadByte());
-                    return 12;
-                case 0xE2:
-                    LoadARegisterIntoCPointer();
-                    return 8;
-                case 0xEA:
-                    LoadARegisterIntoAddress16(ReadUshort());
-                    return 16;
-                case 0xF0:
-                    LoadAddress8IntoARegister(ReadByte());
-                    return 12;
-                case 0xFE:
-                    CompareWithA(ReadByte());
-                    return 8;
-            }
-
-            //string exceptionString = $"This opcode (0x{opcode:X}) is not implemented! PC: 0x{PC:X}";
-            //throw new Exception(exceptionString);
-
-            return 0;
+            r8 = ReadByte(r16_h << 8 | r16_l);
         }
+        private void OP_INC_R16(ref byte rh, ref byte rl)
+        {
+            ushort value = (ushort)(rh << 8 | rl);
+            value++;
+            rh = (byte)((value >> 8) & 0xFF);
+            rl = (byte)((value >> 0) & 0xFF);
+        }
+        #endregion
     }
 }

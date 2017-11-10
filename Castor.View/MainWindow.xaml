@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Castor.View"
+        Closing="Window_Closing"
         Title="Castor" Height="550" Width="540">
     <DockPanel Background="Black">
         <Menu Name="topBar" DockPanel.Dock="Top">

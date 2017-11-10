@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,8 +11,21 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController : IAddressableComponent
     {
-        public delegate void RenderEventHandler(byte[] data);
+        public delegate void RenderEventHandler();
         public event RenderEventHandler OnRenderEvent;
+
+        public const int RENDER_WIDTH = 160;
+        public const int RENDER_HEIGHT = 144;
+
+        public IntPtr Screen
+        {
+            get
+            {
+                var handle = GCHandle.Alloc(_framebuffer, GCHandleType.Pinned);
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(_framebuffer, 0);
+                return ptr;
+            }
+        }
 
         #region Private Members 
         // GPU Data Stuff
@@ -154,7 +168,7 @@ namespace Castor.Emulator.Video
                 RenderBackground();
         }
 
-        private void RenderBackground() // WARNING: This section is math heavy
+        private void RenderBackground()
         {
             // First check which tile map is being used
             int tileMapOffset = _lcdc.BitValue(3) == 0 ?
@@ -180,7 +194,7 @@ namespace Castor.Emulator.Video
             int xIndex = _scx % 8;
 
             // The initial tile based off of the index
-            short tileIndex = (sbyte)_system.MMU[tileRow * 32 + tileCol + tileMapOffset];
+            short tileIndex = (sbyte)_system.MMU[(tileRow * 32) + tileCol + tileMapOffset];
 
             // If signed indices are being used, add an offset of 128
             if (usingSignedIndices) tileIndex += 128;
@@ -254,7 +268,7 @@ namespace Castor.Emulator.Video
                         if (_line == 143) // if this is last line then enter vblank
                         {
                             _mode = 1;
-                            OnRenderEvent(_framebuffer);
+                            OnRenderEvent();
                         }
                         else // otherwise just enter OAM read
                         {
