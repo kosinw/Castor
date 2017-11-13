@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
@@ -18,6 +19,11 @@ namespace Castor.View
 
         WriteableBitmap _writableBuffer;
         Int32Rect _renderingRect;
+
+        [DllImport("winmm.dll")]
+        internal static extern uint timeBeginPeriod(uint period);
+        [DllImport("winmm.dll")]
+        internal static extern uint timeEndPeriod(uint period);
 
         public MainWindow()
         {
@@ -46,9 +52,8 @@ namespace Castor.View
         {
             Dispatcher.BeginInvoke((Action)delegate ()
             {
-                _writableBuffer.WritePixels(_renderingRect, _system.GPU.Screen,
-                    VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT,
-                    _writableBuffer.BackBufferStride);
+                _writableBuffer.WritePixels(_renderingRect, _system.GPU.Screen, 
+                    VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT, _writableBuffer.BackBufferStride);
             });
         }
 
@@ -81,7 +86,9 @@ namespace Castor.View
 
                         if (watch.ElapsedMilliseconds < 16)
                         {
+                            timeBeginPeriod(1); // this is to increase the resolution of window's clock
                             Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
+                            timeEndPeriod(1);
                         }
                     }
                 }))

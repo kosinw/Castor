@@ -42,13 +42,17 @@ namespace Castor.Emulator.Utility
 
             d8 <<= 1;
 
+            d8 |= carry_bit;
+
+            /*
             unchecked
             {
                 if (carry_bit == 0)
                     d8 &= (byte)~carry_bit;
                 else
-                    d8 |= (byte)carry_bit;
+                    
             }
+            */
         }
     }
 }

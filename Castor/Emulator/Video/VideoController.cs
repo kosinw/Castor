@@ -166,65 +166,64 @@ namespace Castor.Emulator.Video
             // Check if Bit0 (BG Display Flag) is set
             if (_lcdc.BitValue(0) == 1)
                 RenderBackground();
+            else
+                Array.Clear(_framebuffer, 0, _framebuffer.Length);
         }
 
         private void RenderBackground()
         {
-            // First check which tile map is being used
-            int tileMapOffset = _lcdc.BitValue(3) == 0 ?
-                0x9800 : 0x9C00;
+            // Here check which data set is being used
+            // For 0x8000 the tile indices are numbered from 0 to 255
+            // For 0x8800 the tile indices are numbered from -128 to 127
+            var tileDataZero = _lcdc.BitValue(4) == 1 ? 0x8000 : 0x8800;
+            var usingSignedIndices = _lcdc.BitValue(4) == 0;
 
-            // Then check which tile data set is being used
-            int tileDataOffset = _lcdc.BitValue(4) == 0 ?
-                0x8800 : 0x8000;
+            // Here check which map set contains the background tile map
+            var tileMapZero = _lcdc.BitValue(3) == 0 ? 0x9800 : 0x9C00;
 
-            // Check if tile data set is numbered starting with -128
-            bool usingSignedIndices = _lcdc.BitValue(4) == 0;
+            // This is used to calculate which row of 32 tiles the GPU is currently on
+            var yPosition = (_scy + _line) % 256;
 
-            // Check which row of the tile map is going to be rendered
-            int tileRow = ((_line + _scy) % 256) / 8;
+            // This is used to calculate which line of whatever tile the GPU is rendering
+            var tileRow = (yPosition / 8) * 32;
 
-            // Check the initial column of the tile map is going to be rendered
-            int tileCol = _scx / 8;
-
-            // Find line of the tile will be rendered
-            int yIndex = (_scy + _line) % 8;
-
-            // Find the initial x index in tileline to start at
-            int xIndex = _scx % 8;
-
-            // The initial tile based off of the index
-            short tileIndex = (sbyte)_system.MMU[(tileRow * 32) + tileCol + tileMapOffset];
-
-            // If signed indices are being used, add an offset of 128
-            if (usingSignedIndices) tileIndex += 128;
-
-            // Otherwise make sure values greater than 127 are their signed counterparts
-            else tileIndex = (byte)tileIndex;
-
-            // For every pixel on this raster line
+            // For each pixel on this scanline
             for (int x = 0; x < 160; ++x)
             {
-                byte byte1 = _system.MMU[tileDataOffset + (16 * tileIndex) + (yIndex * 2)];
-                byte byte2 = _system.MMU[tileDataOffset + (16 * tileIndex) + (yIndex * 2) + 1];
+                var xPosition = (x + _scx) % 256;
 
-                int idx = byte1.BitValue(7 - xIndex) << 1 | byte2.BitValue(7 - xIndex);
+                var tileColumn = (xPosition / 8) % 256;
+                int tileAddress = tileMapZero + tileRow + tileColumn;
 
-                _framebuffer[_line * 160 + x] = Pallette.GetColor(idx, _bgp);
+                // Here find the index of the tile that will be rendered
+                int tileIdx = 0;
+                if (usingSignedIndices)
+                    tileIdx = (sbyte)_system.MMU[tileAddress];
+                else
+                    tileIdx = (byte)_system.MMU[tileAddress];
 
-                xIndex++;
-
-                // If the tile has completed, move onto the next tile
-                if (xIndex == 8)
+                if (tileIdx != 0)
                 {
-                    xIndex = 0;
-                    tileCol = (tileCol + 1) % 32;
-
-                    tileIndex = (sbyte)_system.MMU[tileRow * 32 + tileCol + tileMapOffset];
-
-                    if (usingSignedIndices) tileIndex += 128;
-                    else tileIndex = (byte)tileIndex;
+                    ;
                 }
+                // Here find start location of the tile by index
+                int tileLocation = 0;
+
+                if (usingSignedIndices)
+                    tileLocation += (tileIdx + 128) * 16;
+                else
+                    tileLocation += tileIdx * 16;
+
+                int vline = yPosition % 8; // Each tile is 8 pixels high
+                vline *= 2; // Each line takes up two bytes
+
+                byte b1 = _system.MMU[tileDataZero + tileLocation + vline]; // read the first half of the line
+                byte b2 = _system.MMU[tileDataZero + tileLocation + vline + 1]; // read the second half of the line
+
+                int currentBit = 7 - (xPosition % 8); // the most significant bit is the first bit rendered
+                int colorValue = 2 * b1.BitValue(currentBit) + b2.BitValue(currentBit);
+
+                _framebuffer[_line * 160 + x] = Utility.Video.GetGrayShade(colorValue, _bgp);
             }
         }
 
