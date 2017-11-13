@@ -279,6 +279,10 @@ namespace Castor.Emulator.CPU
                 _system.MMU[HL] = A;
                 _cyclesToWait += 4;
             };
+            _operations[0x78] = delegate            // LD A,B
+            {
+                A = B;
+            };
             _operations[0x7B] = delegate            // LD A,E
             {
                 A = E;
@@ -286,6 +290,23 @@ namespace Castor.Emulator.CPU
             _operations[0x7C] = delegate            // LD A,H
             {
                 A = H;
+            };
+            _operations[0x7D] = delegate            // LD A,L
+            {
+                A = L;
+            };
+            _operations[0x86] = delegate            // ADD A,(HL)
+            {
+                byte d8 = _system.MMU[HL];
+
+                SetFlag((A + d8 - 1) == byte.MaxValue, StatusFlags.ZeroFlag);
+                SetFlag(false, StatusFlags.SubtractFlag);
+                SetFlag((A + d8) % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(A + d8 > byte.MaxValue, StatusFlags.CarryFlag);
+
+                A += d8;
+
+                _cyclesToWait += 4;
             };
             _operations[0x3E] = delegate            // LD A,d8
             {
@@ -308,6 +329,17 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.SubtractFlag);
                 SetFlag(false, StatusFlags.HalfCarryFlag);
                 SetFlag(false, StatusFlags.CarryFlag);
+            };
+            _operations[0xBE] = delegate            // CP (HL)
+            {
+                byte d8 = _system.MMU[HL];
+
+                SetFlag(d8 == A, StatusFlags.ZeroFlag);
+                SetFlag(true, StatusFlags.SubtractFlag);
+                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
+                SetFlag(d8 > A, StatusFlags.CarryFlag);
+
+                _cyclesToWait += 4;
             };
             _operations[0xC1] = delegate            // POP BC
             {
@@ -356,7 +388,6 @@ namespace Castor.Emulator.CPU
             {
                 byte d8 = ReadByte(PC);
 
-
                 SetFlag(d8 == A, StatusFlags.ZeroFlag);
                 SetFlag(true, StatusFlags.SubtractFlag);
                 SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
@@ -390,9 +421,16 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                if (PC == 0x9C)
+                if (PC == 0xFA)
                 {
-                    ;
+                    byte acc = 0;
+
+                    for (int i = 0x134; i <= 0x14D; ++i)
+                    {
+                        acc += _system.MMU[i];
+                    }
+
+                    byte final = (byte)(acc + 0x19);
                 }
 
                 _operations[ReadByte(PC)]();
