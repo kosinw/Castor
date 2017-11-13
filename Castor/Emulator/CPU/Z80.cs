@@ -345,6 +345,10 @@ namespace Castor.Emulator.CPU
             {
                 BC = PopUshort();
             };
+            _operations[0xC3] = delegate            // JP a16
+            {
+                JumpAbsolute(ReadUshort(PC));
+            };
             _operations[0xC5] = delegate            // PUSH BC
             {
                 PushUshort(BC);
@@ -421,18 +425,6 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                if (PC == 0xFA)
-                {
-                    byte acc = 0;
-
-                    for (int i = 0x134; i <= 0x14D; ++i)
-                    {
-                        acc += _system.MMU[i];
-                    }
-
-                    byte final = (byte)(acc + 0x19);
-                }
-
                 _operations[ReadByte(PC)]();
             }
         }
@@ -483,6 +475,12 @@ namespace Castor.Emulator.CPU
         private void JumpRelative(sbyte relativeValue)
         {
             PC = (ushort)((PC + relativeValue) & 0xFFFF);
+            _cyclesToWait += 4;
+        }
+
+        private void JumpAbsolute(ushort addr)
+        {
+            PC = addr;
             _cyclesToWait += 4;
         }
 

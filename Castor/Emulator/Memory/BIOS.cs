@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Memory
 {
-    public class BootROM : IAddressableComponent
+    public class BIOS : IAddressableComponent
     {
         private byte[] _bytecode;
 
-        public BootROM()
+        public BIOS()
         {
             _bytecode = Castor.Properties.Resources.DMG_ROM;
         }

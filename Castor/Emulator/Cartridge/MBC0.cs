@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,18 +10,11 @@ namespace Castor.Emulator.Cartridge
 {
     public class MBC0 : ICartridge
     {
-#if DEBUG
-        GameboySystem _system;
-#endif
-
-        public MBC0(byte[] bytecode, GameboySystem system)
+        public MBC0(byte[] bytecode)
         {
             this._bytecode = bytecode;
-#if DEBUG
-            this._system = system;
-#endif
         }
-
+        
         private byte[] _bytecode;
 
         public byte this[int idx]
@@ -47,7 +42,7 @@ namespace Castor.Emulator.Cartridge
                 return builder.ToString().Trim();
             }
         }
-        
+
         public void SetMemoryModel(byte value) => throw new Exception("This cartridge types does not support this feature.");
         public void SwitchROMBank(byte index) => throw new Exception("This cartridge types does not support this feature.");
     }

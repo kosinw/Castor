@@ -32,7 +32,8 @@ namespace Castor.View
             // Initialize gameboy subsystem
             _system = new GameboySystem();
 
-            this.DataContext = _system;
+            // Set the WPF DataCtx to the Gameboy class
+            DataContext = _system;
 
             // Add OnRenderEventHandler
             _system.GPU.OnRenderEvent += GPU_OnRenderEvent;
@@ -41,6 +42,7 @@ namespace Castor.View
             _writableBuffer = new WriteableBitmap(VideoController.RENDER_WIDTH,
                 VideoController.RENDER_HEIGHT, 96, 96, PixelFormats.Gray8, null);
 
+            // Set the source image of the Image control as the _writableBUffer
             canvas.Source = _writableBuffer;
 
             // This will be used whenever the onrender event is triggered
@@ -50,10 +52,12 @@ namespace Castor.View
 
         private void GPU_OnRenderEvent()
         {
-            Dispatcher.BeginInvoke((Action)delegate ()
+            // this needs to be done this way because of threading
+            Dispatcher.BeginInvoke((Action)delegate () 
             {
                 _writableBuffer.WritePixels(_renderingRect, _system.GPU.Screen, 
-                    VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT, _writableBuffer.BackBufferStride);
+                    VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT,
+                    _writableBuffer.BackBufferStride);
             });
         }
 

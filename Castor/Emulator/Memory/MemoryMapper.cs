@@ -11,7 +11,7 @@ namespace Castor.Emulator.Memory
         private GameboySystem _system;
         private byte[] _internalRam;
         private byte[] _internalRam2;
-        private BootROM _bootROM = new BootROM();
+        private BIOS _bootROM = new BIOS();
 
         private bool _mapFirst256BootROM = true;
 
