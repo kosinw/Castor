@@ -24,10 +24,13 @@ namespace Castor.Emulator.Cartridge
                 if (idx < 0x8000)
                     return _bytecode[idx];
 
-                throw new Exception("You may not read to this location in memory.");
+                return 0;
             }
 
-            set => throw new Exception("You may not write to this location in memory.");
+            set
+            {
+                return;
+            }
         }
 
         public string Title

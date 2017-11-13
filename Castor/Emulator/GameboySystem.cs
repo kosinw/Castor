@@ -38,17 +38,6 @@ namespace Castor.Emulator
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
         }
 
-        public void Start()
-        {
-            // TODO: Add bootup state + boot rom for Gameboy here
-            Restart();
-        }
-
-        public void Restart()
-        {
-            CPU.PC = 0;
-        }
-
         public void Frame()
         {
             for (int _counter = 0; _counter < 70_224; _counter++)

@@ -116,6 +116,9 @@ namespace Castor.Emulator.Memory
                         case 0xFF44:
                             _system.GPU.LY = value;
                             break;
+                        case 0xFF46:
+                            _system.GPU.DMATransfer((byte)(value * 0x100));
+                            break;
                         case 0xFF47:
                             _system.GPU.BGP = value;
                             break;
