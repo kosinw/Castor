@@ -161,6 +161,20 @@ namespace Castor.Emulator.CPU
                 _system.MMU[ReadUshort(PC)] = value;
             }
         }
+        public ushort AccessorSP
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return AccessorSP;
+            }
+
+            set
+            {
+                _cyclesToWait += 4;
+                AccessorSP = value;
+            }
+        }
         #endregion
 
         public ushort SP;
@@ -214,7 +228,7 @@ namespace Castor.Emulator.CPU
 
                 }, 256).ToArray();
 #endif            
-            PopulateLoadInstructions();
+            PopulateLoadInstructions();             // LD, LDH, LDD, LDI, PUSH, POP
 
             _operations[0x00] = delegate { };       // NOP
             _operations[0x03] = delegate            // INC BC
@@ -226,17 +240,17 @@ namespace Castor.Emulator.CPU
             {
                 B++;
 
-                SetFlag(B == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(B % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(B == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(B % 16 == 0, StatusFlags.H);
             };
             _operations[0x05] = delegate            // DEC B
             {
                 B--;
 
-                SetFlag(B == 0, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag(B % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(B == 0, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag(B % 16 == 0, StatusFlags.H);
             };
             _operations[0x0B] = delegate            // DEC BC
             {
@@ -248,17 +262,17 @@ namespace Castor.Emulator.CPU
             {
                 C++;
 
-                SetFlag(C == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(C % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(C == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(C % 16 == 0, StatusFlags.H);
             };
             _operations[0x0D] = delegate            // DEC C
             {
                 C--;
 
-                SetFlag(C == 0, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag(C % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(C == 0, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag(C % 16 == 0, StatusFlags.H);
             };
             _operations[0x13] = delegate             // INC DE
             {
@@ -269,25 +283,25 @@ namespace Castor.Emulator.CPU
             {
                 D--;
 
-                SetFlag(D == 0, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag(D % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(D == 0, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag(D % 16 == 0, StatusFlags.H);
             };
             _operations[0x17] = delegate             // RLA
             {
                 Bitwise.RotateLeft(ref A, ref F);
 
-                SetFlag(false, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(false, StatusFlags.HalfCarryFlag);
+                SetFlag(false, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(false, StatusFlags.H);
             };
             _operations[0x1D] = delegate            // DEC E
             {
                 E--;
 
-                SetFlag(E == 0, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag(E % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(E == 0, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag(E % 16 == 0, StatusFlags.H);
             };
             _operations[0x18] = delegate            // JR r8
             {
@@ -297,7 +311,7 @@ namespace Castor.Emulator.CPU
             _operations[0x20] = delegate            // JR NZ,r8
             {
                 sbyte jumpValue = (sbyte)ReadByte(PC);
-                if (!CheckFlag(StatusFlags.ZeroFlag))
+                if (!CheckFlag(StatusFlags.Z))
                     JumpRelative(jumpValue);
             };
             _operations[0x23] = delegate            // INC HL
@@ -309,32 +323,32 @@ namespace Castor.Emulator.CPU
             {
                 H++;
 
-                SetFlag(H == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(H % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(H == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(H % 16 == 0, StatusFlags.H);
             };
             _operations[0x28] = delegate            // JR Z,r8
             {
                 sbyte jumpValue = (sbyte)ReadByte(PC);
-                if (CheckFlag(StatusFlags.ZeroFlag))
+                if (CheckFlag(StatusFlags.Z))
                     JumpRelative(jumpValue);
             };
             _operations[0x3D] = delegate            // DEC A
             {
                 A--;
 
-                SetFlag(A == 0, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag(A % 16 == 0, StatusFlags.HalfCarryFlag);
+                SetFlag(A == 0, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag(A % 16 == 0, StatusFlags.H);
             };
             _operations[0x86] = delegate            // ADD A,(HL)
             {
                 byte d8 = _system.MMU[HL];
 
-                SetFlag((A + d8 - 1) == byte.MaxValue, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag((A + d8) % 16 == 0, StatusFlags.HalfCarryFlag);
-                SetFlag(A + d8 > byte.MaxValue, StatusFlags.CarryFlag);
+                SetFlag((A + d8 - 1) == byte.MaxValue, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag((A + d8) % 16 == 0, StatusFlags.H);
+                SetFlag(A + d8 > byte.MaxValue, StatusFlags.C);
 
                 A += d8;
 
@@ -342,10 +356,10 @@ namespace Castor.Emulator.CPU
             };
             _operations[0x90] = delegate            // SUB B
             {
-                SetFlag(A == B, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag((B & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
-                SetFlag(B > A, StatusFlags.CarryFlag);
+                SetFlag(A == B, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag((B & 0xF) > (A & 0xF), StatusFlags.H);
+                SetFlag(B > A, StatusFlags.C);
 
                 A -= B;
             };
@@ -353,47 +367,39 @@ namespace Castor.Emulator.CPU
             {
                 A = (byte)(A ^ A);
 
-                SetFlag(A == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(false, StatusFlags.HalfCarryFlag);
-                SetFlag(false, StatusFlags.CarryFlag);
+                SetFlag(A == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(false, StatusFlags.H);
+                SetFlag(false, StatusFlags.C);
             };
             _operations[0xB0] = delegate            // OR B
             {
                 A = (byte)(A | B);
 
-                SetFlag(A == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(false, StatusFlags.HalfCarryFlag);
-                SetFlag(false, StatusFlags.CarryFlag);
+                SetFlag(A == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(false, StatusFlags.H);
+                SetFlag(false, StatusFlags.C);
             };
             _operations[0xB1] = delegate            // OR C
             {
                 A = (byte)(A | C);
 
-                SetFlag(A == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(false, StatusFlags.HalfCarryFlag);
-                SetFlag(false, StatusFlags.CarryFlag);
+                SetFlag(A == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(false, StatusFlags.H);
+                SetFlag(false, StatusFlags.C);
             };
             _operations[0xBE] = delegate            // CP (HL)
             {
                 byte d8 = _system.MMU[HL];
 
-                SetFlag(d8 == A, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
-                SetFlag(d8 > A, StatusFlags.CarryFlag);
+                SetFlag(d8 == A, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.H);
+                SetFlag(d8 > A, StatusFlags.C);
 
                 _cyclesToWait += 4;
-            };
-            _operations[0xC1] = delegate            // POP BC
-            {
-                BC = PopUshort();
-            };
-            _operations[0xC5] = delegate            // PUSH BC
-            {
-                PushUshort(BC);
             };
             _operations[0xC9] = delegate            // RET
             {
@@ -418,27 +424,27 @@ namespace Castor.Emulator.CPU
             {
                 byte d8 = ReadByte(PC);
 
-                SetFlag(d8 == A, StatusFlags.ZeroFlag);
-                SetFlag(true, StatusFlags.SubtractFlag);
-                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.HalfCarryFlag);
-                SetFlag(d8 > A, StatusFlags.CarryFlag);
+                SetFlag(d8 == A, StatusFlags.Z);
+                SetFlag(true, StatusFlags.N);
+                SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.H);
+                SetFlag(d8 > A, StatusFlags.C);
             };
 
             _extendedOperations[0x11] = delegate     // RL C
             {
                 Bitwise.RotateLeft(ref C, ref F);
 
-                SetFlag(C == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(false, StatusFlags.HalfCarryFlag);
+                SetFlag(C == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(false, StatusFlags.H);
             };
             _extendedOperations[0x7C] = delegate     // BIT 7,H
             {
                 int result = H.BitValue(7);
 
-                SetFlag(result == 0, StatusFlags.ZeroFlag);
-                SetFlag(false, StatusFlags.SubtractFlag);
-                SetFlag(true, StatusFlags.HalfCarryFlag);
+                SetFlag(result == 0, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(true, StatusFlags.H);
             };
             #endregion
         }
@@ -451,11 +457,6 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                if (PC == 0x5D)
-                {
-                    ;
-                }
-
                 _operations[ReadByte(PC)]();
             }
         }
@@ -503,20 +504,6 @@ namespace Castor.Emulator.CPU
         {
             PC = (ushort)((PC + relativeValue) & 0xFFFF);
             _cyclesToWait += 4;
-        }
-
-        private void PushUshort(ushort value)
-        {
-            SP -= 2;
-            WriteUshort(SP, value);
-        }
-
-        private ushort PopUshort()
-        {
-            ushort ret = ReadUshort(SP);
-            SP += 2;
-            PC -= 2; // only one parameter, read ushort
-            return ret;
         }
     }
 }

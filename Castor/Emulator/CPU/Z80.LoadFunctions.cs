@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Castor.Emulator.Utility;
+using System;
 
 namespace Castor.Emulator.CPU
 {
@@ -16,7 +17,6 @@ namespace Castor.Emulator.CPU
             L,
             Imm8,
             Imm16,
-            Si8,
             Addr8,
             Addr16,
             AddrC,
@@ -28,10 +28,19 @@ namespace Castor.Emulator.CPU
             BC,
             DE,
             HL,
-            SP
+            SP,
+            AccessorSP
         };
 
-        public void PopulateLoadInstructions()
+        public enum StackType
+        {
+            BC,
+            DE,
+            HL,
+            AF
+        }
+
+        private void PopulateLoadInstructions() // All the data for the move/load instructions
         {
             // LD Reg16,Imm16
             _operations[0x01] = RLI(LoadType.BC, LoadType.Imm16);
@@ -39,7 +48,7 @@ namespace Castor.Emulator.CPU
             _operations[0x21] = RLI(LoadType.HL, LoadType.Imm16);
             _operations[0x31] = RLI(LoadType.SP, LoadType.Imm16);
 
-            // LD RegAddr,A
+            // LD (RegAddr),A
             _operations[0x02] = RLI(LoadType.AddrBC, LoadType.A);
             _operations[0x12] = RLI(LoadType.AddrDE, LoadType.A);
             _operations[0x22] = RLI(LoadType.AddrHLInc, LoadType.A);
@@ -75,7 +84,7 @@ namespace Castor.Emulator.CPU
             _operations[0xFA] = RLI(LoadType.A, LoadType.Addr16);
 
             // LD (a16), SP
-            _operations[0x08] = RLI(LoadType.Addr16, LoadType.SP);
+            _operations[0x08] = RLI(LoadType.Addr16, LoadType.AccessorSP);
 
             // LD B,Reg8
             _operations[0x40] = RLI(LoadType.B, LoadType.B);
@@ -155,6 +164,34 @@ namespace Castor.Emulator.CPU
             _operations[0x7D] = RLI(LoadType.A, LoadType.L);
             _operations[0x7E] = RLI(LoadType.A, LoadType.AddrHL);
             _operations[0x7F] = RLI(LoadType.A, LoadType.A);
+
+            // LD SP,HL
+            _operations[0xF9] = RLI(LoadType.AccessorSP, LoadType.HL);
+
+            // LD HL,SP+r8
+            _operations[0xF8] = () =>
+            {
+                sbyte si8 = (sbyte)ReadByte(PC);
+
+                SetFlag(false, StatusFlags.Z);
+                SetFlag(false, StatusFlags.N);
+                SetFlag(Bitwise.Add.CheckHalfCarry(SP, si8), StatusFlags.H);
+                SetFlag(Bitwise.Add.CheckFullCarry(SP, si8), StatusFlags.C);
+
+                HL = (ushort)(AccessorSP + si8);
+            };
+
+            // POP Reg16
+            _operations[0xC1] = RPOI(StackType.BC);
+            _operations[0xD1] = RPOI(StackType.DE);
+            _operations[0xE1] = RPOI(StackType.HL);
+            _operations[0xF1] = RPOI(StackType.AF);
+
+            // PUSH Reg16
+            _operations[0xC5] = RPUI(StackType.BC);
+            _operations[0xD5] = RPUI(StackType.DE);
+            _operations[0xE5] = RPUI(StackType.HL);
+            _operations[0xF5] = RPUI(StackType.AF);
         }
 
         /// <summary>
@@ -229,6 +266,9 @@ namespace Castor.Emulator.CPU
                 case LoadType.SP:
                     setter = v => SP = (ushort)v;
                     break;
+                case LoadType.AccessorSP:
+                    setter = v => AccessorSP = (ushort)v;
+                    break;
                 default:
                     throw new Exception("Invalid left-hand load type was provided.");
             }
@@ -272,9 +312,79 @@ namespace Castor.Emulator.CPU
                     return () => setter(AddrHLDec);
                 case LoadType.SP:
                     return () => setter(SP);
+                case LoadType.HL:
+                    return () => setter(HL);
+                case LoadType.AccessorSP:
+                    return () => setter(AccessorSP);
                 default:
                     throw new Exception("Invalid right-hand load type was provided.");
             }
+        }
+
+        /// <summary>
+        /// A shorthand notation to register push instructions.
+        /// </summary>
+        /// <param name="operand">The 16-bit register to push onto the stack.</param>
+        /// <returns></returns>
+        Instruction RPUI(StackType operand)
+        {
+            switch (operand)
+            {
+                case StackType.AF:
+                    return () => PushUshort(AF);
+                case StackType.BC:
+                    return () => PushUshort(BC);
+                case StackType.DE:
+                    return () => PushUshort(DE);
+                case StackType.HL:
+                    return () => PushUshort(HL);
+                default:
+                    throw new Exception("Invalid operand supplied.");
+            }
+        }
+
+        /// <summary>
+        /// A shorthand notation to register pop instructions.
+        /// </summary>
+        /// <param name="operand">The 16-bit register to pop off of the stack.</param>
+        /// <returns></returns>
+        Instruction RPOI(StackType operand)
+        {
+            switch (operand)
+            {
+                case StackType.AF:
+                    return () => AF = PopUshort();
+                case StackType.BC:
+                    return () => BC = PopUshort();
+                case StackType.DE:
+                    return () => DE = PopUshort();
+                case StackType.HL:
+                    return () => HL = PopUshort();
+                default:
+                    throw new Exception("Invalid operand supplied.");
+            }
+        }
+
+        /// <summary>
+        /// A utility function to push registers onto the stack.
+        /// </summary>
+        /// <param name="value"></param>
+        private void PushUshort(ushort value)
+        {
+            SP -= 2;
+            WriteUshort(SP, value);
+        }
+
+        /// <summary>
+        /// A utility function to pop registers off of the stack.
+        /// </summary>
+        /// <returns></returns>
+        private ushort PopUshort()
+        {
+            ushort ret = ReadUshort(SP);
+            SP += 2;
+            PC -= 2; // only one parameter, read ushort
+            return ret;
         }
     }
 }

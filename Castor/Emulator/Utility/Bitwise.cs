@@ -36,13 +36,26 @@ namespace Castor.Emulator.Utility
             byte carry_bit = flagRegister.BitValue(4); // index 4 is carry flag
 
             if (bit7_d8 == 0)
-                flagRegister &= (byte)~StatusFlags.CarryFlag;
+                flagRegister &= (byte)~StatusFlags.C;
             else
-                flagRegister |= (byte)StatusFlags.CarryFlag;
+                flagRegister |= (byte)StatusFlags.C;
 
             d8 <<= 1;
 
             d8 |= carry_bit;
+        }
+
+        public static class Add
+        {
+            public static bool CheckHalfCarry(ushort val1, int val2)
+            {
+                return ((val1 & 0xFF) + (val2 & 0xFF) > 0xFF);
+            }
+
+            public static bool CheckFullCarry(ushort val1, int val2)
+            {
+                return (val1 + val2) > ushort.MaxValue;
+            }
         }
     }
 }

@@ -6,13 +6,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
-    [Flags]
-    public enum StatusFlags : byte
+    public partial class Z80
     {
-        None = 0,
-        Z = (1 << 7),
-        N = (1 << 6),
-        H = (1 << 5),
-        C = (1 << 4)
     }
 }
