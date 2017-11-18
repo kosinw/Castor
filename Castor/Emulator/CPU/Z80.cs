@@ -75,11 +75,13 @@ namespace Castor.Emulator.CPU
 
         private delegate void Instruction();
         private Instruction[] _operations = new Instruction[256];
-        private Instruction[] _bitwiseOperations = new Instruction[256];
+        private Instruction[] _extendedOperations = new Instruction[256];
 
         public Z80(GameboySystem system)
         {
             _system = system;
+
+            PopulateLoadInstructions();
 
             #region Opcode Mappings
             _operations = new Instruction[256];
@@ -94,7 +96,7 @@ namespace Castor.Emulator.CPU
 
                 }, 256).ToArray();
 
-            _bitwiseOperations = Enumerable.Repeat<Instruction>(
+            _extendedOperations = Enumerable.Repeat<Instruction>(
                 () =>
                 {
                     throw new Exception($"Instruction (0xCB 0x{_system.MMU[PC - 1]:X2}) " +
@@ -396,7 +398,7 @@ namespace Castor.Emulator.CPU
             };
             _operations[0xCB] = delegate            // PREFIX CB
             {
-                _bitwiseOperations[ReadByte(PC)]();
+                _extendedOperations[ReadByte(PC)]();
             };
             _operations[0xCD] = delegate            // CALL a16
             {
@@ -438,7 +440,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(d8 > A, StatusFlags.CarryFlag);
             };
 
-            _bitwiseOperations[0x11] = delegate     // RL C
+            _extendedOperations[0x11] = delegate     // RL C
             {
                 Bitwise.RotateLeft(ref C, ref F);
 
@@ -446,7 +448,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.SubtractFlag);
                 SetFlag(false, StatusFlags.HalfCarryFlag);
             };
-            _bitwiseOperations[0x7C] = delegate     // BIT 7,H
+            _extendedOperations[0x7C] = delegate     // BIT 7,H
             {
                 int result = H.BitValue(7);
 
@@ -465,18 +467,6 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                if (PC == 0xFA)
-                {
-                    byte acc = 0;
-
-                    for (int i = 0x134; i <= 0x14D; ++i)
-                    {
-                        acc += _system.MMU[i];
-                    }
-
-                    byte final = (byte)(acc + 0x19);
-                }
-
                 _operations[ReadByte(PC)]();
             }
         }
@@ -492,10 +482,6 @@ namespace Castor.Emulator.CPU
         private ushort ReadUshort(int addr)
         {
             ushort ret = Convert.ToUInt16(_system.MMU[addr + 1] << 8 | _system.MMU[addr]);
-            if (ret == 0x0104)
-            {
-                ;
-            }
             PC += 2;
             _cyclesToWait += 8;
             return ret;
