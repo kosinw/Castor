@@ -4,20 +4,17 @@ using Castor.Emulator.Memory;
 using System;
 using System.Drawing;
 using Castor.Emulator.Video;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Castor.Emulator
 {
-    public class GameboySystem : INotifyPropertyChanged
+    public class GameboySystem
     {
         public Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController IRC;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        
 
         public GameboySystem()
         {
@@ -28,14 +25,9 @@ namespace Castor.Emulator
             IRC = new InterruptController(this);
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public void LoadROM(byte[] bytecode)
         {
-            Cartridge = CartridgeFactory.CreateCartridge(bytecode);
+            Cartridge = CartridgeFactory.CreateCartridge(bytecode, this);
         }
 
         public void Frame()
