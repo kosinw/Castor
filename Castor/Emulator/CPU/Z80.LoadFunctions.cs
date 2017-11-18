@@ -19,7 +19,6 @@ namespace Castor.Emulator.CPU
             Si8,
             Addr8,
             Addr16,
-            AddrAF,
             AddrC,
             AddrBC,
             AddrDE,
@@ -97,6 +96,65 @@ namespace Castor.Emulator.CPU
             _operations[0x4D] = RLI(LoadType.C, LoadType.L);
             _operations[0x4E] = RLI(LoadType.C, LoadType.AddrHL);
             _operations[0x4F] = RLI(LoadType.C, LoadType.A);
+
+            // LD D,Reg8
+            _operations[0x50] = RLI(LoadType.D, LoadType.B);
+            _operations[0x51] = RLI(LoadType.D, LoadType.C);
+            _operations[0x52] = RLI(LoadType.D, LoadType.D);
+            _operations[0x53] = RLI(LoadType.D, LoadType.E);
+            _operations[0x54] = RLI(LoadType.D, LoadType.H);
+            _operations[0x55] = RLI(LoadType.D, LoadType.L);
+            _operations[0x56] = RLI(LoadType.D, LoadType.AddrHL);
+            _operations[0x57] = RLI(LoadType.D, LoadType.A);
+
+            // LD E,Reg8
+            _operations[0x58] = RLI(LoadType.E, LoadType.B);
+            _operations[0x59] = RLI(LoadType.E, LoadType.C);
+            _operations[0x5A] = RLI(LoadType.E, LoadType.D);
+            _operations[0x5B] = RLI(LoadType.E, LoadType.E);
+            _operations[0x5C] = RLI(LoadType.E, LoadType.H);
+            _operations[0x5D] = RLI(LoadType.E, LoadType.L);
+            _operations[0x5E] = RLI(LoadType.E, LoadType.AddrHL);
+            _operations[0x5F] = RLI(LoadType.E, LoadType.A);
+
+            // LD H,Reg8
+            _operations[0x60] = RLI(LoadType.H, LoadType.B);
+            _operations[0x61] = RLI(LoadType.H, LoadType.C);
+            _operations[0x62] = RLI(LoadType.H, LoadType.D);
+            _operations[0x63] = RLI(LoadType.H, LoadType.E);
+            _operations[0x64] = RLI(LoadType.H, LoadType.H);
+            _operations[0x65] = RLI(LoadType.H, LoadType.L);
+            _operations[0x66] = RLI(LoadType.H, LoadType.AddrHL);
+            _operations[0x67] = RLI(LoadType.H, LoadType.A);
+
+            // LD L,Reg8
+            _operations[0x68] = RLI(LoadType.L, LoadType.B);
+            _operations[0x69] = RLI(LoadType.L, LoadType.C);
+            _operations[0x6A] = RLI(LoadType.L, LoadType.D);
+            _operations[0x6B] = RLI(LoadType.L, LoadType.E);
+            _operations[0x6C] = RLI(LoadType.L, LoadType.H);
+            _operations[0x6D] = RLI(LoadType.L, LoadType.L);
+            _operations[0x6E] = RLI(LoadType.L, LoadType.AddrHL);
+            _operations[0x6F] = RLI(LoadType.L, LoadType.A);
+
+            // LD (HL),Reg8
+            _operations[0x70] = RLI(LoadType.AddrHL, LoadType.B);
+            _operations[0x71] = RLI(LoadType.AddrHL, LoadType.C);
+            _operations[0x72] = RLI(LoadType.AddrHL, LoadType.D);
+            _operations[0x73] = RLI(LoadType.AddrHL, LoadType.E);
+            _operations[0x74] = RLI(LoadType.AddrHL, LoadType.H);
+            _operations[0x75] = RLI(LoadType.AddrHL, LoadType.L);
+            _operations[0x77] = RLI(LoadType.AddrHL, LoadType.A);
+
+            // LD A,Reg8
+            _operations[0x78] = RLI(LoadType.A, LoadType.B);
+            _operations[0x79] = RLI(LoadType.A, LoadType.C);
+            _operations[0x7A] = RLI(LoadType.A, LoadType.D);
+            _operations[0x7B] = RLI(LoadType.A, LoadType.E);
+            _operations[0x7C] = RLI(LoadType.A, LoadType.H);
+            _operations[0x7D] = RLI(LoadType.A, LoadType.L);
+            _operations[0x7E] = RLI(LoadType.A, LoadType.AddrHL);
+            _operations[0x7F] = RLI(LoadType.A, LoadType.A);
         }
 
         /// <summary>
@@ -118,7 +176,7 @@ namespace Castor.Emulator.CPU
                     setter = v => B = (byte)v;
                     break;
                 case LoadType.C:
-                    setter = v => B = (byte)v;
+                    setter = v => C = (byte)v;
                     break;
                 case LoadType.D:
                     setter = v => D = (byte)v;
@@ -136,31 +194,28 @@ namespace Castor.Emulator.CPU
                     setter = v => L = (byte)v;
                     break;
                 case LoadType.Addr8:
-                    setter = v => _system.MMU[0xFF00 + ReadByte(PC)] = (byte)v;
+                    setter = v => Addr8 = (byte)v;
                     break;
                 case LoadType.Addr16:
-                    setter = v => _system.MMU[ReadUshort(PC)] = (byte)v;
+                    setter = v => Addr16 = (byte)v;
                     break;
                 case LoadType.AddrC:
-                    setter = v => _system.MMU[0xFF00 + C] = (byte)v;
-                    break;
-                case LoadType.AddrAF:
-                    setter = v => _system.MMU[AF] = (byte)v;
+                    setter = v => AddrC = (byte)v;
                     break;
                 case LoadType.AddrBC:
-                    setter = v => _system.MMU[BC] = (byte)v;
+                    setter = v => AddrBC = (byte)v;
                     break;
                 case LoadType.AddrDE:
-                    setter = v => _system.MMU[DE] = (byte)v;
+                    setter = v => AddrDE = (byte)v;
                     break;
                 case LoadType.AddrHL:
-                    setter = v => _system.MMU[HL] = (byte)v;
+                    setter = v => AddrHL = (byte)v;
                     break;
                 case LoadType.AddrHLDec:
-                    setter = v => _system.MMU[HL--] = (byte)v;
+                    setter = v => AddrHLDec = (byte)v;
                     break;
                 case LoadType.AddrHLInc:
-                    setter = v => _system.MMU[HL++] = (byte)v;
+                    setter = v => AddrHLInc = (byte)v;
                     break;
                 case LoadType.BC:
                     setter = v => BC = (ushort)v;
@@ -194,27 +249,29 @@ namespace Castor.Emulator.CPU
                 case LoadType.H:
                     return () => setter(H);
                 case LoadType.L:
-                    return () => setter(L);                
+                    return () => setter(L);
                 case LoadType.Imm8:
                     return () => setter(ReadByte(PC));
                 case LoadType.Imm16:
                     return () => setter(ReadUshort(PC));
                 case LoadType.AddrC:
-                    return () => setter(_system.MMU[0xFF00 + C]);
+                    return () => setter(AddrC);
                 case LoadType.Addr8:
-                    return () => setter(_system.MMU[0xFF00 + ReadByte(PC)]);
+                    return () => setter(Addr8);
                 case LoadType.Addr16:
-                    return () => setter(_system.MMU[ReadUshort(PC)]);
+                    return () => setter(Addr16);
                 case LoadType.AddrBC:
-                    return () => setter(_system.MMU[BC]);
+                    return () => setter(AddrBC);
                 case LoadType.AddrDE:
-                    return () => setter(_system.MMU[DE]);
+                    return () => setter(AddrDE);
                 case LoadType.AddrHL:
-                    return () => setter(_system.MMU[HL]);
+                    return () => setter(AddrHL);
                 case LoadType.AddrHLInc:
-                    return () => setter(_system.MMU[HL++]);
+                    return () => setter(AddrHLInc);
                 case LoadType.AddrHLDec:
-                    return () => setter(_system.MMU[HL--]);
+                    return () => setter(AddrHLDec);
+                case LoadType.SP:
+                    return () => setter(SP);
                 default:
                     throw new Exception("Invalid right-hand load type was provided.");
             }

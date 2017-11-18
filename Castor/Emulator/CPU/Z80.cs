@@ -52,6 +52,117 @@ namespace Castor.Emulator.CPU
                 L = value.LeastSignificantByte();
             }
         }
+
+        #region Pointer Accessors
+        public byte AddrHL
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[HL];
+            }
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[HL] = value;
+            }
+        }
+        public byte AddrHLInc
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[HL++];
+            }
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[HL++] = value;
+            }
+        }
+        public byte AddrHLDec
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[HL--];
+            }
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[HL--] = value;
+            }
+        }
+        public byte AddrC
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[0xFF00 + C];
+            }
+
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[0xFF00 + C] = value;
+            }
+        }
+        public byte AddrBC
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[BC];
+            }
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[BC] = value;
+            }
+        }
+        public byte AddrDE
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[DE];
+            }
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[DE] = value;
+            }
+        }
+        public byte Addr8
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[0xFF00 + ReadByte(PC)];
+            }
+
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[0xFF00 + ReadByte(PC)] = value;
+            }
+        }
+        public byte Addr16
+        {
+            get
+            {
+                _cyclesToWait += 4;
+                return _system.MMU[ReadUshort(PC)];
+            }
+            
+            set
+            {
+                _cyclesToWait += 4;
+                _system.MMU[ReadUshort(PC)] = value;
+            }
+        }
+        #endregion
+
         public ushort SP;
         public ushort PC;
         #endregion
@@ -81,8 +192,6 @@ namespace Castor.Emulator.CPU
         {
             _system = system;
 
-            PopulateLoadInstructions();
-
             #region Opcode Mappings
             _operations = new Instruction[256];
 
@@ -105,16 +214,9 @@ namespace Castor.Emulator.CPU
 
                 }, 256).ToArray();
 #endif            
+            PopulateLoadInstructions();
+
             _operations[0x00] = delegate { };       // NOP
-            _operations[0x01] = delegate            // LD BC,d16
-            {
-                BC = ReadUshort(PC);
-            };
-            _operations[0x02] = delegate            // LD (BC),A
-            {
-                _system.MMU[BC] = A;
-                _cyclesToWait += 4;
-            };
             _operations[0x03] = delegate            // INC BC
             {
                 BC++;
@@ -135,10 +237,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(B == 0, StatusFlags.ZeroFlag);
                 SetFlag(true, StatusFlags.SubtractFlag);
                 SetFlag(B % 16 == 0, StatusFlags.HalfCarryFlag);
-            };
-            _operations[0x06] = delegate            // LD B,d8
-            {
-                B = ReadByte(PC);
             };
             _operations[0x0B] = delegate            // DEC BC
             {
@@ -162,14 +260,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.SubtractFlag);
                 SetFlag(C % 16 == 0, StatusFlags.HalfCarryFlag);
             };
-            _operations[0x0E] = delegate            // LD C,d8
-            {
-                C = ReadByte(PC);
-            };
-            _operations[0x11] = delegate            // LD DE,d16
-            {
-                DE = ReadUshort(PC);
-            };
             _operations[0x13] = delegate             // INC DE
             {
                 DE++;
@@ -183,10 +273,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.SubtractFlag);
                 SetFlag(D % 16 == 0, StatusFlags.HalfCarryFlag);
             };
-            _operations[0x16] = delegate             // LD D,d8
-            {
-                D = ReadByte(PC);
-            };
             _operations[0x17] = delegate             // RLA
             {
                 Bitwise.RotateLeft(ref A, ref F);
@@ -194,11 +280,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.ZeroFlag);
                 SetFlag(false, StatusFlags.SubtractFlag);
                 SetFlag(false, StatusFlags.HalfCarryFlag);
-            };
-            _operations[0x1A] = delegate            // LD A,(DE)
-            {
-                A = _system.MMU[DE];
-                _cyclesToWait += 4;
             };
             _operations[0x1D] = delegate            // DEC E
             {
@@ -213,25 +294,11 @@ namespace Castor.Emulator.CPU
                 sbyte jumpValue = (sbyte)ReadByte(PC);
                 JumpRelative(jumpValue);
             };
-            _operations[0x1E] = delegate            // LD E,d8
-            {
-                E = ReadByte(PC);
-            };
             _operations[0x20] = delegate            // JR NZ,r8
             {
                 sbyte jumpValue = (sbyte)ReadByte(PC);
                 if (!CheckFlag(StatusFlags.ZeroFlag))
                     JumpRelative(jumpValue);
-            };
-            _operations[0x21] = delegate            // LD HL,d16
-            {
-                HL = ReadUshort(PC);
-            };
-            _operations[0x22] = delegate            // LD (HL+),A
-            {
-                _system.MMU[HL] = A;
-                HL++;
-                _cyclesToWait += 4;
             };
             _operations[0x23] = delegate            // INC HL
             {
@@ -252,32 +319,6 @@ namespace Castor.Emulator.CPU
                 if (CheckFlag(StatusFlags.ZeroFlag))
                     JumpRelative(jumpValue);
             };
-            _operations[0x2A] = delegate            // LD A,(HL+)
-            {
-                A = _system.MMU[HL]++;
-
-                _cyclesToWait += 4;
-            };
-            _operations[0x2E] = delegate            // LD L,d8
-            {
-                L = ReadByte(PC);
-            };
-            _operations[0x31] = delegate            // LD SP,d16
-            {
-                SP = ReadUshort(PC);
-            };
-            _operations[0x32] = delegate            // LD (HL-),A
-            {
-                _system.MMU[HL] = A;
-                HL--;
-                _cyclesToWait += 4;
-            };
-            _operations[0x36] = delegate            // LD (HL),d8
-            {
-                _system.MMU[HL] = ReadByte(PC);
-
-                _cyclesToWait += 4;
-            };
             _operations[0x3D] = delegate            // DEC A
             {
                 A--;
@@ -285,39 +326,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(A == 0, StatusFlags.ZeroFlag);
                 SetFlag(true, StatusFlags.SubtractFlag);
                 SetFlag(A % 16 == 0, StatusFlags.HalfCarryFlag);
-            };
-            _operations[0x4F] = delegate            // LD C,A
-            {
-                C = A;
-            };
-            _operations[0x57] = delegate            // LD D,A
-            {
-                D = A;
-            };
-            _operations[0x67] = delegate            // LD H,A
-            {
-                H = A;
-            };
-            _operations[0x77] = delegate            // LD (HL),A
-            {
-                _system.MMU[HL] = A;
-                _cyclesToWait += 4;
-            };
-            _operations[0x78] = delegate            // LD A,B
-            {
-                A = B;
-            };
-            _operations[0x7B] = delegate            // LD A,E
-            {
-                A = E;
-            };
-            _operations[0x7C] = delegate            // LD A,H
-            {
-                A = H;
-            };
-            _operations[0x7D] = delegate            // LD A,L
-            {
-                A = L;
             };
             _operations[0x86] = delegate            // ADD A,(HL)
             {
@@ -331,10 +339,6 @@ namespace Castor.Emulator.CPU
                 A += d8;
 
                 _cyclesToWait += 4;
-            };
-            _operations[0x3E] = delegate            // LD A,d8
-            {
-                A = ReadByte(PC);
             };
             _operations[0x90] = delegate            // SUB B
             {
@@ -406,26 +410,6 @@ namespace Castor.Emulator.CPU
                 PushUshort(PC);
                 PC = d16;
             };
-            _operations[0xE0] = delegate            // LDH (a8),A
-            {
-                _system.MMU[ReadByte(PC) + 0xFF00] = A;
-                _cyclesToWait += 4;
-            };
-            _operations[0xE2] = delegate            // LD (C),A
-            {
-                _system.MMU[C + 0xFF00] = A;
-                _cyclesToWait += 4;
-            };
-            _operations[0xEA] = delegate            // LD (a16),A
-            {
-                _system.MMU[ReadUshort(PC)] = A;
-                _cyclesToWait += 4;
-            };
-            _operations[0xF0] = delegate            // LDH A,(a8)
-            {
-                A = _system.MMU[0xFF00 + ReadByte(PC)];
-                _cyclesToWait += 4;
-            };
             _operations[0xF3] = delegate            // DI
             {
                 _ime = false;
@@ -467,6 +451,11 @@ namespace Castor.Emulator.CPU
             }
             else
             {
+                if (PC == 0x5D)
+                {
+                    ;
+                }
+
                 _operations[ReadByte(PC)]();
             }
         }
