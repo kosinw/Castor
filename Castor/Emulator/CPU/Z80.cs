@@ -238,6 +238,7 @@ namespace Castor.Emulator.CPU
 #endif            
             PopulateLoadInstructions();             // LD, LDH, LDD, LDI, PUSH, POP
             PopulateControlFunctions();             // NOP, STOP, EI, DI, HALT, PREFIX CB
+            PopulateJumpFunctions();                // JP, JR, RST, CALL, RET, RETI
             
             _operations[0x03] = delegate            // INC BC
             {
@@ -311,17 +312,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(E % 16 == 0, StatusFlags.H);
             };
-            _operations[0x18] = delegate            // JR r8
-            {
-                sbyte jumpValue = (sbyte)ReadByte(PC);
-                JumpRelative(jumpValue);
-            };
-            _operations[0x20] = delegate            // JR NZ,r8
-            {
-                sbyte jumpValue = (sbyte)ReadByte(PC);
-                if (!CheckFlag(StatusFlags.Z))
-                    JumpRelative(jumpValue);
-            };
             _operations[0x23] = delegate            // INC HL
             {
                 HL++;
@@ -334,12 +324,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(H == 0, StatusFlags.Z);
                 SetFlag(false, StatusFlags.N);
                 SetFlag(H % 16 == 0, StatusFlags.H);
-            };
-            _operations[0x28] = delegate            // JR Z,r8
-            {
-                sbyte jumpValue = (sbyte)ReadByte(PC);
-                if (CheckFlag(StatusFlags.Z))
-                    JumpRelative(jumpValue);
             };
             _operations[0x3D] = delegate            // DEC A
             {
@@ -414,12 +398,6 @@ namespace Castor.Emulator.CPU
                 PC = PopUshort();
                 _cyclesToWait += 4;
             };
-            _operations[0xCD] = delegate            // CALL a16
-            {
-                ushort d16 = ReadUshort(PC);
-                PushUshort(PC);
-                PC = d16;
-            };
             _operations[0xFE] = delegate            // CP d8
             {
                 byte d8 = ReadByte(PC);
@@ -474,10 +452,9 @@ namespace Castor.Emulator.CPU
                         _ime = false; // disable ime flag
                         _system.ISR.DisableInterrupt(InterruptFlags.VBlank); // clear IF bit 0
 
-                        PushUshort(PC);
+                        PushUshort(PC); // push current pc onto stack
 
-                        _cyclesToWait -= 12; // removing the push ushort
-                        _cyclesToWait += 20; // 20 cycles for an interrupt
+                        _cyclesToWait += 8; // add an extra 8 cycles
 
                         PC = 0x40; // interrupt vector is always 40h
                     }
@@ -534,18 +511,6 @@ namespace Castor.Emulator.CPU
         private bool CheckFlag(StatusFlags flag)
         {
             return (F & (byte)flag) == (byte)flag;
-        }
-
-        private void JumpRelative(sbyte relativeValue)
-        {
-            PC = (ushort)((PC + relativeValue) & 0xFFFF);
-            _cyclesToWait += 4;
-        }
-
-        private void JumpAbsolute(ushort addr)
-        {
-            PC = addr;
-            _cyclesToWait += 4;
-        }
+        }        
     }
 }

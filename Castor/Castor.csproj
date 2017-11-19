@@ -56,6 +56,7 @@
     <Compile Include="Emulator\Cartridge\ICartridge.cs" />
     <Compile Include="Emulator\Cartridge\MBC0.cs" />
     <Compile Include="Emulator\CPU\Z80.ControlFunctions.cs" />
+    <Compile Include="Emulator\CPU\Z80.JumpFunctions.cs" />
     <Compile Include="Emulator\CPU\Z80.LoadFunctions.cs" />
     <Compile Include="Emulator\Memory\InterruptController.cs" />
     <Compile Include="Emulator\CPU\StatusFlags.cs" />
