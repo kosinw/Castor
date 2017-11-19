@@ -1,4 +1,5 @@
-﻿using Castor.Emulator.Utility;
+﻿using Castor.Emulator.Memory;
+using Castor.Emulator.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -42,6 +43,7 @@ namespace Castor.Emulator.Video
         private byte _scy;
         private byte _obp0;
         private byte _obp1;
+        private byte _lyc;
 
         // Timing stuff
         private int _mode;
@@ -78,7 +80,17 @@ namespace Castor.Emulator.Video
         public byte LCDC
         {
             get => _lcdc;
-            set => _lcdc = value;
+            set
+            {
+                if (value.BitValue(7) == 0)
+                {
+                    _line = 0;
+                    _mode = 0;
+                    _modeclock = 0;
+                }
+
+                _lcdc = value;
+            }
         }
 
         public byte BGP
@@ -102,7 +114,12 @@ namespace Castor.Emulator.Video
         public byte LY
         {
             get => (byte)_line;
-            set => _line = 0;
+        }
+
+        public byte LYC
+        {
+            get => _lyc;
+            set => _lyc = value;
         }
 
         public byte SCX
@@ -165,6 +182,7 @@ namespace Castor.Emulator.Video
             for (int i = 0x00; i < 0x9F; ++i)
             {
                 _system.MMU[0xFE00 + i] = _system.MMU[sourceAddr + i];
+                _system.CPU.AddWaitCycles(648); // an oam dma takes 648 cpu cycles
             }
         }
         #endregion
@@ -210,10 +228,6 @@ namespace Castor.Emulator.Video
                 else
                     tileIdx = (byte)_system.MMU[tileAddress];
 
-                if (tileIdx != 0)
-                {
-                    ;
-                }
                 // Here find start location of the tile by index
                 int tileLocation = 0;
 
@@ -241,6 +255,7 @@ namespace Castor.Emulator.Video
             if (_lcdc.BitValue(7) == 0)
                 return;
 
+            // increment modeclock, used to switch between gpu modes
             ++_modeclock;
 
             switch (_mode)
@@ -262,6 +277,10 @@ namespace Castor.Emulator.Video
                         _mode = 0; // next hblank mode so techinically this is end of horiz line
 
                         RenderScanline();
+
+                        // handle h-blank interrupt if stat bit 3
+                        if (_stat.BitValue(3) == 1)
+                            _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                     }
                     break;
 
@@ -272,14 +291,37 @@ namespace Castor.Emulator.Video
                         _modeclock = 0;
                         _line++; // end of hblank period means new line
 
+                        // do ly coincidence
+                        if (_line == _lyc)
+                        {
+                            // trigger lcd stat interrupt if bit 6 is set
+                            if (_stat.BitValue(6) == 1)
+                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+
+                            _stat.SetBit(2);
+                        }
+                        // otherwise unset ly coincidence flag
+                        else
+                            _stat.ClearBit(2);
+
                         if (_line == 143) // if this is last line then enter vblank
                         {
                             _mode = 1;
                             OnRenderEvent();
+
+                            _system.ISR.EnableInterrupt(InterruptFlags.VBlank);
+
+                            // trigger another interrupt if stat bit 3 is set
+                            if (_stat.BitValue(4) == 1)
+                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                         else // otherwise just enter OAM read
                         {
                             _mode = 2;
+
+                            // handle oam interrupt if stat bit 5 is set
+                            if (_stat.BitValue(5) == 1)
+                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }
                     break;
@@ -298,6 +340,10 @@ namespace Castor.Emulator.Video
                             _modeclock = 0;
                             _line = 0; // reset line
                             _mode = 2; // reenter oam read                            
+
+                            // handle oam interrupt if stat bit 5 is set
+                            if (_stat.BitValue(5) == 1)
+                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }
                     break;

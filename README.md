@@ -14,6 +14,10 @@ Castor is a Gameboy project written using .NET Framework, C#, and WPF. The prima
 * all alu instructions
 * all bitwise instructions
 * all jump/calling instructions
+* input
+* timers
+* other mbcs besides mbc0
+* interrupts
 * oam support (sprites)
 * window support (special background)
 * audio

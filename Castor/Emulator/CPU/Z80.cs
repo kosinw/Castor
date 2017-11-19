@@ -1,4 +1,5 @@
-﻿using Castor.Emulator.Utility;
+﻿using Castor.Emulator.Memory;
+using Castor.Emulator.Utility;
 using System;
 using System.Linq;
 
@@ -154,7 +155,7 @@ namespace Castor.Emulator.CPU
                 _cyclesToWait += 4;
                 return _system.MMU[ReadUshort(PC)];
             }
-            
+
             set
             {
                 _cyclesToWait += 4;
@@ -195,8 +196,15 @@ namespace Castor.Emulator.CPU
         /// <summary>
         /// This is the master interrupt enable. If this isn't enabled, then no interrupts will occur.
         /// </summary>
-        private bool _ime = true;
+        private bool _ime = false;
+
+        /// <summary>
+        /// This is the halted flag. If this is enabled, all program activity will stop until interrupts.
+        /// </summary>
+        private bool _halted = false;
         #endregion
+
+        public void AddWaitCycles(int cycles) => _cyclesToWait += cycles;
 
         private delegate void Instruction();
         private Instruction[] _operations = new Instruction[256];
@@ -229,8 +237,8 @@ namespace Castor.Emulator.CPU
                 }, 256).ToArray();
 #endif            
             PopulateLoadInstructions();             // LD, LDH, LDD, LDI, PUSH, POP
-
-            _operations[0x00] = delegate { };       // NOP
+            PopulateControlFunctions();             // NOP, STOP, EI, DI, HALT, PREFIX CB
+            
             _operations[0x03] = delegate            // INC BC
             {
                 BC++;
@@ -406,19 +414,11 @@ namespace Castor.Emulator.CPU
                 PC = PopUshort();
                 _cyclesToWait += 4;
             };
-            _operations[0xCB] = delegate            // PREFIX CB
-            {
-                _extendedOperations[ReadByte(PC)]();
-            };
             _operations[0xCD] = delegate            // CALL a16
             {
                 ushort d16 = ReadUshort(PC);
                 PushUshort(PC);
                 PC = d16;
-            };
-            _operations[0xF3] = delegate            // DI
-            {
-                _ime = false;
             };
             _operations[0xFE] = delegate            // CP d8
             {
@@ -457,7 +457,43 @@ namespace Castor.Emulator.CPU
             }
             else
             {
-                _operations[ReadByte(PC)]();
+                if (!_halted)
+                    _operations[ReadByte(PC)]();
+                else // if halted keep adding 4 extra cycles to wait
+                    _cyclesToWait += 4;
+
+                if (_system.ISR.CanServiceInterrupts && _halted) // if stop or halt, unhalt if interrupt
+                {
+                    _halted = false;
+                }
+
+                if (_ime == true) // check for interrupt stuff only if IME is enabled
+                {
+                    if (_system.ISR.CanHandleInterrupt(InterruptFlags.VBlank))
+                    {
+                        _ime = false; // disable ime flag
+                        _system.ISR.DisableInterrupt(InterruptFlags.VBlank); // clear IF bit 0
+
+                        PushUshort(PC);
+
+                        _cyclesToWait -= 12; // removing the push ushort
+                        _cyclesToWait += 20; // 20 cycles for an interrupt
+
+                        PC = 0x40; // interrupt vector is always 40h
+                    }
+                    else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Timer))
+                    {
+                    }
+                    else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Serial))
+                    {
+                    }
+                    else if (_system.ISR.CanHandleInterrupt(InterruptFlags.LCDStat))
+                    {
+                    }
+                    else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Joypad))
+                    {
+                    }
+                }
             }
         }
 
@@ -503,6 +539,12 @@ namespace Castor.Emulator.CPU
         private void JumpRelative(sbyte relativeValue)
         {
             PC = (ushort)((PC + relativeValue) & 0xFFFF);
+            _cyclesToWait += 4;
+        }
+
+        private void JumpAbsolute(ushort addr)
+        {
+            PC = addr;
             _cyclesToWait += 4;
         }
     }

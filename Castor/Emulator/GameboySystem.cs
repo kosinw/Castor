@@ -13,7 +13,7 @@ namespace Castor.Emulator
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
-        public InterruptController IRC;
+        public InterruptController ISR;
         
 
         public GameboySystem()
@@ -22,7 +22,7 @@ namespace Castor.Emulator
             MMU = new MemoryMapper(this);
             Cartridge = null;
             GPU = new VideoController(this);
-            IRC = new InterruptController(this);
+            ISR = new InterruptController(this);
         }
 
         public void LoadROM(byte[] bytecode)

@@ -30,6 +30,11 @@ namespace Castor.Emulator.Utility
             d8 = (byte)((d8 | 1 << index) & 0xFF);
         }
 
+        public static void ClearBit(this byte d8, int index)
+        {
+            d8 = (byte)((d8 & ~(1 << index)) & 0xFF);
+        }
+
         public static void RotateLeft(ref byte d8, ref byte flagRegister)
         {
             byte bit7_d8 = d8.BitValue(7);

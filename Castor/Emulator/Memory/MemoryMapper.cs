@@ -47,7 +47,7 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF0F:
-                            return _system.IRC.IF;
+                            return _system.ISR.IF;
                         case 0xFF40:
                             return _system.GPU.LCDC;
                         case 0xFF41:
@@ -58,6 +58,8 @@ namespace Castor.Emulator.Memory
                             return _system.GPU.SCX;
                         case 0xFF44:
                             return _system.GPU.LY;
+                        case 0xFF45:
+                            return _system.GPU.LYC;
                         case 0xFF47:
                             return _system.GPU.BGP;
                         case 0xFF48:
@@ -73,7 +75,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     return _internalRam2[idx - 0xFF80];
                 else if (idx == 0xFFFF)
-                    return _system.IRC.IE;
+                    return _system.ISR.IE;
 
                 throw new Exception("You may not read to this memory location.");
             }
@@ -99,7 +101,7 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF0F:
-                            _system.IRC.IF = value;
+                            _system.ISR.IF = value;
                             break;
                         case 0xFF40:
                             _system.GPU.LCDC = value;
@@ -114,7 +116,10 @@ namespace Castor.Emulator.Memory
                             _system.GPU.SCX = value;
                             break;
                         case 0xFF44:
-                            _system.GPU.LY = value;
+                            // this is supposed to write to LY, but ignore it
+                            break;
+                        case 0xFF45:
+                            _system.GPU.LYC = value;
                             break;
                         case 0xFF46:
                             _system.GPU.DMATransfer((byte)(value * 0x100));
@@ -139,7 +144,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _internalRam2[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _system.IRC.IE = value;                
+                    _system.ISR.IE = value;                
             }
         }
     }
