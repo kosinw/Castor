@@ -199,6 +199,13 @@ namespace Castor.Emulator.CPU
         private bool _ime = false;
 
         /// <summary>
+        /// If this is set to 2, then decrement.
+        /// After next instruction, if set to 1 then trigger ime, then decrement.
+        /// If 0 just ignore it.
+        /// </summary>
+        private int _eiflag = 0;
+
+        /// <summary>
         /// This is the halted flag. If this is enabled, all program activity will stop until interrupts.
         /// </summary>
         private bool _halted = false;
@@ -239,20 +246,8 @@ namespace Castor.Emulator.CPU
             PopulateLoadInstructions();             // LD, LDH, LDD, LDI, PUSH, POP
             PopulateControlFunctions();             // NOP, STOP, EI, DI, HALT, PREFIX CB
             PopulateJumpFunctions();                // JP, JR, RST, CALL, RET, RETI
+            PopulateALUInstructions();              // INC, DEC, CPL, CCF, DAA, SCF, AND, XOR, OR, ADD, SUB, CP, ADC, SBC
             
-            _operations[0x03] = delegate            // INC BC
-            {
-                BC++;
-                _cyclesToWait += 4;
-            };
-            _operations[0x04] = delegate            // INC B
-            {
-                B++;
-
-                SetFlag(B == 0, StatusFlags.Z);
-                SetFlag(false, StatusFlags.N);
-                SetFlag(B % 16 == 0, StatusFlags.H);
-            };
             _operations[0x05] = delegate            // DEC B
             {
                 B--;
@@ -266,15 +261,7 @@ namespace Castor.Emulator.CPU
                 BC--;
 
                 _cyclesToWait += 4;
-            };
-            _operations[0x0C] = delegate            // INC C
-            {
-                C++;
-
-                SetFlag(C == 0, StatusFlags.Z);
-                SetFlag(false, StatusFlags.N);
-                SetFlag(C % 16 == 0, StatusFlags.H);
-            };
+            };           
             _operations[0x0D] = delegate            // DEC C
             {
                 C--;
@@ -282,12 +269,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(C == 0, StatusFlags.Z);
                 SetFlag(true, StatusFlags.N);
                 SetFlag(C % 16 == 0, StatusFlags.H);
-            };
-            _operations[0x13] = delegate             // INC DE
-            {
-                DE++;
-                _cyclesToWait += 4;
-            };
+            };            
             _operations[0x15] = delegate             // DEC D
             {
                 D--;
@@ -311,20 +293,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(E == 0, StatusFlags.Z);
                 SetFlag(true, StatusFlags.N);
                 SetFlag(E % 16 == 0, StatusFlags.H);
-            };
-            _operations[0x23] = delegate            // INC HL
-            {
-                HL++;
-                _cyclesToWait += 4;
-            };
-            _operations[0x24] = delegate            // INC H
-            {
-                H++;
-
-                SetFlag(H == 0, StatusFlags.Z);
-                SetFlag(false, StatusFlags.N);
-                SetFlag(H % 16 == 0, StatusFlags.H);
-            };
+            };            
             _operations[0x3D] = delegate            // DEC A
             {
                 A--;
@@ -393,11 +362,6 @@ namespace Castor.Emulator.CPU
 
                 _cyclesToWait += 4;
             };
-            _operations[0xC9] = delegate            // RET
-            {
-                PC = PopUshort();
-                _cyclesToWait += 4;
-            };
             _operations[0xFE] = delegate            // CP d8
             {
                 byte d8 = ReadByte(PC);
@@ -419,7 +383,7 @@ namespace Castor.Emulator.CPU
             _extendedOperations[0x7C] = delegate     // BIT 7,H
             {
                 int result = H.BitValue(7);
-
+                    
                 SetFlag(result == 0, StatusFlags.Z);
                 SetFlag(false, StatusFlags.N);
                 SetFlag(true, StatusFlags.H);
@@ -436,7 +400,15 @@ namespace Castor.Emulator.CPU
             else
             {
                 if (!_halted)
+                {
                     _operations[ReadByte(PC)]();
+
+                    if (_eiflag == 1)
+                        _ime = true;
+                    if (_eiflag > 0)
+                        --_eiflag;
+                }
+
                 else // if halted keep adding 4 extra cycles to wait
                     _cyclesToWait += 4;
 
@@ -511,6 +483,6 @@ namespace Castor.Emulator.CPU
         private bool CheckFlag(StatusFlags flag)
         {
             return (F & (byte)flag) == (byte)flag;
-        }        
+        }
     }
 }
