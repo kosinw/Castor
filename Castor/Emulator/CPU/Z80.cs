@@ -213,7 +213,8 @@ namespace Castor.Emulator.CPU
 
         public void AddWaitCycles(int cycles) => _cyclesToWait += cycles;
 
-        private delegate void Instruction();
+
+        private delegate void Instruction();        
         private Instruction[] _operations = new Instruction[256];
         private Instruction[] _extendedOperations = new Instruction[256];
 

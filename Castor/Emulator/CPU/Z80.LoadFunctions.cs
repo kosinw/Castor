@@ -7,29 +7,11 @@ namespace Castor.Emulator.CPU
     {
         public enum LoadType
         {
-            A,
-            B,
-            C,
-            D,
-            E,
-            F,
-            H,
-            L,
-            Imm8,
-            Imm16,
-            Addr8,
-            Addr16,
-            AddrC,
-            AddrBC,
-            AddrDE,
-            AddrHL,
-            AddrHLInc,
-            AddrHLDec,
-            BC,
-            DE,
-            HL,
-            SP,
-            AccessorSP
+            A, B, C, D, E, F, H, L,
+            Imm8, Imm16, Addr8, Addr16,
+            AddrC, AddrBC, AddrDE, AddrHL,
+            AddrHLInc, AddrHLDec, BC, DE,
+            HL, SP, AccessorSP
         };
 
         public enum StackType
