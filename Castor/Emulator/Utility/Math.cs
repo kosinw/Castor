@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Utility
 {
-    public static class Bitwise
+    public static class Math
     {
         public static byte MostSignificantByte(this ushort d16)
         {

@@ -1,5 +1,7 @@
 ﻿using Castor.Emulator.Utility;
 using System;
+using static Castor.Emulator.CPU.Types.ByteTypeEx;
+using IB = Castor.Emulator.CPU.InstructionBuilder;
 
 namespace Castor.Emulator.CPU
 {
@@ -30,19 +32,44 @@ namespace Castor.Emulator.CPU
             _operations[0x21] = RLI(LoadType.HL, LoadType.Imm16);
             _operations[0x31] = RLI(LoadType.SP, LoadType.Imm16);
 
-            // LD (RegAddr),A
-            _operations[0x02] = RLI(LoadType.AddrBC, LoadType.A);
-            _operations[0x12] = RLI(LoadType.AddrDE, LoadType.A);
-            _operations[0x22] = RLI(LoadType.AddrHLInc, LoadType.A);
-            _operations[0x32] = RLI(LoadType.AddrHLDec, LoadType.A);
+            // LD (_),A
+            _operations[0x02] = IB
+                .DescibedAs(_system)
+                .Load8(ByteType.A)
+                .Store8(ByteType._BC)
+                .Build();
+            _operations[0x12] = IB
+                .DescibedAs(_system)
+                .Load8(ByteType.A)
+                .Store8(ByteType._DE)
+                .Build();
+            _operations[0x22] = IB.DescibedAs(_system)
+                .Load8(ByteType.A)
+                .Store8(ByteType._HLI)
+                .Build();
+            _operations[0x32] = IB.DescibedAs(_system)
+                .Load8(ByteType.A)
+                .Store8(ByteType._HLD)
+                .Build();
 
             // LD A,RegAddr
-            _operations[0x0A] = RLI(LoadType.A, LoadType.AddrBC);
-            _operations[0x1A] = RLI(LoadType.A, LoadType.AddrDE);
-            _operations[0x2A] = RLI(LoadType.A, LoadType.AddrHLInc);
-            _operations[0x3A] = RLI(LoadType.A, LoadType.AddrHLDec);
+            _operations[0x0A] = IB.DescibedAs(_system)
+                .Load8(ByteType._BC)
+                .Store8(ByteType.A)
+                .Build();
+            _operations[0x1A] = IB.DescibedAs(_system)
+                .Load8(ByteType._DE)
+                .Store8(ByteType.A)
+                .Build();
+            _operations[0x2A] = IB.DescibedAs(_system)
+                .Load8(ByteType._HLI)
+                .Store8(ByteType.A)
+                .Build();
+            _operations[0x3A] = IB.DescibedAs(_system)
+                .Load8(ByteType._HLD)
+                .Store8(ByteType.A)
+                .Build();
 
-            // LD Reg8,Imm8
             _operations[0x06] = RLI(LoadType.B, LoadType.Imm8);
             _operations[0x16] = RLI(LoadType.D, LoadType.Imm8);
             _operations[0x26] = RLI(LoadType.H, LoadType.Imm8);
@@ -157,8 +184,8 @@ namespace Castor.Emulator.CPU
 
                 SetFlag(false, StatusFlags.Z);
                 SetFlag(false, StatusFlags.N);
-                SetFlag(Bitwise.Add.CheckHalfCarry(SP, si8), StatusFlags.H);
-                SetFlag(Bitwise.Add.CheckFullCarry(SP, si8), StatusFlags.C);
+                SetFlag(Utility.Math.Add.CheckHalfCarry(SP, si8), StatusFlags.H);
+                SetFlag(Utility.Math.Add.CheckFullCarry(SP, si8), StatusFlags.C);
 
                 HL = (ushort)(AccessorSP + si8);
             };

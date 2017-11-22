@@ -61,8 +61,8 @@ namespace Castor.View
         {
 
             if (_systemThread != null)
-            {
-                _systemThread.Join(1000);
+            {                
+                _systemThread.Abort();
 
                 _system = new GameboySystem();
                 _system.GPU.OnRenderEvent += GPU_OnRenderEvent;
@@ -74,19 +74,20 @@ namespace Castor.View
             {
                 _system.LoadROM(File.ReadAllBytes(fd.FileName));
 
-                _systemThread = new Thread(new ThreadStart(delegate ()
+                _systemThread = new Thread(new ThreadStart(() =>
                 {
                     Stopwatch watch = new Stopwatch();
                     while (true)
                     {
                         watch.Reset();
+
                         watch.Start();
                         _system.Frame();
                         watch.Stop();
 
                         if (watch.ElapsedMilliseconds < 16)
                         {
-                            timeBeginPeriod(1); // this is to increase the resolution of window's clock
+                            timeBeginPeriod(1); // this is to increase the resolution of Window's system clock
                             Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
                             timeEndPeriod(1);
                         }

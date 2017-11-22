@@ -14,10 +14,9 @@ namespace Castor.Emulator
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController ISR;
-        
 
         public GameboySystem()
-        {
+        {                        
             CPU = new Z80(this);
             MMU = new MemoryMapper(this);
             Cartridge = null;
@@ -27,16 +26,22 @@ namespace Castor.Emulator
 
         public void LoadROM(byte[] bytecode)
         {
-            Cartridge = CartridgeFactory.CreateCartridge(bytecode, this);
+            Cartridge = CartridgeFactory.CreateCartridge(bytecode);
         }
 
+        /// <summary>
+        /// This method tells the gameboy system to emulate one frame.
+        /// (70,224 clock cycles ~= One emulator video frame.)
+        /// </summary>
         public void Frame()
         {
-            for (int _counter = 0; _counter < 70_224; _counter++)
+            for (int _counter = 0; _counter < 70_224;)
             {
-                CPU.Step();
-                GPU.Step();
-            }            
+                int cycles = CPU.Step();
+                GPU.Step(cycles);
+
+                _counter += cycles; // need to add the cycles used up
+            }
         }
     }
 }

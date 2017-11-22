@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Castor.Emulator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,8 +10,8 @@ namespace Castor.Emulator.Memory
     public class MemoryMapper : IAddressableComponent
     {
         private GameboySystem _system;
-        private byte[] _internalRam;
-        private byte[] _internalRam2;
+        private byte[] _wram;
+        private byte[] _zram;
         private BootROM _bootROM = new BootROM();
 
         private bool _mapFirst256BootROM = true;
@@ -18,9 +19,9 @@ namespace Castor.Emulator.Memory
         public MemoryMapper(GameboySystem system)
         {
             _system = system;
-            _internalRam = new byte[0x2000];
-            _internalRam2 = new byte[0x80];
-        }
+            _wram = new byte[0x2000];
+            _zram = new byte[0x80];
+        }                
 
         public byte this[int idx]
         {
@@ -35,9 +36,9 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xC000)
                     return _system.Cartridge[idx];
                 else if (idx < 0xE000)
-                    return _internalRam[idx - 0xC000];
+                    return _wram[idx - 0xC000];
                 else if (idx < 0xFE00)
-                    return _internalRam[idx - 0xE000];
+                    return _wram[idx - 0xE000];
                 else if (idx < 0xFEA0)
                     return _system.GPU[idx];
                 else if (idx < 0xFF00)
@@ -73,7 +74,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFF80)
                     return 0;
                 else if (idx < 0xFFFF)
-                    return _internalRam2[idx - 0xFF80];
+                    return _zram[idx - 0xFF80];
                 else if (idx == 0xFFFF)
                     return _system.ISR.IE;
 
@@ -89,9 +90,9 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xC000)
                     _system.Cartridge[idx] = value;
                 else if (idx < 0xE000)
-                    _internalRam[idx - 0xC000] = value;
+                    _wram[idx - 0xC000] = value;
                 else if (idx < 0xFE00)
-                    _internalRam[idx - 0xE000] = value;
+                    _wram[idx - 0xE000] = value;
                 else if (idx < 0xFEA0)
                     _system.GPU[idx] = value;
                 else if (idx < 0xFF00)
@@ -121,8 +122,8 @@ namespace Castor.Emulator.Memory
                         case 0xFF45:
                             _system.GPU.LYC = value;
                             break;
-                        case 0xFF46:
-                            _system.GPU.DMATransfer((byte)(value * 0x100));
+                        case 0xFF46: // TODO: DMA Transfer is not this easy, reimplement
+                            _system.GPU.DMATransfer((byte)(value * 0x100)); 
                             break;
                         case 0xFF47:
                             _system.GPU.BGP = value;
@@ -142,7 +143,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFF80)
                     return;
                 else if (idx < 0xFFFF)
-                    _internalRam2[idx - 0xFF80] = value;
+                    _zram[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
                     _system.ISR.IE = value;                
             }

@@ -8,16 +8,9 @@ namespace Castor.Emulator.Cartridge
 {
     public class MBC0 : ICartridge
     {
-#if DEBUG
-        GameboySystem _system;
-#endif
-
-        public MBC0(byte[] bytecode, GameboySystem system)
+        public MBC0(byte[] bytecode)
         {
             this._bytecode = bytecode;
-#if DEBUG
-            this._system = system;
-#endif
         }
 
         private byte[] _bytecode;

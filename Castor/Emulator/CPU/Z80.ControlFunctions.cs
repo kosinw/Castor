@@ -23,10 +23,10 @@ namespace Castor.Emulator.CPU
             _operations[0xCB] = () => { _extendedOperations[ReadByte(PC)](); };
 
             // EI
-            _operations[0xFB] = () => { _eiflag = 2; };
+            _operations[0xFB] = () => { _setei = 2; };
 
             // DI
-            _operations[0xF3] = () => { _ime = false; _eiflag = 0; };
+            _operations[0xF3] = () => { _ime = false; _setei = 0; };
         }
     }
 }
