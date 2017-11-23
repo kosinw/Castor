@@ -1,7 +1,7 @@
 ﻿using Castor.Emulator.Utility;
 using System;
-using static Castor.Emulator.CPU.Types.ByteTypeEx;
-using IB = Castor.Emulator.CPU.InstructionBuilder;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Castor.Emulator.CPU
 {
@@ -11,8 +11,8 @@ namespace Castor.Emulator.CPU
         {
             A, B, C, D, E, F, H, L,
             Imm8, Imm16, Addr8, Addr16,
-            AddrC, AddrBC, AddrDE, AddrHL,
-            AddrHLInc, AddrHLDec, BC, DE,
+            _C, _BC, _DE, _HL,
+            _HLI, _HLD, BC, DE,
             HL, SP, AccessorSP
         };
 
@@ -27,158 +27,132 @@ namespace Castor.Emulator.CPU
         private void PopulateLoadInstructions() // All the data for the move/load instructions
         {
             // LD Reg16,Imm16
-            _operations[0x01] = RLI(LoadType.BC, LoadType.Imm16);
-            _operations[0x11] = RLI(LoadType.DE, LoadType.Imm16);
-            _operations[0x21] = RLI(LoadType.HL, LoadType.Imm16);
-            _operations[0x31] = RLI(LoadType.SP, LoadType.Imm16);
+            _op[0x01] = RLI(LoadType.BC, LoadType.Imm16);
+            _op[0x11] = RLI(LoadType.DE, LoadType.Imm16);
+            _op[0x21] = RLI(LoadType.HL, LoadType.Imm16);
+            _op[0x31] = RLI(LoadType.SP, LoadType.Imm16);
 
             // LD (_),A
-            _operations[0x02] = IB
-                .DescibedAs(_system)
-                .Load8(ByteType.A)
-                .Store8(ByteType._BC)
-                .Build();
-            _operations[0x12] = IB
-                .DescibedAs(_system)
-                .Load8(ByteType.A)
-                .Store8(ByteType._DE)
-                .Build();
-            _operations[0x22] = IB.DescibedAs(_system)
-                .Load8(ByteType.A)
-                .Store8(ByteType._HLI)
-                .Build();
-            _operations[0x32] = IB.DescibedAs(_system)
-                .Load8(ByteType.A)
-                .Store8(ByteType._HLD)
-                .Build();
+            _op[0x02] = RLI(LoadType._BC, LoadType.A);
+            _op[0x12] = RLI(LoadType._DE, LoadType.A);
+            _op[0x22] = RLI(LoadType._HLI, LoadType.A);
+            _op[0x32] = RLI(LoadType._HLD, LoadType.A);
 
-            // LD A,RegAddr
-            _operations[0x0A] = IB.DescibedAs(_system)
-                .Load8(ByteType._BC)
-                .Store8(ByteType.A)
-                .Build();
-            _operations[0x1A] = IB.DescibedAs(_system)
-                .Load8(ByteType._DE)
-                .Store8(ByteType.A)
-                .Build();
-            _operations[0x2A] = IB.DescibedAs(_system)
-                .Load8(ByteType._HLI)
-                .Store8(ByteType.A)
-                .Build();
-            _operations[0x3A] = IB.DescibedAs(_system)
-                .Load8(ByteType._HLD)
-                .Store8(ByteType.A)
-                .Build();
+            // LD A,(_)
+            _op[0x0A] = RLI(LoadType.A, LoadType._BC);
+            _op[0x1A] = RLI(LoadType.A, LoadType._DE);
+            _op[0x2A] = RLI(LoadType.A, LoadType._HLI);
+            _op[0x3A] = RLI(LoadType.A, LoadType._HLD);
 
-            _operations[0x06] = RLI(LoadType.B, LoadType.Imm8);
-            _operations[0x16] = RLI(LoadType.D, LoadType.Imm8);
-            _operations[0x26] = RLI(LoadType.H, LoadType.Imm8);
-            _operations[0x36] = RLI(LoadType.AddrHL, LoadType.Imm8);
+            _op[0x06] = RLI(LoadType.B, LoadType.Imm8);
+            _op[0x16] = RLI(LoadType.D, LoadType.Imm8);
+            _op[0x26] = RLI(LoadType.H, LoadType.Imm8);
+            _op[0x36] = RLI(LoadType._HL, LoadType.Imm8);
 
-            _operations[0x0E] = RLI(LoadType.C, LoadType.Imm8);
-            _operations[0x1E] = RLI(LoadType.E, LoadType.Imm8);
-            _operations[0x2E] = RLI(LoadType.L, LoadType.Imm8);
-            _operations[0x3E] = RLI(LoadType.A, LoadType.Imm8);
+            _op[0x0E] = RLI(LoadType.C, LoadType.Imm8);
+            _op[0x1E] = RLI(LoadType.E, LoadType.Imm8);
+            _op[0x2E] = RLI(LoadType.L, LoadType.Imm8);
+            _op[0x3E] = RLI(LoadType.A, LoadType.Imm8);
 
             // LDH
-            _operations[0xE0] = RLI(LoadType.Addr8, LoadType.A);
-            _operations[0xF0] = RLI(LoadType.A, LoadType.Addr8);
+            _op[0xE0] = RLI(LoadType.Addr8, LoadType.A);
+            _op[0xF0] = RLI(LoadType.A, LoadType.Addr8);
 
             // LD (C),A & LD A,(C)
-            _operations[0xE2] = RLI(LoadType.AddrC, LoadType.A);
-            _operations[0xF2] = RLI(LoadType.A, LoadType.AddrC);
+            _op[0xE2] = RLI(LoadType._C, LoadType.A);
+            _op[0xF2] = RLI(LoadType.A, LoadType._C);
 
             // LD (a16),A & LD A,(a16)
-            _operations[0xEA] = RLI(LoadType.Addr16, LoadType.A);
-            _operations[0xFA] = RLI(LoadType.A, LoadType.Addr16);
+            _op[0xEA] = RLI(LoadType.Addr16, LoadType.A);
+            _op[0xFA] = RLI(LoadType.A, LoadType.Addr16);
 
             // LD (a16), SP
-            _operations[0x08] = RLI(LoadType.Addr16, LoadType.AccessorSP);
+            _op[0x08] = RLI(LoadType.Addr16, LoadType.AccessorSP);
 
             // LD B,Reg8
-            _operations[0x40] = RLI(LoadType.B, LoadType.B);
-            _operations[0x41] = RLI(LoadType.B, LoadType.C);
-            _operations[0x42] = RLI(LoadType.B, LoadType.D);
-            _operations[0x43] = RLI(LoadType.B, LoadType.E);
-            _operations[0x44] = RLI(LoadType.B, LoadType.H);
-            _operations[0x45] = RLI(LoadType.B, LoadType.L);
-            _operations[0x46] = RLI(LoadType.B, LoadType.AddrHL);
-            _operations[0x47] = RLI(LoadType.B, LoadType.A);
+            _op[0x40] = RLI(LoadType.B, LoadType.B);
+            _op[0x41] = RLI(LoadType.B, LoadType.C);
+            _op[0x42] = RLI(LoadType.B, LoadType.D);
+            _op[0x43] = RLI(LoadType.B, LoadType.E);
+            _op[0x44] = RLI(LoadType.B, LoadType.H);
+            _op[0x45] = RLI(LoadType.B, LoadType.L);
+            _op[0x46] = RLI(LoadType.B, LoadType._HL);
+            _op[0x47] = RLI(LoadType.B, LoadType.A);
 
             // LD C,Reg8
-            _operations[0x48] = RLI(LoadType.C, LoadType.B);
-            _operations[0x49] = RLI(LoadType.C, LoadType.C);
-            _operations[0x4A] = RLI(LoadType.C, LoadType.D);
-            _operations[0x4B] = RLI(LoadType.C, LoadType.E);
-            _operations[0x4C] = RLI(LoadType.C, LoadType.H);
-            _operations[0x4D] = RLI(LoadType.C, LoadType.L);
-            _operations[0x4E] = RLI(LoadType.C, LoadType.AddrHL);
-            _operations[0x4F] = RLI(LoadType.C, LoadType.A);
+            _op[0x48] = RLI(LoadType.C, LoadType.B);
+            _op[0x49] = RLI(LoadType.C, LoadType.C);
+            _op[0x4A] = RLI(LoadType.C, LoadType.D);
+            _op[0x4B] = RLI(LoadType.C, LoadType.E);
+            _op[0x4C] = RLI(LoadType.C, LoadType.H);
+            _op[0x4D] = RLI(LoadType.C, LoadType.L);
+            _op[0x4E] = RLI(LoadType.C, LoadType._HL);
+            _op[0x4F] = RLI(LoadType.C, LoadType.A);
 
             // LD D,Reg8
-            _operations[0x50] = RLI(LoadType.D, LoadType.B);
-            _operations[0x51] = RLI(LoadType.D, LoadType.C);
-            _operations[0x52] = RLI(LoadType.D, LoadType.D);
-            _operations[0x53] = RLI(LoadType.D, LoadType.E);
-            _operations[0x54] = RLI(LoadType.D, LoadType.H);
-            _operations[0x55] = RLI(LoadType.D, LoadType.L);
-            _operations[0x56] = RLI(LoadType.D, LoadType.AddrHL);
-            _operations[0x57] = RLI(LoadType.D, LoadType.A);
+            _op[0x50] = RLI(LoadType.D, LoadType.B);
+            _op[0x51] = RLI(LoadType.D, LoadType.C);
+            _op[0x52] = RLI(LoadType.D, LoadType.D);
+            _op[0x53] = RLI(LoadType.D, LoadType.E);
+            _op[0x54] = RLI(LoadType.D, LoadType.H);
+            _op[0x55] = RLI(LoadType.D, LoadType.L);
+            _op[0x56] = RLI(LoadType.D, LoadType._HL);
+            _op[0x57] = RLI(LoadType.D, LoadType.A);
 
             // LD E,Reg8
-            _operations[0x58] = RLI(LoadType.E, LoadType.B);
-            _operations[0x59] = RLI(LoadType.E, LoadType.C);
-            _operations[0x5A] = RLI(LoadType.E, LoadType.D);
-            _operations[0x5B] = RLI(LoadType.E, LoadType.E);
-            _operations[0x5C] = RLI(LoadType.E, LoadType.H);
-            _operations[0x5D] = RLI(LoadType.E, LoadType.L);
-            _operations[0x5E] = RLI(LoadType.E, LoadType.AddrHL);
-            _operations[0x5F] = RLI(LoadType.E, LoadType.A);
+            _op[0x58] = RLI(LoadType.E, LoadType.B);
+            _op[0x59] = RLI(LoadType.E, LoadType.C);
+            _op[0x5A] = RLI(LoadType.E, LoadType.D);
+            _op[0x5B] = RLI(LoadType.E, LoadType.E);
+            _op[0x5C] = RLI(LoadType.E, LoadType.H);
+            _op[0x5D] = RLI(LoadType.E, LoadType.L);
+            _op[0x5E] = RLI(LoadType.E, LoadType._HL);
+            _op[0x5F] = RLI(LoadType.E, LoadType.A);
 
             // LD H,Reg8
-            _operations[0x60] = RLI(LoadType.H, LoadType.B);
-            _operations[0x61] = RLI(LoadType.H, LoadType.C);
-            _operations[0x62] = RLI(LoadType.H, LoadType.D);
-            _operations[0x63] = RLI(LoadType.H, LoadType.E);
-            _operations[0x64] = RLI(LoadType.H, LoadType.H);
-            _operations[0x65] = RLI(LoadType.H, LoadType.L);
-            _operations[0x66] = RLI(LoadType.H, LoadType.AddrHL);
-            _operations[0x67] = RLI(LoadType.H, LoadType.A);
+            _op[0x60] = RLI(LoadType.H, LoadType.B);
+            _op[0x61] = RLI(LoadType.H, LoadType.C);
+            _op[0x62] = RLI(LoadType.H, LoadType.D);
+            _op[0x63] = RLI(LoadType.H, LoadType.E);
+            _op[0x64] = RLI(LoadType.H, LoadType.H);
+            _op[0x65] = RLI(LoadType.H, LoadType.L);
+            _op[0x66] = RLI(LoadType.H, LoadType._HL);
+            _op[0x67] = RLI(LoadType.H, LoadType.A);
 
             // LD L,Reg8
-            _operations[0x68] = RLI(LoadType.L, LoadType.B);
-            _operations[0x69] = RLI(LoadType.L, LoadType.C);
-            _operations[0x6A] = RLI(LoadType.L, LoadType.D);
-            _operations[0x6B] = RLI(LoadType.L, LoadType.E);
-            _operations[0x6C] = RLI(LoadType.L, LoadType.H);
-            _operations[0x6D] = RLI(LoadType.L, LoadType.L);
-            _operations[0x6E] = RLI(LoadType.L, LoadType.AddrHL);
-            _operations[0x6F] = RLI(LoadType.L, LoadType.A);
+            _op[0x68] = RLI(LoadType.L, LoadType.B);
+            _op[0x69] = RLI(LoadType.L, LoadType.C);
+            _op[0x6A] = RLI(LoadType.L, LoadType.D);
+            _op[0x6B] = RLI(LoadType.L, LoadType.E);
+            _op[0x6C] = RLI(LoadType.L, LoadType.H);
+            _op[0x6D] = RLI(LoadType.L, LoadType.L);
+            _op[0x6E] = RLI(LoadType.L, LoadType._HL);
+            _op[0x6F] = RLI(LoadType.L, LoadType.A);
 
             // LD (HL),Reg8
-            _operations[0x70] = RLI(LoadType.AddrHL, LoadType.B);
-            _operations[0x71] = RLI(LoadType.AddrHL, LoadType.C);
-            _operations[0x72] = RLI(LoadType.AddrHL, LoadType.D);
-            _operations[0x73] = RLI(LoadType.AddrHL, LoadType.E);
-            _operations[0x74] = RLI(LoadType.AddrHL, LoadType.H);
-            _operations[0x75] = RLI(LoadType.AddrHL, LoadType.L);
-            _operations[0x77] = RLI(LoadType.AddrHL, LoadType.A);
+            _op[0x70] = RLI(LoadType._HL, LoadType.B);
+            _op[0x71] = RLI(LoadType._HL, LoadType.C);
+            _op[0x72] = RLI(LoadType._HL, LoadType.D);
+            _op[0x73] = RLI(LoadType._HL, LoadType.E);
+            _op[0x74] = RLI(LoadType._HL, LoadType.H);
+            _op[0x75] = RLI(LoadType._HL, LoadType.L);
+            _op[0x77] = RLI(LoadType._HL, LoadType.A);
 
             // LD A,Reg8
-            _operations[0x78] = RLI(LoadType.A, LoadType.B);
-            _operations[0x79] = RLI(LoadType.A, LoadType.C);
-            _operations[0x7A] = RLI(LoadType.A, LoadType.D);
-            _operations[0x7B] = RLI(LoadType.A, LoadType.E);
-            _operations[0x7C] = RLI(LoadType.A, LoadType.H);
-            _operations[0x7D] = RLI(LoadType.A, LoadType.L);
-            _operations[0x7E] = RLI(LoadType.A, LoadType.AddrHL);
-            _operations[0x7F] = RLI(LoadType.A, LoadType.A);
+            _op[0x78] = RLI(LoadType.A, LoadType.B);
+            _op[0x79] = RLI(LoadType.A, LoadType.C);
+            _op[0x7A] = RLI(LoadType.A, LoadType.D);
+            _op[0x7B] = RLI(LoadType.A, LoadType.E);
+            _op[0x7C] = RLI(LoadType.A, LoadType.H);
+            _op[0x7D] = RLI(LoadType.A, LoadType.L);
+            _op[0x7E] = RLI(LoadType.A, LoadType._HL);
+            _op[0x7F] = RLI(LoadType.A, LoadType.A);
 
             // LD SP,HL
-            _operations[0xF9] = RLI(LoadType.AccessorSP, LoadType.HL);
+            _op[0xF9] = RLI(LoadType.AccessorSP, LoadType.HL);
 
             // LD HL,SP+r8
-            _operations[0xF8] = () =>
+            _op[0xF8] = () =>
             {
                 sbyte si8 = (sbyte)ReadByte(PC);
 
@@ -191,16 +165,16 @@ namespace Castor.Emulator.CPU
             };
 
             // POP Reg16
-            _operations[0xC1] = RPOI(StackType.BC);
-            _operations[0xD1] = RPOI(StackType.DE);
-            _operations[0xE1] = RPOI(StackType.HL);
-            _operations[0xF1] = RPOI(StackType.AF);
+            _op[0xC1] = RPOI(StackType.BC);
+            _op[0xD1] = RPOI(StackType.DE);
+            _op[0xE1] = RPOI(StackType.HL);
+            _op[0xF1] = RPOI(StackType.AF);
 
             // PUSH Reg16
-            _operations[0xC5] = RPUI(StackType.BC);
-            _operations[0xD5] = RPUI(StackType.DE);
-            _operations[0xE5] = RPUI(StackType.HL);
-            _operations[0xF5] = RPUI(StackType.AF);
+            _op[0xC5] = RPUI(StackType.BC);
+            _op[0xD5] = RPUI(StackType.DE);
+            _op[0xE5] = RPUI(StackType.HL);
+            _op[0xF5] = RPUI(StackType.AF);
         }
 
         /// <summary>
@@ -245,23 +219,23 @@ namespace Castor.Emulator.CPU
                 case LoadType.Addr16:
                     setter = v => Addr16 = (byte)v;
                     break;
-                case LoadType.AddrC:
+                case LoadType._C:
                     setter = v => AddrC = (byte)v;
                     break;
-                case LoadType.AddrBC:
+                case LoadType._BC:
                     setter = v => AddrBC = (byte)v;
                     break;
-                case LoadType.AddrDE:
+                case LoadType._DE:
                     setter = v => AddrDE = (byte)v;
                     break;
-                case LoadType.AddrHL:
+                case LoadType._HL:
                     setter = v => AddrHL = (byte)v;
                     break;
-                case LoadType.AddrHLDec:
-                    setter = v => AddrHLDec = (byte)v;
+                case LoadType._HLD:
+                    setter = v => AddrHLD = (byte)v;
                     break;
-                case LoadType.AddrHLInc:
-                    setter = v => AddrHLInc = (byte)v;
+                case LoadType._HLI:
+                    setter = v => AddrHLI = (byte)v;
                     break;
                 case LoadType.BC:
                     setter = v => BC = (ushort)v;
@@ -303,22 +277,22 @@ namespace Castor.Emulator.CPU
                     return () => setter(ReadByte(PC));
                 case LoadType.Imm16:
                     return () => setter(ReadUshort(PC));
-                case LoadType.AddrC:
+                case LoadType._C:
                     return () => setter(AddrC);
                 case LoadType.Addr8:
                     return () => setter(Addr8);
                 case LoadType.Addr16:
                     return () => setter(Addr16);
-                case LoadType.AddrBC:
+                case LoadType._BC:
                     return () => setter(AddrBC);
-                case LoadType.AddrDE:
+                case LoadType._DE:
                     return () => setter(AddrDE);
-                case LoadType.AddrHL:
+                case LoadType._HL:
                     return () => setter(AddrHL);
-                case LoadType.AddrHLInc:
-                    return () => setter(AddrHLInc);
-                case LoadType.AddrHLDec:
-                    return () => setter(AddrHLDec);
+                case LoadType._HLI:
+                    return () => setter(AddrHLI);
+                case LoadType._HLD:
+                    return () => setter(AddrHLD);
                 case LoadType.SP:
                     return () => setter(SP);
                 case LoadType.HL:

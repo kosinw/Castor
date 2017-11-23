@@ -15,13 +15,13 @@ namespace Castor.Emulator.CPU
         public byte D;
         public byte E;
         public byte H;
-        public byte L;
+        public byte L;       
 
         public ushort AF
         {
             get => Convert.ToUInt16(A << 8 | F);
             set
-            {
+            {                
                 A = value.MostSignificantByte();
                 F = value.LeastSignificantByte();
             }
@@ -68,7 +68,7 @@ namespace Castor.Emulator.CPU
                 _system.MMU[HL] = value;
             }
         }
-        public byte AddrHLInc
+        public byte AddrHLI
         {
             get
             {
@@ -81,7 +81,7 @@ namespace Castor.Emulator.CPU
                 _system.MMU[HL++] = value;
             }
         }
-        public byte AddrHLDec
+        public byte AddrHLD
         {
             get
             {
@@ -214,18 +214,18 @@ namespace Castor.Emulator.CPU
         public void AddWaitCycles(int cycles) => _cyclesToWait += cycles;
 
         public delegate void Instruction();
-        private Instruction[] _operations = new Instruction[256];
-        private Instruction[] _extendedOperations = new Instruction[256];
+        private Instruction[] _op = new Instruction[256];
+        private Instruction[] _cb = new Instruction[256];
 
         public Z80(GameboySystem system)
         {
             _system = system;
 
             #region Opcode Mappings
-            _operations = new Instruction[256];
+            _op = new Instruction[256];
 
 #if DEBUG
-            _operations = Enumerable.Repeat<Instruction>(
+            _op = Enumerable.Repeat<Instruction>(
                 delegate
                 {
                     throw new Exception($"Instruction (0x{_system.MMU[PC - 1]:X2}) " +
@@ -234,7 +234,7 @@ namespace Castor.Emulator.CPU
 
                 }, 256).ToArray();
 
-            _extendedOperations = Enumerable.Repeat<Instruction>(
+            _cb = Enumerable.Repeat<Instruction>(
                 () =>
                 {
                     throw new Exception($"Instruction (0xCB 0x{_system.MMU[PC - 1]:X2}) " +
@@ -247,8 +247,9 @@ namespace Castor.Emulator.CPU
             PopulateControlFunctions();             // NOP, STOP, EI, DI, HALT, PREFIX CB
             PopulateJumpFunctions();                // JP, JR, RST, CALL, RET, RETI
             PopulateALUInstructions();              // INC, DEC, CPL, CCF, DAA, SCF, AND, XOR, OR, ADD, SUB, CP, ADC, SBC
+            PopulateBitwiseInstructions();          // LOTS OK
 
-            _operations[0x05] = delegate            // DEC B
+            _op[0x05] = delegate            // DEC B
             {
                 B--;
 
@@ -256,13 +257,13 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(B % 16 == 0, StatusFlags.H);
             };
-            _operations[0x0B] = delegate            // DEC BC
+            _op[0x0B] = delegate            // DEC BC
             {
                 BC--;
 
                 _cyclesToWait += 4;
             };
-            _operations[0x0D] = delegate            // DEC C
+            _op[0x0D] = delegate            // DEC C
             {
                 C--;
 
@@ -270,7 +271,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(C % 16 == 0, StatusFlags.H);
             };
-            _operations[0x15] = delegate             // DEC D
+            _op[0x15] = delegate             // DEC D
             {
                 D--;
 
@@ -278,7 +279,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(D % 16 == 0, StatusFlags.H);
             };
-            _operations[0x17] = delegate             // RLA
+            _op[0x17] = delegate             // RLA
             {
                 Utility.Math.RotateLeft(ref A, ref F);
 
@@ -286,7 +287,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.N);
                 SetFlag(false, StatusFlags.H);
             };
-            _operations[0x1D] = delegate            // DEC E
+            _op[0x1D] = delegate            // DEC E
             {
                 E--;
 
@@ -294,7 +295,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(E % 16 == 0, StatusFlags.H);
             };
-            _operations[0x3D] = delegate            // DEC A
+            _op[0x3D] = delegate            // DEC A
             {
                 A--;
 
@@ -302,7 +303,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(A % 16 == 0, StatusFlags.H);
             };
-            _operations[0x86] = delegate            // ADD A,(HL)
+            _op[0x86] = delegate            // ADD A,(HL)
             {
                 byte d8 = _system.MMU[HL];
 
@@ -315,7 +316,7 @@ namespace Castor.Emulator.CPU
 
                 _cyclesToWait += 4;
             };
-            _operations[0x90] = delegate            // SUB B
+            _op[0x90] = delegate            // SUB B
             {
                 SetFlag(A == B, StatusFlags.Z);
                 SetFlag(true, StatusFlags.N);
@@ -324,7 +325,7 @@ namespace Castor.Emulator.CPU
 
                 A -= B;
             };
-            _operations[0xAF] = delegate            // XOR A
+            _op[0xAF] = delegate            // XOR A
             {
                 A = (byte)(A ^ A);
 
@@ -333,7 +334,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.H);
                 SetFlag(false, StatusFlags.C);
             };
-            _operations[0xB0] = delegate            // OR B
+            _op[0xB0] = delegate            // OR B
             {
                 A = (byte)(A | B);
 
@@ -342,7 +343,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.H);
                 SetFlag(false, StatusFlags.C);
             };
-            _operations[0xB1] = delegate            // OR C
+            _op[0xB1] = delegate            // OR C
             {
                 A = (byte)(A | C);
 
@@ -351,7 +352,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.H);
                 SetFlag(false, StatusFlags.C);
             };
-            _operations[0xBE] = delegate            // CP (HL)
+            _op[0xBE] = delegate            // CP (HL)
             {
                 byte d8 = _system.MMU[HL];
 
@@ -362,7 +363,7 @@ namespace Castor.Emulator.CPU
 
                 _cyclesToWait += 4;
             };
-            _operations[0xFE] = delegate            // CP d8
+            _op[0xFE] = delegate            // CP d8
             {
                 byte d8 = ReadByte(PC);
 
@@ -372,7 +373,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(d8 > A, StatusFlags.C);
             };
 
-            _extendedOperations[0x11] = delegate     // RL C
+            _cb[0x11] = delegate     // RL C
             {
                 Utility.Math.RotateLeft(ref C, ref F);
 
@@ -380,7 +381,7 @@ namespace Castor.Emulator.CPU
                 SetFlag(false, StatusFlags.N);
                 SetFlag(false, StatusFlags.H);
             };
-            _extendedOperations[0x7C] = delegate     // BIT 7,H
+            _cb[0x7C] = delegate     // BIT 7,H
             {
                 int result = H.BitValue(7);
 
@@ -397,7 +398,7 @@ namespace Castor.Emulator.CPU
 
             if (!_halted)
             {
-                _operations[ReadByte(PC)]();
+                _op[ReadByte(PC)]();
 
                 if (_setei == 1)
                     _ime = true;
@@ -405,7 +406,7 @@ namespace Castor.Emulator.CPU
                     --_setei;
             }
 
-            else // if halted keep adding 4 extra cycles to wait
+            else
                 _cyclesToWait += 4;
 
             if (_system.ISR.CanServiceInterrupts && _halted) // if stop or halt, unhalt if interrupt
@@ -443,7 +444,7 @@ namespace Castor.Emulator.CPU
             return _cyclesToWait;
         }
 
-        public byte ReadByte(int addr)
+        private byte ReadByte(int addr)
         {
             byte ret = _system.MMU[addr];
             PC++;
@@ -451,13 +452,13 @@ namespace Castor.Emulator.CPU
             return ret;
         }        
 
-        public void WriteByte(int addr, byte value)
+        private void WriteByte(int addr, byte value)
         {
             _system.MMU[addr] = value;
             _cyclesToWait += 4;
         }
 
-        public ushort ReadUshort(int addr)
+        private ushort ReadUshort(int addr)
         {
             ushort ret = Convert.ToUInt16(_system.MMU[addr + 1] << 8 | _system.MMU[addr]);
             PC += 2;
@@ -465,7 +466,7 @@ namespace Castor.Emulator.CPU
             return ret;
         }
 
-        public void WriteUshort(int addr, ushort value)
+        private void WriteUshort(int addr, ushort value)
         {
             byte byte1 = value.MostSignificantByte();
             byte byte2 = value.LeastSignificantByte();

@@ -11,22 +11,22 @@ namespace Castor.Emulator.CPU
         private void PopulateControlFunctions()
         {
             // NOP
-            _operations[0x00] = () => { };
+            _op[0x00] = () => { };
 
             // STOP 0
-            _operations[0x01] = () => { ReadByte(PC); _cyclesToWait -= 4; _halted = true; };
+            _op[0x01] = () => { ReadByte(PC); _cyclesToWait -= 4; _halted = true; };
 
             // HALT
-            _operations[0x76] = () => { _halted = true; };
+            _op[0x76] = () => { _halted = true; };
 
             // PREFIX CB
-            _operations[0xCB] = () => { _extendedOperations[ReadByte(PC)](); };
+            _op[0xCB] = () => { _cb[ReadByte(PC)](); };
 
             // EI
-            _operations[0xFB] = () => { _setei = 2; };
+            _op[0xFB] = () => { _setei = 2; };
 
             // DI
-            _operations[0xF3] = () => { _ime = false; _setei = 0; };
+            _op[0xF3] = () => { _ime = false; _setei = 0; };
         }
     }
 }

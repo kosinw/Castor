@@ -50,6 +50,14 @@ namespace Castor.Emulator.Utility
             d8 |= carry_bit;
         }
 
+        public static byte Swap(this byte d8)
+        {
+            var hi = (d8 >> 4) & 0xF;
+            var lo = (d8 >> 0) & 0xF;
+
+            return (byte)(lo << 4 | hi);
+        }
+
         public static class Add
         {
             public static bool CheckHalfCarry(ushort val1, int val2)

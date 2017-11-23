@@ -11,59 +11,59 @@ namespace Castor.Emulator.CPU
         private void PopulateJumpFunctions()
         {
             // JR Nx,r8
-            _operations[0x20] = RJI(() => !CheckFlag(StatusFlags.Z), false,
+            _op[0x20] = RJI(() => !CheckFlag(StatusFlags.Z), false,
                 () => (sbyte)ReadByte(PC), 0, 4);
-            _operations[0x30] = RJI(() => !CheckFlag(StatusFlags.C), false,
+            _op[0x30] = RJI(() => !CheckFlag(StatusFlags.C), false,
                 () => (sbyte)ReadByte(PC), 0, 4);
 
             // JR x,r8
-            _operations[0x18] = RJI(() => true, false,
+            _op[0x18] = RJI(() => true, false,
                 () => (sbyte)ReadByte(PC), 0, 4);
-            _operations[0x28] = RJI(() => CheckFlag(StatusFlags.Z), false,
+            _op[0x28] = RJI(() => CheckFlag(StatusFlags.Z), false,
                 () => (sbyte)ReadByte(PC), 0, 4);
-            _operations[0x38] = RJI(() => CheckFlag(StatusFlags.C), false,
+            _op[0x38] = RJI(() => CheckFlag(StatusFlags.C), false,
                 () => (sbyte)ReadByte(PC), 0, 4);
 
             // JP Nx,a16
-            _operations[0xC2] = RJI(() => !CheckFlag(StatusFlags.Z), true,
+            _op[0xC2] = RJI(() => !CheckFlag(StatusFlags.Z), true,
                 () => ReadUshort(PC), 0, 4);
-            _operations[0xD2] = RJI(() => !CheckFlag(StatusFlags.C), true,
+            _op[0xD2] = RJI(() => !CheckFlag(StatusFlags.C), true,
                 () => ReadUshort(PC), 0, 4);
 
             // JP x,a16
-            _operations[0xC3] = RJI(() => true, true, 
+            _op[0xC3] = RJI(() => true, true, 
                 () => ReadUshort(PC), 0, 4);
-            _operations[0xCA] = RJI(() => CheckFlag(StatusFlags.Z), true,
+            _op[0xCA] = RJI(() => CheckFlag(StatusFlags.Z), true,
                 () => ReadUshort(PC), 0, 4);
-            _operations[0xDA] = RJI(() => CheckFlag(StatusFlags.C), true,
+            _op[0xDA] = RJI(() => CheckFlag(StatusFlags.C), true,
                 () => ReadUshort(PC), 0, 4);
-            _operations[0xE9] = RJI(() => true, true,
+            _op[0xE9] = RJI(() => true, true,
                 () => HL, 0, 0);
 
             // CALL
-            _operations[0xC4] = RCI(() => !CheckFlag(StatusFlags.Z), () => ReadUshort(PC), 0);
-            _operations[0xD4] = RCI(() => !CheckFlag(StatusFlags.C), () => ReadUshort(PC), 0);
-            _operations[0xCC] = RCI(() => CheckFlag(StatusFlags.Z), () => ReadUshort(PC), 0);
-            _operations[0xDC] = RCI(() => CheckFlag(StatusFlags.C), () => ReadUshort(PC), 0);
-            _operations[0xCD] = RCI(() => true, () => ReadUshort(PC), 0);
+            _op[0xC4] = RCI(() => !CheckFlag(StatusFlags.Z), () => ReadUshort(PC), 0);
+            _op[0xD4] = RCI(() => !CheckFlag(StatusFlags.C), () => ReadUshort(PC), 0);
+            _op[0xCC] = RCI(() => CheckFlag(StatusFlags.Z), () => ReadUshort(PC), 0);
+            _op[0xDC] = RCI(() => CheckFlag(StatusFlags.C), () => ReadUshort(PC), 0);
+            _op[0xCD] = RCI(() => true, () => ReadUshort(PC), 0);
 
             // RST
-            _operations[0xC7] = RCI(() => true, () => 0x00, 0);
-            _operations[0xD7] = RCI(() => true, () => 0x10, 0);
-            _operations[0xE7] = RCI(() => true, () => 0x20, 0);
-            _operations[0xF7] = RCI(() => true, () => 0x30, 0);
-            _operations[0xCF] = RCI(() => true, () => 0x08, 0);
-            _operations[0xDF] = RCI(() => true, () => 0x18, 0);
-            _operations[0xEF] = RCI(() => true, () => 0x28, 0);
-            _operations[0xFF] = RCI(() => true, () => 0x38, 0);
+            _op[0xC7] = RCI(() => true, () => 0x00, 0);
+            _op[0xD7] = RCI(() => true, () => 0x10, 0);
+            _op[0xE7] = RCI(() => true, () => 0x20, 0);
+            _op[0xF7] = RCI(() => true, () => 0x30, 0);
+            _op[0xCF] = RCI(() => true, () => 0x08, 0);
+            _op[0xDF] = RCI(() => true, () => 0x18, 0);
+            _op[0xEF] = RCI(() => true, () => 0x28, 0);
+            _op[0xFF] = RCI(() => true, () => 0x38, 0);
 
             // RET
-            _operations[0xC0] = RRI(() => !CheckFlag(StatusFlags.Z), 4, false);
-            _operations[0xD0] = RRI(() => !CheckFlag(StatusFlags.C), 4, false);
-            _operations[0xC8] = RRI(() => CheckFlag(StatusFlags.Z), 4, false);
-            _operations[0xD8] = RRI(() => CheckFlag(StatusFlags.C), 4, false);
-            _operations[0xC9] = RRI(() => true, 4, false);
-            _operations[0xD9] = RRI(() => true, 4, true);
+            _op[0xC0] = RRI(() => !CheckFlag(StatusFlags.Z), 4, false);
+            _op[0xD0] = RRI(() => !CheckFlag(StatusFlags.C), 4, false);
+            _op[0xC8] = RRI(() => CheckFlag(StatusFlags.Z), 4, false);
+            _op[0xD8] = RRI(() => CheckFlag(StatusFlags.C), 4, false);
+            _op[0xC9] = RRI(() => true, 4, false);
+            _op[0xD9] = RRI(() => true, 4, true);
         }
 
         /// <summary>

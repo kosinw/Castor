@@ -55,9 +55,6 @@
     <Compile Include="Emulator\Cartridge\CartridgeFactory.cs" />
     <Compile Include="Emulator\Cartridge\ICartridge.cs" />
     <Compile Include="Emulator\Cartridge\MBC0.cs" />
-    <Compile Include="Emulator\CPU\InstructionBuilder.cs" />
-    <Compile Include="Emulator\CPU\MicroOperation.cs" />
-    <Compile Include="Emulator\CPU\Types\ByteTypeEx.cs" />
     <Compile Include="Emulator\CPU\Z80.ALUFunctions.cs" />
     <Compile Include="Emulator\CPU\Z80.BitFunctions.cs" />
     <Compile Include="Emulator\CPU\Z80.ControlFunctions.cs" />
@@ -72,7 +69,6 @@
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
     <Compile Include="Emulator\Utility\Math.cs" />
-    <Compile Include="Emulator\Utility\Memory.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
