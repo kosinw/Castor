@@ -58,16 +58,36 @@ namespace Castor.Emulator.Utility
             return (byte)(lo << 4 | hi);
         }
 
+        public static byte Xor(byte d1, byte d2)
+        {
+            return (byte)(d1 ^ d2);
+        }
+
         public static class Add
         {
-            public static bool CheckHalfCarry(ushort val1, int val2)
+            public static bool CheckHalfCarry(ushort val1, params int[] val2)
             {
-                return ((val1 & 0xFF) + (val2 & 0xFF) > 0xFF);
+                return ((val1 & 0xFF) + (val2.Sum() & 0xFF) > 0xFF);
             }
 
-            public static bool CheckFullCarry(ushort val1, int val2)
+            public static bool CheckFullCarry(ushort val1, params int[] val2)
             {
-                return (val1 + val2) > ushort.MaxValue;
+                return (val1 + val2.Sum()) > ushort.MaxValue;
+            }
+
+            public static bool CheckHalfCarry(byte val1, params int[] val2)
+            {
+                return ((val1 & 0xF) + (val2.Sum() & 0xF) > 0xF);
+            }
+
+            public static bool CheckFullCarry(byte val1, params int[] val2)
+            {
+                return (val1 + val2.Sum()) > byte.MaxValue;
+            }
+
+            public static bool CheckZero(byte val1, params int[] val2)
+            {
+                return (val1 + val2.Sum()) == byte.MaxValue + 1;
             }
         }
     }

@@ -85,12 +85,12 @@ namespace Castor.View
                         _system.Frame();
                         watch.Stop();
 
-                        if (watch.ElapsedMilliseconds < 16)
-                        {
-                            timeBeginPeriod(1); // this is to increase the resolution of Window's system clock
-                            Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
-                            timeEndPeriod(1);
-                        }
+                        //if (watch.ElapsedMilliseconds < 16)
+                        //{
+                        //    timeBeginPeriod(1); // this is to increase the resolution of Window's system clock
+                        //    Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
+                        //    timeEndPeriod(1);
+                        //}
                     }
                 }))
                 {

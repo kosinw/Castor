@@ -81,6 +81,7 @@ namespace Castor.Emulator.Video
                 }
 
                 _lcdc = value;
+                _mode = 2;
             }
         }
 

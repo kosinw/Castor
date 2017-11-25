@@ -303,19 +303,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(true, StatusFlags.N);
                 SetFlag(A % 16 == 0, StatusFlags.H);
             };
-            _op[0x86] = delegate            // ADD A,(HL)
-            {
-                byte d8 = _system.MMU[HL];
-
-                SetFlag((A + d8 - 1) == byte.MaxValue, StatusFlags.Z);
-                SetFlag(false, StatusFlags.N);
-                SetFlag((A + d8) % 16 == 0, StatusFlags.H);
-                SetFlag(A + d8 > byte.MaxValue, StatusFlags.C);
-
-                A += d8;
-
-                _cyclesToWait += 4;
-            };
             _op[0x90] = delegate            // SUB B
             {
                 SetFlag(A == B, StatusFlags.Z);
@@ -324,15 +311,6 @@ namespace Castor.Emulator.CPU
                 SetFlag(B > A, StatusFlags.C);
 
                 A -= B;
-            };
-            _op[0xAF] = delegate            // XOR A
-            {
-                A = (byte)(A ^ A);
-
-                SetFlag(A == 0, StatusFlags.Z);
-                SetFlag(false, StatusFlags.N);
-                SetFlag(false, StatusFlags.H);
-                SetFlag(false, StatusFlags.C);
             };
             _op[0xB0] = delegate            // OR B
             {
@@ -398,6 +376,10 @@ namespace Castor.Emulator.CPU
 
             if (!_halted)
             {
+                if (PC == 0xf1)
+                {
+                    ;
+                }
                 _op[ReadByte(PC)]();
 
                 if (_setei == 1)
