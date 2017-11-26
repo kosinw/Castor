@@ -21,7 +21,36 @@ namespace Castor.Emulator.Memory
             _system = system;
             _wram = new byte[0x2000];
             _zram = new byte[0x80];
-        }                
+        }
+
+        public byte ReadByte(int addr, ref int timer)
+        {
+            timer += 4;
+
+            return this[addr];
+        }
+
+        public void WriteByte(int addr, byte value, ref int timer)
+        {
+            timer += 4;
+
+            this[addr] = value;
+        }
+
+        public ushort ReadWord(int addr, ref int timer)
+        {
+            timer += 8;
+
+            return (ushort)(this[addr + 1] << 8 | this[addr]);
+        }
+
+        public void WriteWord(int addr, ushort value, ref int timer)
+        {
+            timer += 8;
+
+            this[addr] = value.LeastSignificantByte();
+            this[addr + 1] = value.MostSignificantByte();
+        }
 
         public byte this[int idx]
         {
@@ -67,6 +96,10 @@ namespace Castor.Emulator.Memory
                             return _system.GPU.OBP0;
                         case 0xFF49:
                             return _system.GPU.OBP1;
+                        case 0xFF4A:
+                            return _system.GPU.WY;
+                        case 0xFF4B:
+                            return _system.GPU.WX;
                         default:
                             return 0;
                     }
@@ -80,7 +113,7 @@ namespace Castor.Emulator.Memory
 
                 throw new Exception("You may not read to this memory location.");
             }
-            
+
             set
             {
                 if (idx < 0x8000)
@@ -122,8 +155,8 @@ namespace Castor.Emulator.Memory
                         case 0xFF45:
                             _system.GPU.LYC = value;
                             break;
-                        case 0xFF46: // TODO: DMA Transfer is not this easy, reimplement
-                            _system.GPU.DMATransfer((byte)(value * 0x100)); 
+                        case 0xFF46:
+                            _system.DMA.BeginDMA(value);
                             break;
                         case 0xFF47:
                             _system.GPU.BGP = value;
@@ -133,6 +166,12 @@ namespace Castor.Emulator.Memory
                             break;
                         case 0xFF49:
                             _system.GPU.OBP1 = value;
+                            break;
+                        case 0xFF4A:
+                            _system.GPU.WY = value;
+                            break;
+                        case 0xFF4B:
+                            _system.GPU.WX = value;
                             break;
                         default:
                             return;
@@ -145,7 +184,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _zram[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _system.ISR.IE = value;                
+                    _system.ISR.IE = value;
             }
         }
     }

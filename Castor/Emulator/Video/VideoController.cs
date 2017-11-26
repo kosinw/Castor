@@ -44,6 +44,8 @@ namespace Castor.Emulator.Video
         private byte _obp0;
         private byte _obp1;
         private byte _lyc;
+        private int _wx;
+        private int _wy;
 
         // Timing stuff
         private int _mode;
@@ -67,7 +69,7 @@ namespace Castor.Emulator.Video
                 _stat = value;
             }
         }
-        
+
         public byte LCDC
         {
             get => _lcdc;
@@ -125,6 +127,18 @@ namespace Castor.Emulator.Video
             get => _scy;
             set => _scy = value;
         }
+
+        public byte WX
+        {
+            get => (byte)(_wx + 7);
+            set => _wx = value - 7;
+        }
+
+        public byte WY
+        {
+            get => (byte)_wy;
+            set => _wy = value;
+        }
         #endregion
 
         #region Constructors
@@ -168,15 +182,6 @@ namespace Castor.Emulator.Video
                 }
             }
         }
-
-        public void DMATransfer(ushort sourceAddr)
-        {
-            for (int i = 0x00; i < 0x9F; ++i)
-            {
-                _system.MMU[0xFE00 + i] = _system.MMU[sourceAddr + i];
-                _system.CPU.AddWaitCycles(648); // an oam dma takes 648 cpu cycles
-            }
-        }
         #endregion
 
         private void RenderScanline()
@@ -208,6 +213,12 @@ namespace Castor.Emulator.Video
             // For each pixel on this scanline
             for (int x = 0; x < 160; ++x)
             {
+                // Check if the window is enabled
+                if (_lcdc.BitValue(5) == 1 || _lcdc.BitValue(1) == 1)
+                {
+                    ;
+                }
+
                 var xPosition = (x + _scx) % 256;
 
                 var tileColumn = (xPosition / 8) % 256;
@@ -218,7 +229,7 @@ namespace Castor.Emulator.Video
                 if (usingSignedIndices)
                     tileIdx = (sbyte)_system.MMU[tileAddress];
                 else
-                    tileIdx = (byte)_system.MMU[tileAddress];
+                    tileIdx = _system.MMU[tileAddress];
 
                 // Here find start location of the tile by index
                 int tileLocation = 0;

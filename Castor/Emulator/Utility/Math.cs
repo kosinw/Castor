@@ -1,5 +1,6 @@
 ﻿using Castor.Emulator.CPU;
 using Castor.Emulator.Video;
+using SharpDX.XInput;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,7 +68,7 @@ namespace Castor.Emulator.Utility
         {
             public static bool CheckHalfCarry(ushort val1, params int[] val2)
             {
-                return ((val1 & 0xFF) + (val2.Sum() & 0xFF) > 0xFF);
+                return ((val1 & 0xFF) + (val2.Sum() & 0xFF)) > 0xFF;
             }
 
             public static bool CheckFullCarry(ushort val1, params int[] val2)

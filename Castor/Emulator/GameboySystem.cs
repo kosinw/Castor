@@ -14,6 +14,7 @@ namespace Castor.Emulator
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController ISR;
+        public DMAController DMA;
 
         public GameboySystem()
         {                        
@@ -22,6 +23,7 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             ISR = new InterruptController(this);
+            DMA = new DMAController(this);
         }
 
         public void LoadROM(byte[] bytecode)
@@ -39,6 +41,9 @@ namespace Castor.Emulator
             {
                 int cycles = CPU.Step();
                 GPU.Step(cycles);
+
+                if (DMA.IsTransfering)
+                    DMA.Step(cycles);
 
                 _counter += cycles; // need to add the cycles used up
             }

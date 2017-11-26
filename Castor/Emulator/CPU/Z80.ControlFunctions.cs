@@ -14,7 +14,8 @@ namespace Castor.Emulator.CPU
             _op[0x00] = () => { };
 
             // STOP 0
-            _op[0x01] = () => { ReadByte(PC); _cyclesToWait -= 4; _halted = true; };
+            // TODO: More accurately emulate the stop command by turning off lcd, timers, + sound systems.
+            _op[0x01] = () => { ReadByte(PC); _waitcycles -= 4; _halted = true; };
 
             // HALT
             _op[0x76] = () => { _halted = true; };
@@ -23,10 +24,10 @@ namespace Castor.Emulator.CPU
             _op[0xCB] = () => { _cb[ReadByte(PC)](); };
 
             // EI
-            _op[0xFB] = () => { _setei = 2; };
+            _op[0xFB] = () => { _setime = InterruptToggle.EnableInterruptSoon; };
 
             // DI
-            _op[0xF3] = () => { _ime = false; _setei = 0; };
+            _op[0xF3] = () => { _setime = InterruptToggle.DisableInterrupt; };
         }
     }
 }
