@@ -74,7 +74,10 @@
     <Compile Include="Emulator\Memory\InterruptFlags.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
+    <Compile Include="Emulator\Utility\IReadWrite.cs" />
     <Compile Include="Emulator\Utility\Math.cs" />
+    <Compile Include="Emulator\Utility\Memory.cs" />
+    <Compile Include="Emulator\Utility\MemoryReference.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />
     <Compile Include="Emulator\Video\DMAController.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />

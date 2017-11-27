@@ -69,10 +69,10 @@ namespace Castor.Emulator.CPU
             _op[0xC6] = RADI(() => ReadByte(PC), false, 0);
 
             // ADD HL instructions
-            _op[0x09] = RAHLI(() => BC);
-            _op[0x19] = RAHLI(() => DE);
-            _op[0x29] = RAHLI(() => HL);
-            _op[0x39] = RAHLI(() => SP);
+            _op[0x09] = RAHLI(() => HL += BC);
+            _op[0x19] = RAHLI(() => HL += DE);
+            _op[0x29] = RAHLI(() => HL += HL);
+            _op[0x39] = RAHLI(() => HL += SP);
         }
 
         /// <summary>
