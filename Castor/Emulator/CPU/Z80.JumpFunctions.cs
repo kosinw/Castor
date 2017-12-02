@@ -90,10 +90,10 @@ namespace Castor.Emulator.CPU
                     else
                         PC = (ushort)(PC + addressInvoked);
 
-                    _waitcycles += actionTakenCycles;                    
+                    _cyclesToWait += actionTakenCycles;                    
                 }
 
-                _waitcycles += extraCycles;
+                _cyclesToWait += extraCycles;
             };
         }
 
@@ -115,7 +115,7 @@ namespace Castor.Emulator.CPU
                     PC = (ushort)addressInvoked;
                 }
 
-                _waitcycles += extraCycles;
+                _cyclesToWait += extraCycles;
             };
         }
 
@@ -129,13 +129,13 @@ namespace Castor.Emulator.CPU
                 if (condition.Invoke())
                 {
                     PC = PopUshort();
-                    _waitcycles += 4;
+                    _cyclesToWait += 4;
 
                     if (setIme)
                         _ime = true;
                 }
 
-                _waitcycles += extraCycles;
+                _cyclesToWait += extraCycles;
             };
         }
 

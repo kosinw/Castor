@@ -1,10 +1,7 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Castor.Emulator.CPU
 {
@@ -18,13 +15,13 @@ namespace Castor.Emulator.CPU
         public byte D;
         public byte E;
         public byte H;
-        public byte L;
+        public byte L;       
 
         public ushort AF
         {
             get => Convert.ToUInt16(A << 8 | F);
             set
-            {
+            {                
                 A = value.MostSignificantByte();
                 F = value.LeastSignificantByte();
             }
@@ -62,12 +59,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[HL];
             }
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[HL] = value;
             }
         }
@@ -75,12 +72,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[HL++];
             }
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[HL++] = value;
             }
         }
@@ -88,12 +85,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[HL--];
             }
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[HL--] = value;
             }
         }
@@ -101,13 +98,13 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[0xFF00 + C];
             }
 
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[0xFF00 + C] = value;
             }
         }
@@ -115,12 +112,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[BC];
             }
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[BC] = value;
             }
         }
@@ -128,12 +125,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[DE];
             }
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[DE] = value;
             }
         }
@@ -141,13 +138,13 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[0xFF00 + ReadByte(PC)];
             }
 
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[0xFF00 + ReadByte(PC)] = value;
             }
         }
@@ -155,13 +152,13 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return _system.MMU[ReadUshort(PC)];
             }
 
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 _system.MMU[ReadUshort(PC)] = value;
             }
         }
@@ -169,13 +166,13 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 return SP;
             }
 
             set
             {
-                _waitcycles += 4;
+                _cyclesToWait += 4;
                 SP = value;
             }
         }
@@ -189,7 +186,7 @@ namespace Castor.Emulator.CPU
         /// <summary>
         /// This counts how many cycles need to be waited until the next instruction is executed.
         /// </summary>
-        private int _waitcycles = 0;
+        private int _cyclesToWait = 0;
 
         /// <summary>
         /// This is a reference to the overarching class of all components
@@ -201,23 +198,12 @@ namespace Castor.Emulator.CPU
         /// </summary>
         private bool _ime = false;
 
-        ///<summary>
-        /// This holds the state of the next behavior of the IME flag.
-        ///<summary>
-        private InterruptToggle _setime;
-
         /// <summary>
-        /// This holds a list of instructions and their addreses.
+        /// If this is set to 2, then decrement.
+        /// After next instruction, if set to 1 then trigger ime, then decrement.
+        /// If 0 just ignore it.
         /// </summary>
-        private List<(int addr, byte inst)> _disasm;
-
-        private enum InterruptToggle
-        {
-            None,
-            DisableInterrupt,
-            EnableInterrupt,
-            EnableInterruptSoon
-        }
+        private int _setei = 0;
 
         /// <summary>
         /// This is the halted flag. If this is enabled, all program activity will stop until interrupts.
@@ -225,7 +211,7 @@ namespace Castor.Emulator.CPU
         private bool _halted = false;
         #endregion
 
-        public void AddWaitCycles(int cycles) => _waitcycles += cycles;
+        public void AddWaitCycles(int cycles) => _cyclesToWait += cycles;
 
         public delegate void Instruction();
         private Instruction[] _op = new Instruction[256];
@@ -237,7 +223,6 @@ namespace Castor.Emulator.CPU
 
             #region Opcode Mappings
             _op = new Instruction[256];
-            _disasm = new List<(int addr, byte inst)>();
 
 #if DEBUG
             _op = Enumerable.Repeat<Instruction>(
@@ -276,7 +261,7 @@ namespace Castor.Emulator.CPU
             {
                 BC--;
 
-                _waitcycles += 4;
+                _cyclesToWait += 4;
             };
             _op[0x0D] = delegate            // DEC C
             {
@@ -354,7 +339,7 @@ namespace Castor.Emulator.CPU
                 SetFlag((d8 & 0xF) > (A & 0xF), StatusFlags.H);
                 SetFlag(d8 > A, StatusFlags.C);
 
-                _waitcycles += 4;
+                _cyclesToWait += 4;
             };
             _op[0xFE] = delegate            // CP d8
             {
@@ -386,8 +371,25 @@ namespace Castor.Emulator.CPU
         }
 
         public int Step()
-        { 
-            _waitcycles = 0;
+        {
+            _cyclesToWait = 0;
+
+            if (!_halted)
+            {
+                if (PC == 0xf1)
+                {
+                    ;
+                }
+                _op[ReadByte(PC)]();
+
+                if (_setei == 1)
+                    _ime = true;
+                if (_setei > 0)
+                    --_setei;
+            }
+
+            else
+                _cyclesToWait += 4;
 
             if (_system.ISR.CanServiceInterrupts && _halted) // if stop or halt, unhalt if interrupt
             {
@@ -397,87 +399,64 @@ namespace Castor.Emulator.CPU
             if (_ime == true) // check for interrupt stuff only if IME is enabled
             {
                 if (_system.ISR.CanHandleInterrupt(InterruptFlags.VBlank))
-                    ServiceInterurpt(InterruptFlags.VBlank, 0x40);
-                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.LCDStat))
-                    ServiceInterurpt(InterruptFlags.LCDStat, 0x48);
-                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Timer))
-                    ServiceInterurpt(InterruptFlags.Timer, 0x50);
-                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Serial))
-                    ServiceInterurpt(InterruptFlags.Serial, 0x58);
-                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Joypad))
-                    ServiceInterurpt(InterruptFlags.Joypad, 0x60);
-
-                if (_system.ISR.CanServiceInterrupts) // return before any opcode decoding
-                    return _waitcycles;
-            }
-
-            if (!_halted)
-            {
-                _disasm.Add((PC, _system.MMU[PC]));
-
-                Instruction operation = _op[DecodeOpcode()];               
-                operation.Invoke();
-
-                switch (_setime)
                 {
-                    case InterruptToggle.DisableInterrupt:
-                        _ime = false;
-                        _setime = InterruptToggle.None;
-                        break;
-                    case InterruptToggle.EnableInterruptSoon:
-                        _setime = InterruptToggle.EnableInterrupt;
-                        break;
-                    case InterruptToggle.EnableInterrupt:
-                        _ime = true;
-                        _setime = InterruptToggle.None;
-                        break;
+                    _ime = false; // disable ime flag
+                    _system.ISR.DisableInterrupt(InterruptFlags.VBlank); // clear IF bit 0
+
+                    PushUshort(PC); // push current pc onto stack
+
+                    _cyclesToWait += 8; // add an extra 8 cycles
+
+                    PC = 0x40; // interrupt vector is always 40h
+                }
+                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Timer))
+                {
+                }
+                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Serial))
+                {
+                }
+                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.LCDStat))
+                {
+                }
+                else if (_system.ISR.CanHandleInterrupt(InterruptFlags.Joypad))
+                {
                 }
             }
-            else
-            {
-                InternalDelay(1);
-            }
 
-            return _waitcycles;
+            return _cyclesToWait;
         }
-
-        private void ServiceInterurpt(InterruptFlags flag, ushort jumpVector)
-        {
-            _ime = false; // disable ime flag
-            _system.ISR.DisableInterrupt(flag); // clear whatever interrupt
-
-            InternalDelay(3); // have an internal delay of 3
-
-            PushUshort(PC); // push current pc onto stack
-
-            PC = jumpVector;
-        }
-
-        private byte DecodeOpcode() => _system.MMU.ReadByte(PC++, ref _waitcycles);
 
         private byte ReadByte(int addr)
         {
-            return _system.MMU.ReadByte(PC++, ref _waitcycles);
-        }
+            byte ret = _system.MMU[addr];
+            PC++;
+            _cyclesToWait += 4;
+            return ret;
+        }        
 
         private void WriteByte(int addr, byte value)
         {
-            _system.MMU.WriteByte(addr, value, ref _waitcycles);
+            _system.MMU[addr] = value;
+            _cyclesToWait += 4;
         }
 
         private ushort ReadUshort(int addr)
         {
-            ushort ret = _system.MMU.ReadWord(addr, ref _waitcycles);
+            ushort ret = Convert.ToUInt16(_system.MMU[addr + 1] << 8 | _system.MMU[addr]);
             PC += 2;
+            _cyclesToWait += 8;
             return ret;
         }
 
         private void WriteUshort(int addr, ushort value)
         {
-            _system.MMU.WriteWord(addr, value, ref _waitcycles);
-        }
+            byte byte1 = value.MostSignificantByte();
+            byte byte2 = value.LeastSignificantByte();
 
-        private void InternalDelay(int count) => AddWaitCycles(4 * count);
+            _system.MMU[addr] = byte2;
+            _system.MMU[addr + 1] = byte1;
+            _cyclesToWait += 12;
+        }
 
         private void SetFlag(bool condition, StatusFlags flag)
         {

@@ -355,7 +355,7 @@ namespace Castor.Emulator.CPU
         private void PushUshort(ushort value)
         {
             SP -= 2;
-            _system.MMU.WriteWord(SP, value, ref _waitcycles);
+            WriteUshort(SP, value);
         }
 
         /// <summary>

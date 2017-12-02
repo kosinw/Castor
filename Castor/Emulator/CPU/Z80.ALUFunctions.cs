@@ -64,7 +64,7 @@ namespace Castor.Emulator.CPU
             _op[0x83] = RADI(() => E, false, 0);
             _op[0x84] = RADI(() => H, false, 0);
             _op[0x85] = RADI(() => L, false, 0);
-            _op[0x86] = RADI(() => _system.MMU.ReadByte(HL, ref _waitcycles), false, 0);
+            _op[0x86] = RADI(() => _system.MMU[HL], false, 4);
             _op[0x87] = RADI(() => A, false, 0);
             _op[0xC6] = RADI(() => ReadByte(PC), false, 0);
 
