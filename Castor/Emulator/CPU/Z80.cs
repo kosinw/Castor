@@ -53,18 +53,20 @@ namespace Castor.Emulator.CPU
                 L = value.LeastSignificantByte();
             }
         }
+        public ushort SP;
+        public ushort PC;
 
         #region Pointer Accessors
         public byte AddrHL
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[HL];
             }
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[HL] = value;
             }
         }
@@ -72,12 +74,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[HL++];
             }
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[HL++] = value;
             }
         }
@@ -85,12 +87,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[HL--];
             }
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[HL--] = value;
             }
         }
@@ -98,13 +100,13 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[0xFF00 + C];
             }
 
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[0xFF00 + C] = value;
             }
         }
@@ -112,12 +114,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[BC];
             }
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[BC] = value;
             }
         }
@@ -125,12 +127,12 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[DE];
             }
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[DE] = value;
             }
         }
@@ -138,27 +140,28 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[0xFF00 + ReadByte(PC)];
             }
 
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[0xFF00 + ReadByte(PC)] = value;
             }
+
         }
         public byte Addr16
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return _system.MMU[ReadUshort(PC)];
             }
 
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 _system.MMU[ReadUshort(PC)] = value;
             }
         }
@@ -166,20 +169,17 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 return SP;
             }
 
             set
             {
-                _cyclesToWait += 4;
+                InternalDelay(1);
                 SP = value;
             }
         }
-        #endregion
-
-        public ushort SP;
-        public ushort PC;
+        #endregion        
         #endregion
 
         #region Private Members
@@ -212,6 +212,7 @@ namespace Castor.Emulator.CPU
         #endregion
 
         public void AddWaitCycles(int cycles) => _cyclesToWait += cycles;
+        public void InternalDelay(int cycles) => AddWaitCycles(cycles * 4);
 
         public delegate void Instruction();
         private Instruction[] _op = new Instruction[256];
@@ -376,10 +377,11 @@ namespace Castor.Emulator.CPU
 
             if (!_halted)
             {
-                if (PC == 0xf1)
+                if (PC == 0x100)
                 {
                     ;
                 }
+
                 _op[ReadByte(PC)]();
 
                 if (_setei == 1)

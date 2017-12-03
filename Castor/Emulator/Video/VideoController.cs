@@ -50,6 +50,10 @@ namespace Castor.Emulator.Video
         private int _modeclock;
         private int _line;
 
+        // Window stuff
+        private int _wx;
+        private int _wy;
+
         private GameboySystem _system;
         #endregion
 
@@ -67,7 +71,7 @@ namespace Castor.Emulator.Video
                 _stat = value;
             }
         }
-        
+
         public byte LCDC
         {
             get => _lcdc;
@@ -124,6 +128,18 @@ namespace Castor.Emulator.Video
         {
             get => _scy;
             set => _scy = value;
+        }
+
+        public byte WX
+        {
+            get => (byte)(_wx + 7);
+            set => _wx = value - 7;
+        }
+
+        public byte WY
+        {
+            get => (byte)_wy;
+            set => _wy = value;
         }
         #endregion
 
@@ -186,6 +202,12 @@ namespace Castor.Emulator.Video
                 RenderBackground();
             else
                 Array.Clear(_framebuffer, 0, _framebuffer.Length);
+            if (_lcdc.BitValue(1) == 1)
+                RenderSprites();
+        }
+
+        private void RenderSprites()
+        {
         }
 
         private void RenderBackground()
@@ -196,19 +218,40 @@ namespace Castor.Emulator.Video
             var tileDataZero = _lcdc.BitValue(4) == 1 ? 0x8000 : 0x8800;
             var usingSignedIndices = _lcdc.BitValue(4) == 0;
 
+            // Check if the window is enabled, if so then calculate when the wx and wy start
+            var usingWindow = false;
+
+            // If the window is on screen and the window y is greater than the scroll y register
+            // enable using windows
+            if (_lcdc.BitValue(5) == 1 && _wy > _scy)
+            {
+                usingWindow = true;
+            }
+
             // Here check which map set contains the background tile map
-            var tileMapZero = _lcdc.BitValue(3) == 0 ? 0x9800 : 0x9C00;
+            var tileMapZero = _lcdc.BitValue(3) == 0 ? 0x9800 : 0x9C00;            
 
             // This is used to calculate which row of 32 tiles the GPU is currently on
             var yPosition = (_scy + _line) % 256;
 
+            if (usingWindow)
+            {
+                tileMapZero = _lcdc.BitValue(6) == 0 ? 0x9800 : 0x9C00;
+                yPosition = (_scy - _wy) % 256;
+            }
+
             // This is used to calculate which line of whatever tile the GPU is rendering
             var tileRow = (yPosition / 8) * 32;
-
+            
             // For each pixel on this scanline
             for (int x = 0; x < 160; ++x)
             {
                 var xPosition = (x + _scx) % 256;
+
+                if (usingWindow && x >= _wx)
+                {
+                    xPosition = x - _wx;
+                }
 
                 var tileColumn = (xPosition / 8) % 256;
                 int tileAddress = tileMapZero + tileRow + tileColumn;

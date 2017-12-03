@@ -50,12 +50,17 @@ namespace Castor.Emulator.Utility
             d8 |= carry_bit;
         }
 
-        public static byte Swap(this byte d8)
+        public static byte Swap(byte d8)
         {
             var hi = (d8 >> 4) & 0xF;
             var lo = (d8 >> 0) & 0xF;
 
             return (byte)(lo << 4 | hi);
+        }
+
+        public static byte Reset(byte d8, int index)
+        {
+            return (byte)((d8 & ~(1 << index)) & 0xFF);
         }
 
         public static byte Xor(byte d1, byte d2)

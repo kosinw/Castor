@@ -26,37 +26,39 @@ namespace Castor.Emulator.CPU
 
         private void PopulateLoadInstructions() // All the data for the move/load instructions
         {
-            // LD Reg16,Imm16
-            _op[0x01] = RLI(LoadType.BC, LoadType.Imm16);
-            _op[0x11] = RLI(LoadType.DE, LoadType.Imm16);
-            _op[0x21] = RLI(LoadType.HL, LoadType.Imm16);
-            _op[0x31] = RLI(LoadType.SP, LoadType.Imm16);
+            // ld r16,imm16
+            _op[0x01] = () => { BC = ReadUshort(PC); };
+            _op[0x11] = () => { DE = ReadUshort(PC); };
+            _op[0x21] = () => { HL = ReadUshort(PC); };
+            _op[0x31] = () => { SP = ReadUshort(PC); };
 
-            // LD (_),A
-            _op[0x02] = RLI(LoadType._BC, LoadType.A);
-            _op[0x12] = RLI(LoadType._DE, LoadType.A);
-            _op[0x22] = RLI(LoadType._HLI, LoadType.A);
-            _op[0x32] = RLI(LoadType._HLD, LoadType.A);
+            // ld (r16),A
+            _op[0x02] = () => { AddrBC = A; };
+            _op[0x12] = () => { AddrDE = A; };
+            _op[0x22] = () => { AddrHLI = A; };
+            _op[0x32] = () => { AddrHLD = A; };
 
-            // LD A,(_)
-            _op[0x0A] = RLI(LoadType.A, LoadType._BC);
-            _op[0x1A] = RLI(LoadType.A, LoadType._DE);
-            _op[0x2A] = RLI(LoadType.A, LoadType._HLI);
-            _op[0x3A] = RLI(LoadType.A, LoadType._HLD);
+            // LD A,(r16)
+            _op[0x0A] = () => { A = AddrBC; };
+            _op[0x1A] = () => { A = AddrDE; };
+            _op[0x2A] = () => { A = AddrHLI; };
+            _op[0x3A] = () => { A = AddrHLD; };
 
-            _op[0x06] = RLI(LoadType.B, LoadType.Imm8);
-            _op[0x16] = RLI(LoadType.D, LoadType.Imm8);
-            _op[0x26] = RLI(LoadType.H, LoadType.Imm8);
-            _op[0x36] = RLI(LoadType._HL, LoadType.Imm8);
+            // LD r8,imm8
+            _op[0x06] = () => { B = ReadByte(PC); };
+            _op[0x16] = () => { D = ReadByte(PC); };
+            _op[0x26] = () => { H = ReadByte(PC); };
+            _op[0x36] = () => { AddrHL = ReadByte(PC); };
 
-            _op[0x0E] = RLI(LoadType.C, LoadType.Imm8);
-            _op[0x1E] = RLI(LoadType.E, LoadType.Imm8);
-            _op[0x2E] = RLI(LoadType.L, LoadType.Imm8);
-            _op[0x3E] = RLI(LoadType.A, LoadType.Imm8);
+            _op[0x0E] = () => { C = ReadByte(PC); };
+            _op[0x1E] = () => { E = ReadByte(PC); };
+            _op[0x2E] = () => { L = ReadByte(PC); };
+            _op[0x3E] = () => { A = ReadByte(PC); };
 
-            // LDH
-            _op[0xE0] = RLI(LoadType.Addr8, LoadType.A);
-            _op[0xF0] = RLI(LoadType.A, LoadType.Addr8);
+            // LDH (a8),A
+            // LDH A,(a8)
+            _op[0xE0] = () => { Addr8 = A; };
+            _op[0xF0] = () => { A = Addr8; };
 
             // LD (C),A & LD A,(C)
             _op[0xE2] = RLI(LoadType._C, LoadType.A);
