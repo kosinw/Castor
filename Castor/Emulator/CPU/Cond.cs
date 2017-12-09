@@ -11,8 +11,11 @@ namespace Castor.Emulator.CPU
     {
         Z = 1 << 7,
         N = 1 << 6,
-        C = 1 << 5,
-        H = 1 << 4
+        H = 1 << 5,
+        C = 1 << 4,    
+        
+        NZ = 1 << 7,
+        NC = 1 << 4
     }
 
     public static class CondImpl

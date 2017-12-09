@@ -1,4 +1,5 @@
-﻿using Castor.Emulator.CPULegacy;
+﻿using Castor.Emulator.CPU;
+using Castor.Emulator.CPULegacy;
 using Castor.Emulator.Video;
 using System;
 using System.Collections.Generic;
@@ -10,16 +11,6 @@ namespace Castor.Emulator.Utility
 {
     public static class Math
     {
-        public static byte MostSignificantByte(this ushort d16)
-        {
-            return Convert.ToByte((d16 >> 8) & 0xFF);
-        }
-
-        public static byte LeastSignificantByte(this ushort d16)
-        {
-            return Convert.ToByte((d16 >> 0) & 0xFF);
-        }
-
         public static byte BitValue(this byte d8, int index)
         {
             return (byte)((d8 >> index) & 1);
@@ -70,6 +61,17 @@ namespace Castor.Emulator.Utility
 
         public static class Add
         {
+            public static byte Inc(byte value, ref byte F)
+            {
+                var result = (byte)(value + 1);
+
+                Bit.AlterFlag(ref F, Cond.Z, result == 0);
+                Bit.AlterFlag(ref F, Cond.N, false);
+                Bit.AlterFlag(ref F, Cond.H, result % 16 == 0);
+
+                return result;
+            }
+
             public static bool CheckHalfCarry(ushort val1, params int[] val2)
             {
                 return ((val1 & 0xFF) + (val2.Sum() & 0xFF) > 0xFF);

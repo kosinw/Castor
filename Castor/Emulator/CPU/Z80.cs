@@ -81,11 +81,26 @@ namespace Castor.Emulator.CPU
                 _d.MMU[HLD] = value;
             }
         }
+        public byte Imm8
+        {
+            get => ReadByte(_registers.Bump());
+            set => WriteByte(_registers.Bump(), value);
+        }        
+        public byte ZeroPageC
+        {
+            get => ReadByte(C + 0xFF00);
+            set => WriteByte(C + 0xFF00, value);
+        }
         #endregion
 
         #region Utility Functions
         private void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
-        private byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
+        public byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
+        private byte ReadByte(int addr, int delay = 1)
+        {
+            InternalDelay(delay);
+            return _d.MMU[addr];
+        }
         private void WriteByte(int addr, byte value, int delay = 1)
         {
             InternalDelay(delay);
@@ -95,7 +110,12 @@ namespace Castor.Emulator.CPU
         {
             InternalDelay(delay);
             return (ushort)(_d.MMU[addr + 1] << 8 | _d.MMU[addr]);
-        }        
+        }
+        private void Jump(ushort value)
+        {
+            InternalDelay();
+            PC = value;
+        }
         #endregion
 
         #region Internal Members
@@ -141,10 +161,10 @@ namespace Castor.Emulator.CPU
         #region Opcode Methods
         public override void Load(ref byte out8, byte in8)
         {
-            throw new NotImplementedException();
+            out8 = in8;
         }
 
-        public override void Load(ushort indr, byte in8, int hlAction = 0)
+        public override void Load(int indr, byte in8, int hlAction = 0)
         {
             WriteByte(indr, in8);
             HL += (ushort)hlAction;
@@ -194,7 +214,13 @@ namespace Castor.Emulator.CPU
 
         public override void Inc(ref byte io8)
         {
-            throw new NotImplementedException();
+            io8 = Utility.Math.Add.Inc(io8, ref _registers.F);
+        }
+
+        public override void Inc(int indr)
+        {
+            var in8 = ReadByte(indr);
+            WriteByte(indr, Utility.Math.Add.Inc(in8,, ref _registers.F));
         }
 
         public override void Dec(ref byte io8)
@@ -264,7 +290,7 @@ namespace Castor.Emulator.CPU
 
         public override void Bit(uint num, byte in8)
         {
-            throw new NotImplementedException();
+            Utility.Bit.Value(in8, num, ref _registers.F);
         }
 
         public override void Set(uint num, ref byte io8)
@@ -314,7 +340,17 @@ namespace Castor.Emulator.CPU
 
         public override void Jr(Cond cond)
         {
-            throw new NotImplementedException();
+            ushort value = (ushort)((sbyte)ReadByte(_registers.Bump()) + PC);
+
+            if (cond == Cond.NC || cond == Cond.NZ)
+            {
+                if (!((Cond)_registers.F).HasFlag(cond))
+                    Jump(value);
+            }
+            else if (((Cond)_registers.F).HasFlag(cond))
+            {
+                Jump(value);
+            }
         }
 
         public override void Call(Cond cond)
@@ -373,11 +409,6 @@ namespace Castor.Emulator.CPU
         }
 
         public override void Cpl()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void CbPrefix()
         {
             throw new NotImplementedException();
         }

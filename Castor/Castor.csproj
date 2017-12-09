@@ -61,7 +61,6 @@
     <Compile Include="Emulator\CPULegacy\Z80.JumpFunctions.cs" />
     <Compile Include="Emulator\CPULegacy\Z80.LoadFunctions.cs" />
     <Compile Include="Emulator\CPU\Cond.cs" />
-    <Compile Include="Emulator\CPU\IndirectAddress.cs" />
     <Compile Include="Emulator\CPU\OpcodeBuilder.cs" />
     <Compile Include="Emulator\CPU\Registers.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
@@ -72,6 +71,7 @@
     <Compile Include="Emulator\Memory\InterruptFlags.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPULegacy\Z80.cs" />
+    <Compile Include="Emulator\Utility\Bit.cs" />
     <Compile Include="Emulator\Utility\Consts.cs" />
     <Compile Include="Emulator\Utility\Math.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />

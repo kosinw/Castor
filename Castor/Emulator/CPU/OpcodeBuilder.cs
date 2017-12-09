@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IA = Castor.Emulator.CPU.IndirectAddress;
 
 namespace Castor.Emulator.CPU
 {
@@ -12,7 +11,7 @@ namespace Castor.Emulator.CPU
         // --- 8-bit operations
         // 8-bit loads
         public abstract void Load(ref byte out8, byte in8);
-        public abstract void Load(ushort indr, byte in8, int hlAction = 0);
+        public abstract void Load(int indr, byte in8, int hlAction = 0);
         // 8-bit arithmetic
         public abstract void Add(byte in8);
         public abstract void Adc(byte in8);
@@ -23,6 +22,7 @@ namespace Castor.Emulator.CPU
         public abstract void Or(byte in8);
         public abstract void Xor(byte in8);
         public abstract void Inc(ref byte io8);
+        public abstract void Inc(int indr);
         public abstract void Dec(ref byte io8);
         public abstract void Rlca();
         public abstract void Rla();
@@ -61,7 +61,6 @@ namespace Castor.Emulator.CPU
         public abstract void Nop();
         public abstract void Daa();
         public abstract void Cpl();
-        public abstract void CbPrefix();
         // --- 16-bit operations
         // 16-bit loads
         public abstract void Load16(ref ushort io16);
@@ -89,6 +88,8 @@ namespace Castor.Emulator.CPU
                 case 0x7C: Load(ref d.CPU.A, d.CPU.H); break;
                 case 0x7D: Load(ref d.CPU.A, d.CPU.L); break;
                 case 0x7E: Load(ref d.CPU.A, d.CPU.AddrHL); break;
+                case 0x3E: Load(ref d.CPU.A, d.CPU.Imm8); break;
+                case 0xF2: Load(ref d.CPU.A, d.CPU.ZeroPageC); break;
                 case 0x47: Load(ref d.CPU.B, d.CPU.A); break;
                 case 0x40: Load(ref d.CPU.B, d.CPU.B); break;
                 case 0x41: Load(ref d.CPU.B, d.CPU.C); break;
@@ -105,6 +106,7 @@ namespace Castor.Emulator.CPU
                 case 0x4C: Load(ref d.CPU.C, d.CPU.H); break;
                 case 0x4D: Load(ref d.CPU.C, d.CPU.L); break;
                 case 0x4E: Load(ref d.CPU.C, d.CPU.AddrHL); break;
+                case 0x0E: Load(ref d.CPU.C, d.CPU.Imm8); break;
                 case 0x57: Load(ref d.CPU.D, d.CPU.A); break;
                 case 0x50: Load(ref d.CPU.D, d.CPU.B); break;
                 case 0x51: Load(ref d.CPU.D, d.CPU.C); break;
@@ -146,8 +148,17 @@ namespace Castor.Emulator.CPU
                 case 0x75: Load(d.CPU.HL, d.CPU.L); break;
                 case 0x22: Load(d.CPU.HL, d.CPU.A, 1); break;
                 case 0x32: Load(d.CPU.HL, d.CPU.A, -1); break;
+                case 0xE2: Load(d.CPU.C + 0xFF00, d.CPU.A); break;
                 #endregion
                 #region 8-bit arithmetic
+                case 0x3C: Inc(ref d.CPU.A); break;
+                case 0x04: Inc(ref d.CPU.B); break;
+                case 0x0C: Inc(ref d.CPU.C); break;
+                case 0x14: Inc(ref d.CPU.D); break;
+                case 0x1C: Inc(ref d.CPU.E); break;
+                case 0x24: Inc(ref d.CPU.H); break;
+                case 0x2C: Inc(ref d.CPU.L); break;
+                case 0x3F: Inc(d.CPU.HL); break;
                 case 0xA7: And(d.CPU.A); break;
                 case 0xA0: And(d.CPU.B); break;
                 case 0xA1: And(d.CPU.C); break;
@@ -173,18 +184,41 @@ namespace Castor.Emulator.CPU
                 case 0xB5: Or(d.CPU.L); break;
                 case 0xB6: Or(d.CPU.AddrHL); break;
                 #endregion
+                #region Control
+                case 0x20: Jr(Cond.NZ); break;
+                #endregion
+                #region Miscellaneous
+                case 0xCB: DecodeCB(d, d.CPU.DecodeInstruction()); break;
+                #endregion
                 #region 16-bit loads
                 case 0x21: Load16(ref d.CPU.HL); break;
                 case 0x31: Load16(ref d.CPU.SP); break;
                 #endregion
 
-                default: Unimplemented(d); break;
+                default: Unimplemented(d, op); break;
             }
         }
 
-        private void Unimplemented(Device d)
+        private void DecodeCB(Device d, byte op)
         {
-            throw new Exception($"Opcode not defined: {d.MMU[d.CPU.PC - 1]:X2} at PC: {d.CPU.PC - 1:X2}");
+            switch (op)
+            {
+                #region Bit
+                case 0x7C: Bit(7, d.CPU.H); break;
+                #endregion
+
+                default: UnimplementedCB(d, op); break;
+            }
+        }
+
+        private void Unimplemented(Device d, byte op)
+        {
+            throw new Exception($"Opcode not defined: 0x{op:X2} at PC: 0x{d.CPU.PC - 1:X2}.");
+        }
+
+        private void UnimplementedCB(Device d, byte op)
+        {
+            throw new Exception($"Opcode not defined: 0xCB 0x{op:X2} at PC: 0x{d.CPU.PC - 2:X2}.");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Castor.Emulator.Memory
 {
     public class MemoryMapper
     {
-        private Device _system;
+        private Device _d;
         private byte[] _wram;
         private byte[] _zram;
         private BootROM _bootROM = new BootROM();
@@ -18,7 +18,7 @@ namespace Castor.Emulator.Memory
 
         public MemoryMapper(Device system)
         {
-            _system = system;
+            _d = system;
             _wram = new byte[0x2000];
             _zram = new byte[0x80];
         }                
@@ -30,17 +30,17 @@ namespace Castor.Emulator.Memory
                 if (idx < 0x0100 && _enableBIOS)
                     return _bootROM[idx];
                 else if (idx < 0x8000)
-                    return _system.Cartridge[idx];
+                    return _d.Cartridge[idx];
                 else if (idx < 0xA000)
-                    return _system.GPU[idx];
+                    return _d.GPU[idx];
                 else if (idx < 0xC000)
-                    return _system.Cartridge[idx];
+                    return _d.Cartridge[idx];
                 else if (idx < 0xE000)
                     return _wram[idx - 0xC000];
                 else if (idx < 0xFE00)
                     return _wram[idx - 0xE000];
                 else if (idx < 0xFEA0)
-                    return _system.GPU[idx];
+                    return _d.GPU[idx];
                 else if (idx < 0xFF00)
                     return Consts.NullRef;
                 else if (idx < 0xFF4C) // here we get a little more complex
@@ -48,25 +48,25 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF0F:
-                            return _system.ISR.IF;
+                            return _d.ISR.IF;
                         case 0xFF40:
-                            return _system.GPU.LCDC;
+                            return _d.GPU.LCDC;
                         case 0xFF41:
-                            return _system.GPU.STAT;
+                            return _d.GPU.STAT;
                         case 0xFF42:
-                            return _system.GPU.SCY;
+                            return _d.GPU.SCY;
                         case 0xFF43:
-                            return _system.GPU.SCX;
+                            return _d.GPU.SCX;
                         case 0xFF44:
-                            return _system.GPU.LY;
+                            return _d.GPU.LY;
                         case 0xFF45:
-                            return _system.GPU.LYC;
+                            return _d.GPU.LYC;
                         case 0xFF47:
-                            return _system.GPU.BGP;
+                            return _d.GPU.BGP;
                         case 0xFF48:
-                            return _system.GPU.OBP0;
+                            return _d.GPU.OBP0;
                         case 0xFF49:
-                            return _system.GPU.OBP1;
+                            return _d.GPU.OBP1;
                         default:
                             return 0;
                     }
@@ -76,7 +76,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     return _zram[idx - 0xFF80];
                 else if (idx == 0xFFFF)
-                    return _system.ISR.IE;
+                    return _d.ISR.IE;
 
                 throw new Exception("You may not read to this memory location.");
             }
@@ -84,17 +84,17 @@ namespace Castor.Emulator.Memory
             set
             {
                 if (idx < 0x8000)
-                    _system.Cartridge[idx] = value;
+                    _d.Cartridge[idx] = value;
                 else if (idx < 0xA000)
-                    _system.GPU[idx] = value;
+                    _d.GPU[idx] = value;
                 else if (idx < 0xC000)
-                    _system.Cartridge[idx] = value;
+                    _d.Cartridge[idx] = value;
                 else if (idx < 0xE000)
                     _wram[idx - 0xC000] = value;
                 else if (idx < 0xFE00)
                     _wram[idx - 0xE000] = value;
                 else if (idx < 0xFEA0)
-                    _system.GPU[idx] = value;
+                    _d.GPU[idx] = value;
                 else if (idx < 0xFF00)
                     return;
                 else if (idx < 0xFF4C)
@@ -102,37 +102,37 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF0F:
-                            _system.ISR.IF = value;
+                            _d.ISR.IF = value;
                             break;
                         case 0xFF40:
-                            _system.GPU.LCDC = value;
+                            _d.GPU.LCDC = value;
                             break;
                         case 0xFF41:
-                            _system.GPU.STAT = value;
+                            _d.GPU.STAT = value;
                             break;
                         case 0xFF42:
-                            _system.GPU.SCY = value;
+                            _d.GPU.SCY = value;
                             break;
                         case 0xFF43:
-                            _system.GPU.SCX = value;
+                            _d.GPU.SCX = value;
                             break;
                         case 0xFF44:
                             // this is supposed to write to LY, but ignore it
                             break;
                         case 0xFF45:
-                            _system.GPU.LYC = value;
+                            _d.GPU.LYC = value;
                             break;
                         case 0xFF46:
-                            _system.DMA.BeginOAMTransfer(value);
+                            _d.DMA.BeginOAMTransfer(value);
                             break;
                         case 0xFF47:
-                            _system.GPU.BGP = value;
+                            _d.GPU.BGP = value;
                             break;
                         case 0xFF48:
-                            _system.GPU.OBP0 = value;
+                            _d.GPU.OBP0 = value;
                             break;
                         case 0xFF49:
-                            _system.GPU.OBP1 = value;
+                            _d.GPU.OBP1 = value;
                             break;
                         default:
                             return;
@@ -145,7 +145,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _zram[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _system.ISR.IE = value;                
+                    _d.ISR.IE = value;                
             }
         }
     }
