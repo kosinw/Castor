@@ -17,9 +17,9 @@ namespace Castor.Emulator.CPU
 
     public static class CondImpl
     {
-        public static int Test(this Cond c, bool condition)
+        public static byte Test(this Cond c, bool condition)
         {
-            return condition ? (int)c : 0;
+            return condition ? (byte)c : (byte)0;
         }
     }
 }

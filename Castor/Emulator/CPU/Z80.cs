@@ -25,6 +25,17 @@ namespace Castor.Emulator.CPU
 
         public ref ushort SP => ref _registers.SP;
         public ref ushort PC => ref _registers.PC;
+
+        public ushort HLI
+        {
+            get => HL++;
+            set { HL = value; HL++; }
+        }
+        public ushort HLD
+        {
+            get => HL--;
+            set { HL = value; HL--; }
+        }
         #endregion
 
         #region Memory Accessors
@@ -42,16 +53,49 @@ namespace Castor.Emulator.CPU
                 _d.MMU[HL] = value;
             }
         }
+        public byte AddrHLI
+        {
+            get
+            {
+                InternalDelay();
+                return _d.MMU[HLI];
+            }
+
+            set
+            {
+                InternalDelay();
+                _d.MMU[HLI] = value;
+            }
+        }
+        public byte AddrHLD
+        {
+            get
+            {
+                InternalDelay();
+                return _d.MMU[HLD];
+            }
+
+            set
+            {
+                InternalDelay();
+                _d.MMU[HLD] = value;
+            }
+        }
         #endregion
 
         #region Utility Functions
-        public void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
-
-        public ushort ReadWord(int addr)
+        private void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
+        private byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
+        private void WriteByte(int addr, byte value, int delay = 1)
         {
-            InternalDelay(2);
-            return (ushort)(_d.MMU[addr + 1] << 8 | _d.MMU[addr]);
+            InternalDelay(delay);
+            _d.MMU[addr] = value;
         }
+        private ushort ReadWord(int addr, int delay = 2)
+        {
+            InternalDelay(delay);
+            return (ushort)(_d.MMU[addr + 1] << 8 | _d.MMU[addr]);
+        }        
         #endregion
 
         #region Internal Members
@@ -89,7 +133,7 @@ namespace Castor.Emulator.CPU
 
         public void DecodeStep()
         {
-            var opcode = _d.MMU[_registers.Bump()];
+            var opcode = DecodeInstruction();
 
             Decode(_d, opcode);
         }
@@ -100,9 +144,10 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public override void Load(IndirectAddress indr, byte in8)
+        public override void Load(ushort indr, byte in8, int hlAction = 0)
         {
-            throw new NotImplementedException();
+            WriteByte(indr, in8);
+            HL += (ushort)hlAction;
         }
 
         public override void Add(byte in8)
@@ -143,7 +188,7 @@ namespace Castor.Emulator.CPU
         public override void Xor(byte in8)
         {
             var result = A ^ in8;
-            F = (byte)Cond.Z.Test(result == 0);
+            F = Cond.Z.Test(result == 0);
             A = in8;
         }
 
@@ -347,6 +392,11 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
+        public override void Load16IndrSP()
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Load16HLSPe()
         {
             throw new NotImplementedException();
@@ -378,11 +428,6 @@ namespace Castor.Emulator.CPU
         }
 
         public override void Dec16(ref ushort io16)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Load16IndrSP()
         {
             throw new NotImplementedException();
         }
