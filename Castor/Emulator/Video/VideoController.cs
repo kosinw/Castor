@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Video
 {
-    public partial class VideoController : IAddressableComponent
+    public partial class VideoController
     {
         public delegate void RenderEventHandler();
         public event RenderEventHandler OnRenderEvent;
@@ -54,7 +54,7 @@ namespace Castor.Emulator.Video
         private int _wx;
         private int _wy;
 
-        private GameboySystem _system;
+        private Device _system;
         #endregion
 
         #region IO Registers
@@ -144,7 +144,7 @@ namespace Castor.Emulator.Video
         #endregion
 
         #region Constructors
-        public VideoController(GameboySystem system)
+        public VideoController(Device system)
         {
             _vram = new byte[0x2000];
             _oam = new byte[0xA0];

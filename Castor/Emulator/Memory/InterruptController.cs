@@ -8,7 +8,7 @@ namespace Castor.Emulator.Memory
 {
     public class InterruptController
     {
-        private GameboySystem _system;
+        private Device _system;
 
         public byte IF { get => (byte)_if; set => _if = (InterruptFlags)value; }
         public byte IE { get => (byte)_ie; set => _ie = (InterruptFlags)value; }
@@ -16,7 +16,7 @@ namespace Castor.Emulator.Memory
         private InterruptFlags _if;
         private InterruptFlags _ie;
 
-        public InterruptController(GameboySystem system)
+        public InterruptController(Device system)
         {
             _system = system;
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Memory
 {
-    public class BootROM : IAddressableComponent
+    public class BootROM
     {
         private byte[] _bytecode;
 

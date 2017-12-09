@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.Memory
 {
-    public class MemoryMapper : IAddressableComponent
+    public class MemoryMapper
     {
-        private GameboySystem _system;
+        private Device _system;
         private byte[] _wram;
         private byte[] _zram;
         private BootROM _bootROM = new BootROM();
 
-        private bool _mapFirst256BootROM = true;
+        private bool _enableBIOS = true;
 
-        public MemoryMapper(GameboySystem system)
+        public MemoryMapper(Device system)
         {
             _system = system;
             _wram = new byte[0x2000];
@@ -27,7 +27,7 @@ namespace Castor.Emulator.Memory
         {
             get
             {
-                if (idx < 0x0100 && _mapFirst256BootROM)
+                if (idx < 0x0100 && _enableBIOS)
                     return _bootROM[idx];
                 else if (idx < 0x8000)
                     return _system.Cartridge[idx];
@@ -139,7 +139,7 @@ namespace Castor.Emulator.Memory
                     }
                 }
                 else if (idx == 0xFF50)
-                    _mapFirst256BootROM = false;
+                    _enableBIOS = false;
                 else if (idx < 0xFF80)
                     return;
                 else if (idx < 0xFFFF)

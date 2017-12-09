@@ -191,7 +191,7 @@ namespace Castor.Emulator.CPU
         /// <summary>
         /// This is a reference to the overarching class of all components
         /// </summary>
-        private GameboySystem _system { get; set; }
+        private Device _system { get; set; }
 
         /// <summary>
         /// This is the master interrupt enable. If this isn't enabled, then no interrupts will occur.
@@ -218,7 +218,7 @@ namespace Castor.Emulator.CPU
         private Instruction[] _op = new Instruction[256];
         private Instruction[] _cb = new Instruction[256];
 
-        public Z80(GameboySystem system)
+        public Z80(Device system)
         {
             _system = system;
 

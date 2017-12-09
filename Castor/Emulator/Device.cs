@@ -7,17 +7,19 @@ using Castor.Emulator.Video;
 
 namespace Castor.Emulator
 {
-    public class GameboySystem
+    public class Device
     {
         public Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController ISR;
+        public DMAController DMA;
 
-        public GameboySystem()
+        public Device()
         {                        
             CPU = new Z80(this);
+            DMA = new DMAController(this);
             MMU = new MemoryMapper(this);
             Cartridge = null;
             GPU = new VideoController(this);
@@ -39,6 +41,7 @@ namespace Castor.Emulator
             {
                 int cycles = CPU.Step();
                 GPU.Step(cycles);
+                DMA.Step(cycles);
 
                 _counter += cycles; // need to add the cycles used up
             }

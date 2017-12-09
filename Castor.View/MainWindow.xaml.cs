@@ -14,7 +14,7 @@ namespace Castor.View
 {
     public partial class MainWindow : Window
     {
-        GameboySystem _system;
+        Device _system;
         Thread _systemThread;
 
         WriteableBitmap _writableBuffer;
@@ -30,7 +30,7 @@ namespace Castor.View
             InitializeComponent();
 
             // Initialize gameboy subsystem
-            _system = new GameboySystem();
+            _system = new Device();
 
             this.DataContext = _system;
 
@@ -64,7 +64,7 @@ namespace Castor.View
             {                
                 _systemThread.Abort();
 
-                _system = new GameboySystem();
+                _system = new Device();
                 _system.GPU.OnRenderEvent += GPU_OnRenderEvent;
             }
 
