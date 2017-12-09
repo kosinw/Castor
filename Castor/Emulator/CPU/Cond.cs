@@ -7,12 +7,11 @@ using System.Threading.Tasks;
 namespace Castor.Emulator.CPU
 {
     [Flags]
-    public enum StatusFlags : byte
+    public enum Cond : byte
     {
-        None = 0,
-        Z = (1 << 7),
-        N = (1 << 6),
-        H = (1 << 5),
-        C = (1 << 4)
+        Z = 1 << 7,
+        N = 1 << 6,
+        C = 1 << 5,
+        H = 1 << 4
     }
 }

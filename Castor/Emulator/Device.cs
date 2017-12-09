@@ -1,5 +1,5 @@
 ﻿using Castor.Emulator.Cartridge;
-using Castor.Emulator.CPU;
+using Castor.Emulator.CPULegacy;
 using Castor.Emulator.Memory;
 using System;
 using System.Drawing;
@@ -9,7 +9,7 @@ namespace Castor.Emulator
 {
     public class Device
     {
-        public Z80 CPU;
+        public CPULegacy.Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;

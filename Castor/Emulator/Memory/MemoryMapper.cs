@@ -122,8 +122,8 @@ namespace Castor.Emulator.Memory
                         case 0xFF45:
                             _system.GPU.LYC = value;
                             break;
-                        case 0xFF46: // TODO: DMA Transfer is not this easy, reimplement
-                            _system.GPU.DMATransfer((byte)(value * 0x100)); 
+                        case 0xFF46:
+                            _system.DMA.BeginOAMTransfer(value);
                             break;
                         case 0xFF47:
                             _system.GPU.BGP = value;

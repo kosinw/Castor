@@ -184,15 +184,6 @@ namespace Castor.Emulator.Video
                 }
             }
         }
-
-        public void DMATransfer(ushort sourceAddr)
-        {
-            for (int i = 0x00; i < 0x9F; ++i)
-            {
-                _system.MMU[0xFE00 + i] = _system.MMU[sourceAddr + i];
-                _system.CPU.AddWaitCycles(648); // an oam dma takes 648 cpu cycles
-            }
-        }
         #endregion
 
         private void RenderScanline()

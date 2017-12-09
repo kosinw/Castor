@@ -1,4 +1,4 @@
-﻿using Castor.Emulator.CPU;
+﻿using Castor.Emulator.CPULegacy;
 using Castor.Emulator.Video;
 using System;
 using System.Collections.Generic;

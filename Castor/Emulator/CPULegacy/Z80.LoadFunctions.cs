@@ -3,7 +3,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Castor.Emulator.CPU
+namespace Castor.Emulator.CPULegacy
 {
     public partial class Z80
     {

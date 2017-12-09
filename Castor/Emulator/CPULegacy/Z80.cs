@@ -1,9 +1,9 @@
 ﻿using Castor.Emulator.Memory;
-using Castor.Emulator.Utility;
 using System;
+using Castor.Emulator.Utility;
 using System.Linq;
 
-namespace Castor.Emulator.CPU
+namespace Castor.Emulator.CPULegacy
 {
     public partial class Z80
     {

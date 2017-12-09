@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Castor.Emulator.CPU
+namespace Castor.Emulator.CPULegacy
 {
     public partial class Z80
     {

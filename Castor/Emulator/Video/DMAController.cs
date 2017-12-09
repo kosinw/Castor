@@ -39,7 +39,7 @@ namespace Castor.Emulator.Video
 
             _cycles += cycles;
 
-            while ((_cycles / 4) - 4 >= _bytescopied)
+            while ((_cycles / 4) - 1 >= _bytescopied)
             {
                 _system.MMU[_zeroAddress + _bytescopied] = _system.MMU[_zeroAddress + _bytescopied];
                 _bytescopied++;

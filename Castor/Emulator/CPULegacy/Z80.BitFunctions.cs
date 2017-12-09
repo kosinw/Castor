@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Math = Castor.Emulator.Utility.Math;
 
-namespace Castor.Emulator.CPU
+namespace Castor.Emulator.CPULegacy
 {
     public partial class Z80
     {

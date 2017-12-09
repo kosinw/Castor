@@ -62,14 +62,14 @@
     <Compile Include="Emulator\CPU\Z80.LoadFunctions.cs" />
     <Compile Include="Emulator\Memory\InterruptController.cs" />
     <Compile Include="Emulator\CPU\StatusFlags.cs" />
-    <Compile Include="Emulator\GameboySystem.cs" />
-    <Compile Include="Emulator\IAddressableComponent.cs" />
+    <Compile Include="Emulator\Device.cs" />
     <Compile Include="Emulator\Memory\BootROM.cs" />
     <Compile Include="Emulator\Memory\InterruptFlags.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
     <Compile Include="Emulator\Utility\Math.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />
+    <Compile Include="Emulator\Video\DMAController.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
