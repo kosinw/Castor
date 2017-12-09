@@ -14,4 +14,12 @@ namespace Castor.Emulator.CPU
         C = 1 << 5,
         H = 1 << 4
     }
+
+    public static class CondImpl
+    {
+        public static int Test(this Cond c, bool condition)
+        {
+            return condition ? (int)c : 0;
+        }
+    }
 }

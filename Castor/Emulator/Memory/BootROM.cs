@@ -18,10 +18,9 @@ namespace Castor.Emulator.Memory
 
         public int Count() => _bytecode.Length;
 
-        public byte this[int idx]
+        public ref byte this[int idx]
         {
-            get => _bytecode[idx];
-            set => _bytecode[idx] = value;
+            get => ref _bytecode[idx];
         }
     }
 }

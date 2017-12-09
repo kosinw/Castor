@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Castor.Emulator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,21 +14,16 @@ namespace Castor.Emulator.Cartridge
             this._bytecode = bytecode;
         }
 
-        private byte[] _bytecode;
+        private byte[] _bytecode;        
 
-        public byte this[int idx]
+        public ref byte this[int idx]
         {
             get
             {
                 if (idx < 0x8000)
-                    return _bytecode[idx];
+                    return ref _bytecode[idx];
 
-                return 0;
-            }
-
-            set
-            {
-                return;
+                return ref Consts.NullRef;
             }
         }
 

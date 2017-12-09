@@ -25,6 +25,13 @@ namespace Castor.Emulator.CPU
         [FieldOffset(6)] public ushort HL;
 
         [FieldOffset(8)] public ushort SP;
-        [FieldOffset(10)] public ushort PC;        
+        [FieldOffset(10)] public ushort PC;
+
+        public ushort Bump(ushort times = 1)
+        {
+            var ret = PC;
+            PC += times;
+            return ret;
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFEA0)
                     return _system.GPU[idx];
                 else if (idx < 0xFF00)
-                    return 0;
+                    return Consts.NullRef;
                 else if (idx < 0xFF4C) // here we get a little more complex
                 {
                     switch (idx)

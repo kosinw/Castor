@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IA = Castor.Emulator.CPU.IndirectAddress;
 
 namespace Castor.Emulator.CPU
 {
@@ -11,6 +12,7 @@ namespace Castor.Emulator.CPU
         // --- 8-bit operations
         // 8-bit loads
         public abstract void Load(ref byte out8, byte in8);
+        public abstract void Load(IA indr, byte in8);
         // 8-bit arithmetic
         public abstract void Add(byte in8);
         public abstract void Adc(byte in8);
@@ -63,7 +65,7 @@ namespace Castor.Emulator.CPU
         // --- 16-bit operations
         // 16-bit loads
         public abstract void Load16(ref ushort io16);
-        public abstract void Load16SP();
+        public abstract void Load16IndrSP();
         public abstract void Load16SPHL();
         public abstract void Load16HLSPe();
         public abstract void Push16(ref ushort io16);
@@ -78,8 +80,7 @@ namespace Castor.Emulator.CPU
         {
             switch (op)
             {
-                // --- 8-bit operations
-                // 8-bit loads
+                #region 8-bit loads
                 case 0x7F: Load(ref d.CPU.A, d.CPU.A); break;
                 case 0x78: Load(ref d.CPU.A, d.CPU.B); break;
                 case 0x79: Load(ref d.CPU.A, d.CPU.C); break;
@@ -98,6 +99,66 @@ namespace Castor.Emulator.CPU
                 case 0x46: Load(ref d.CPU.B, d.CPU.AddrHL); break;
                 case 0x4F: Load(ref d.CPU.C, d.CPU.A); break;
                 case 0x48: Load(ref d.CPU.C, d.CPU.B); break;
+                case 0x49: Load(ref d.CPU.C, d.CPU.C); break;
+                case 0x4A: Load(ref d.CPU.C, d.CPU.D); break;
+                case 0x4B: Load(ref d.CPU.C, d.CPU.E); break;
+                case 0x4C: Load(ref d.CPU.C, d.CPU.H); break;
+                case 0x4D: Load(ref d.CPU.C, d.CPU.L); break;
+                case 0x4E: Load(ref d.CPU.C, d.CPU.AddrHL); break;
+                case 0x57: Load(ref d.CPU.D, d.CPU.A); break;
+                case 0x50: Load(ref d.CPU.D, d.CPU.B); break;
+                case 0x51: Load(ref d.CPU.D, d.CPU.C); break;
+                case 0x52: Load(ref d.CPU.D, d.CPU.D); break;
+                case 0x53: Load(ref d.CPU.D, d.CPU.E); break;
+                case 0x54: Load(ref d.CPU.D, d.CPU.H); break;
+                case 0x55: Load(ref d.CPU.D, d.CPU.L); break;
+                case 0x56: Load(ref d.CPU.D, d.CPU.AddrHL); break;
+                case 0x5F: Load(ref d.CPU.E, d.CPU.A); break;
+                case 0x58: Load(ref d.CPU.E, d.CPU.B); break;
+                case 0x59: Load(ref d.CPU.E, d.CPU.C); break;
+                case 0x5A: Load(ref d.CPU.E, d.CPU.D); break;
+                case 0x5B: Load(ref d.CPU.E, d.CPU.E); break;
+                case 0x5C: Load(ref d.CPU.E, d.CPU.H); break;
+                case 0x5D: Load(ref d.CPU.E, d.CPU.L); break;
+                case 0x5E: Load(ref d.CPU.E, d.CPU.AddrHL); break;
+                case 0x67: Load(ref d.CPU.H, d.CPU.A); break;
+                case 0x60: Load(ref d.CPU.H, d.CPU.B); break;
+                case 0x61: Load(ref d.CPU.H, d.CPU.C); break;
+                case 0x62: Load(ref d.CPU.H, d.CPU.D); break;
+                case 0x63: Load(ref d.CPU.H, d.CPU.E); break;
+                case 0x64: Load(ref d.CPU.H, d.CPU.H); break;
+                case 0x65: Load(ref d.CPU.H, d.CPU.L); break;
+                case 0x66: Load(ref d.CPU.H, d.CPU.AddrHL); break;
+                case 0x6F: Load(ref d.CPU.L, d.CPU.A); break;
+                case 0x68: Load(ref d.CPU.L, d.CPU.B); break;
+                case 0x69: Load(ref d.CPU.L, d.CPU.C); break;
+                case 0x6A: Load(ref d.CPU.L, d.CPU.D); break;
+                case 0x6B: Load(ref d.CPU.L, d.CPU.E); break;
+                case 0x6C: Load(ref d.CPU.L, d.CPU.H); break;
+                case 0x6D: Load(ref d.CPU.L, d.CPU.L); break;
+                case 0x6E: Load(ref d.CPU.L, d.CPU.AddrHL); break;
+                case 0x77: Load(IA.AddrHL, d.CPU.A); break;
+                case 0x70: Load(IA.AddrHL, d.CPU.B); break;
+                case 0x71: Load(IA.AddrHL, d.CPU.C); break;
+                case 0x72: Load(IA.AddrHL, d.CPU.D); break;
+                case 0x73: Load(IA.AddrHL, d.CPU.E); break;
+                case 0x74: Load(IA.AddrHL, d.CPU.H); break;
+                case 0x75: Load(IA.AddrHL, d.CPU.L); break;
+                #endregion
+                #region 8-bit arithmetic
+                case 0xAF: Xor(d.CPU.A); break;
+                case 0xA8: Xor(d.CPU.B); break;
+                case 0xA9: Xor(d.CPU.C); break;
+                case 0xAA: Xor(d.CPU.D); break;
+                case 0xAB: Xor(d.CPU.E); break;
+                case 0xAC: Xor(d.CPU.H); break;
+                case 0xAD: Xor(d.CPU.L); break;
+                case 0xAE: Xor(d.CPU.AddrHL); break;
+                #endregion
+                #region 16-bit loads
+                case 0x21: Load16(ref d.CPU.HL); break;
+                case 0x31: Load16(ref d.CPU.SP); break;
+                #endregion
             }
         }
     }

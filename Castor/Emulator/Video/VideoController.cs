@@ -157,31 +157,20 @@ namespace Castor.Emulator.Video
         #endregion
 
         #region Memory Mapping
-        public byte this[int idx]
+        public ref byte this[int idx]
         {
             get
             {
                 if (idx >= 0x8000 && idx < 0xA000)
                 {
-                    return _vram[idx - 0x8000];
+                    return ref _vram[idx - 0x8000];
                 }
                 else if (idx >= 0xFE00 && idx < 0xFEA0)
                 {
-                    return _oam[idx - 0xFE00];
+                    return ref _oam[idx - 0xFE00];
                 }
 
                 throw new Exception("This memory address should not be mapped to this component.");
-            }
-            set
-            {
-                if (idx >= 0x8000 && idx < 0xA000)
-                {
-                    _vram[idx - 0x8000] = value;
-                }
-                else if (idx >= 0xFE00 && idx < 0xFEA0)
-                {
-                    _oam[idx - 0xFE00] = value;
-                }
             }
         }
         #endregion

@@ -11,6 +11,6 @@ namespace Castor.Emulator.Cartridge
         void SwitchROMBank(byte index);
         void SetMemoryModel(byte value);
         string Title { get; }
-        byte this[int idx] { get; set; }
+        ref byte this[int idx] { get; }
     }
 }
