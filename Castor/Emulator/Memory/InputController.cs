@@ -19,7 +19,7 @@ namespace Castor.Emulator.Memory
                 byte header = (byte)((byte)_selectedKeys << 4);
                 byte body = 0;
 
-                if (!_selectedKeys.HasFlag(SelectedKeys.Buttons))
+                if (_selectedKeys.HasFlag(SelectedKeys.Buttons))
                 {
                     body |= (byte)(body | (byte)JoypadSelectState.A);
                     body |= (byte)(body | (byte)JoypadSelectState.B);
@@ -27,7 +27,7 @@ namespace Castor.Emulator.Memory
                     body |= (byte)(body | (byte)JoypadSelectState.Start);
                 }
 
-                if (!_selectedKeys.HasFlag(SelectedKeys.Direction))
+                if (_selectedKeys.HasFlag(SelectedKeys.Direction))
                 {
                     body |= (byte)(body | (byte)JoypadSelectState.Down);
                     body |= (byte)(body | (byte)JoypadSelectState.Up);
@@ -40,7 +40,7 @@ namespace Castor.Emulator.Memory
 
             set
             {
-                byte header = (byte)(~((value >> 4) & 0b11) & 0b11);
+                byte header = (byte)(~(value >> 4) & 0b11);
 
                 _selectedKeys |= (SelectedKeys)header;
             }
