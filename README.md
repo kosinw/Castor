@@ -1,26 +1,22 @@
 # Castor
 
-Castor is a Gameboy project written using .NET Framework, C#, and WPF. The primary purpose of this project is to learn about emulator systems and low-level operations.
+Castor is a Gameboy interpreter written using .NET Framework, C#, and WPF. The primary purpose of this project is to learn about emulator systems and low-level operations.
 
 # Implemented Features
-* all load/move instructions
-* all jump instructions
-* all control instructions
+* partial CPU decoding
 * background rendering
 * working ui using wpf
 * oam dma support
-* enough instructions for boot rom to complete
-* interrupts
+* functional bootrom
+* window rendering
 
 # Unimplemented Features
-* refactoring of dma, interrupts, and opcodes
-* all alu instructions
-* all bitwise instructions
+* complete CPU decoding
+* any type of testing
 * input
 * timers
-* other mbcs besides mbc0
+* cartridge types
 * oam support (sprites)
-* window rendering support
 * audio
 
 # Resources used:
@@ -31,3 +27,4 @@ Castor is a Gameboy project written using .NET Framework, C#, and WPF. The prima
 * [Gameboy Bootstrap ROM](http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM) - A dissassembly of the Gameboy's boot rom.
 * [Mooneye GB](https://github.com/Gekkio/mooneye-gb) - A Game Boy research project and emulator written in Rust.
 * [Emulation accuracy](https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown) - A markdown talking about questions about certain specifics of the gameboy.
+* [GameBoy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Assembly Language Commands, Timings and Opcodes, and everything you always wanted to know about GB but were afraid to ask.
