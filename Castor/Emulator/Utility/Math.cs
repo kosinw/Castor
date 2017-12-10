@@ -38,7 +38,7 @@ namespace Castor.Emulator.Utility
 
         public static class Add
         {
-            public static byte Addt(byte value, ref Registers R)
+            public static byte Add8(byte value, ref Registers R)
             {
                 var result = (byte)(R.A + value);
 
@@ -46,6 +46,17 @@ namespace Castor.Emulator.Utility
                 Bit.AlterFlag(ref R.F, Cond.N, false);
                 Bit.AlterFlag(ref R.F, Cond.H, result % 16 == 0);
                 Bit.AlterFlag(ref R.F, Cond.C, (result & 0xFF) < (value & 0xFF));
+
+                return result;
+            }
+
+            public static ushort Add16(ushort value, ref Registers R)
+            {
+                var result = (ushort)(R.HL + value);
+
+                Bit.AlterFlag(ref R.F, Cond.N, false);
+                Bit.AlterFlag(ref R.F, Cond.H, result % 256 == 0);
+                Bit.AlterFlag(ref R.F, Cond.C, (result & 0xFFFF) < (value & 0xFFFF));
 
                 return result;
             }
@@ -69,6 +80,18 @@ namespace Castor.Emulator.Utility
             Bit.AlterFlag(ref R.F, Cond.Z, result == 0);
             Bit.AlterFlag(ref R.F, Cond.N, false);
             Bit.AlterFlag(ref R.F, Cond.H, false);
+            Bit.AlterFlag(ref R.F, Cond.C, false);
+
+            return result;
+        }
+
+        public static byte And(byte in8, ref Registers R)
+        {
+            var result = (byte)(R.A & in8);
+
+            Bit.AlterFlag(ref R.F, Cond.Z, result == 0);
+            Bit.AlterFlag(ref R.F, Cond.N, false);
+            Bit.AlterFlag(ref R.F, Cond.H, true);
             Bit.AlterFlag(ref R.F, Cond.C, false);
 
             return result;

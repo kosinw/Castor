@@ -75,5 +75,19 @@ namespace Castor.Emulator.Utility
 
             return result;
         }
+
+        public static byte Swap(byte v, ref byte F)
+        {
+            var hi = (v >> 4) & 0xF;
+            var lo = (v >> 0) & 0xF;
+            var result = (byte)(lo << 4 | hi);
+
+            AlterFlag(ref F, Cond.Z, result == 0);
+            AlterFlag(ref F, Cond.N, false);
+            AlterFlag(ref F, Cond.H, false);
+            AlterFlag(ref F, Cond.C, false);
+
+            return result;
+        }
     }
 }

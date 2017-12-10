@@ -121,6 +121,7 @@ namespace Castor.Emulator.CPU
                 case 0xA4: And(H); break;
                 case 0xA5: And(L); break;
                 case 0xA6: And(AddrHL); break;
+                case 0xE6: And(Imm8()); break;
                 case 0xAF: Xor(A); break;
                 case 0xA8: Xor(B); break;
                 case 0xA9: Xor(C); break;
@@ -161,8 +162,17 @@ namespace Castor.Emulator.CPU
                 case 0x20: Jr(Cond.NZ); break;
                 case 0x28: Jr(Cond.Z); break;
                 case 0xC3: Jp(); break;
+                case 0xE9: JpHL(); break;
                 case 0xCD: Call(); break;
                 case 0xC9: Ret(); break;
+                case 0xC7: Rst(0x00); break;
+                case 0xCF: Rst(0x08); break;
+                case 0xD7: Rst(0x10); break;
+                case 0xDF: Rst(0x18); break;
+                case 0xE7: Rst(0x20); break;
+                case 0xEF: Rst(0x28); break;
+                case 0xF7: Rst(0x30); break;
+                case 0xFF: Rst(0x38); break;
                 #endregion
                 #region Miscellaneous
                 case 0x00: Nop(); break;
@@ -194,6 +204,10 @@ namespace Castor.Emulator.CPU
                 case 0x1B: Dec16(ref DE); break;
                 case 0x2B: Dec16(ref HL); break;
                 case 0x3B: Dec16(ref SP); break;
+                case 0x09: Add16(BC); break;
+                case 0x19: Add16(DE); break;
+                case 0x29: Add16(HL); break;
+                case 0x39: Add16(SP); break;
                 #endregion
 
                 default: Unimplemented(d, op); break;
@@ -206,6 +220,16 @@ namespace Castor.Emulator.CPU
             {
                 #region Rotate Left
                 case 0x11: Rl(ref C); break;
+                #endregion
+                #region Swap
+                case 0x37: Swap(ref A); break;
+                case 0x30: Swap(ref B); break;
+                case 0x31: Swap(ref C); break;
+                case 0x32: Swap(ref D); break;
+                case 0x33: Swap(ref E); break;
+                case 0x34: Swap(ref H); break;
+                case 0x35: Swap(ref L); break;
+                case 0x36: SwapHL(); break;
                 #endregion
                 #region Bit
                 case 0x7C: Bit(7, H); break;

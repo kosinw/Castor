@@ -202,7 +202,7 @@ namespace Castor.Emulator.CPU
 
         public void Add(byte in8)
         {
-            A = Utility.Math.Add.Addt(in8, ref _registers);
+            A = Utility.Math.Add.Add8(in8, ref _registers);
         }
 
         public void Adc(byte in8)
@@ -227,7 +227,7 @@ namespace Castor.Emulator.CPU
 
         public void And(byte in8)
         {
-            throw new NotImplementedException();
+            A = Utility.Math.And(in8, ref _registers);
         }
 
         public void Or(byte in8)
@@ -322,7 +322,12 @@ namespace Castor.Emulator.CPU
 
         public void Swap(ref byte io8)
         {
-            throw new NotImplementedException();
+            io8 = Utility.Bit.Swap(io8, ref _registers.F);
+        }
+
+        public void SwapHL()
+        {
+            AddrHL = Utility.Bit.Swap(AddrHL, ref _registers.F);
         }
 
         public void Bit(int num, byte in8)
@@ -349,7 +354,7 @@ namespace Castor.Emulator.CPU
 
         public void JpHL()
         {
-            throw new NotImplementedException();
+            PC = HL;
         }
 
         public void Jr()
@@ -405,7 +410,9 @@ namespace Castor.Emulator.CPU
 
         public void Rst(byte vec)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+            WriteWord(SP, PC);
+            PC = vec;
         }
 
         public void Halt()
@@ -487,9 +494,9 @@ namespace Castor.Emulator.CPU
             io16 = Pop();
         }
 
-        public void Add16(ref ushort io16)
+        public void Add16(ushort io16)
         {
-            throw new NotImplementedException();
+            HL = Utility.Math.Add.Add16(io16, ref _registers);
         }
 
         public void Add16SPe()
