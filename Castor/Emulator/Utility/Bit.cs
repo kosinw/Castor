@@ -19,9 +19,9 @@ namespace Castor.Emulator.Utility
             return Convert.ToByte((d16 >> 0) & 0xFF);
         }
 
-        public static byte Value(byte d8, uint index, ref byte F)
+        public static byte Value(byte d8, int index, ref byte F)
         {
-            var result = (byte)(d8 >> (int)index & 1);
+            var result = (byte)((d8 >> index) & 1);
 
             AlterFlag(ref F, Cond.Z, result == 0);
             AlterFlag(ref F, Cond.N, false);
@@ -32,7 +32,7 @@ namespace Castor.Emulator.Utility
 
         private static byte BitValue(byte d8, int index)
         {
-            return (byte)(d8 >> index & 1);
+            return (byte)((d8 >> index) & 1);
         }
 
         public static void AlterFlag(ref byte F, Cond cond, bool parameter)
@@ -49,24 +49,17 @@ namespace Castor.Emulator.Utility
             byte bit7 = BitValue(v, 7);
             byte carryFlag = BitValue(F, 4); // index 4 is carry flag
 
-            
+
             AlterFlag(ref F, Cond.N, false);
             AlterFlag(ref F, Cond.H, false);
-            AlterFlag(ref F, Cond.C, bit7 == 1);            
+            AlterFlag(ref F, Cond.C, bit7 == 1);
 
             result <<= 1;
 
             if (carry)
-            {
-                if (carryFlag != 0)
-                    result += 1;
-                
-            }
+                result |= carryFlag;
             else
-            {
-                if (bit7 != 0)
-                    result += 1;
-            }
+                result |= bit7;
 
             AlterFlag(ref F, Cond.Z, result == 0);
 

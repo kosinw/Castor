@@ -52,6 +52,7 @@ namespace Castor.Emulator.CPU
                 case 0x54: Load(ref D, H); break;
                 case 0x55: Load(ref D, L); break;
                 case 0x56: Load(ref D, AddrHL); break;
+                case 0x16: Load(ref D, Imm8()); break;
                 case 0x5F: Load(ref E, A); break;
                 case 0x58: Load(ref E, B); break;
                 case 0x59: Load(ref E, C); break;
@@ -77,6 +78,7 @@ namespace Castor.Emulator.CPU
                 case 0x6C: Load(ref L, H); break;
                 case 0x6D: Load(ref L, L); break;
                 case 0x6E: Load(ref L, AddrHL); break;
+                case 0x2E: Load(ref L, Imm8()); break;
                 case 0x77: Load(HL, A); break;
                 case 0x70: Load(HL, B); break;
                 case 0x71: Load(HL, C); break;
@@ -132,9 +134,27 @@ namespace Castor.Emulator.CPU
                 case 0xB4: Or(H); break;
                 case 0xB5: Or(L); break;
                 case 0xB6: Or(AddrHL); break;
+                case 0x87: Add(A); break;
+                case 0x80: Add(B); break;
+                case 0x81: Add(C); break;
+                case 0x82: Add(D); break;
+                case 0x83: Add(E); break;
+                case 0x84: Add(H); break;
+                case 0x85: Add(L); break;
+                case 0x86: Add(AddrHL); break;
+                case 0x97: Sub(A); break;
+                case 0x90: Sub(B); break;
+                case 0x91: Sub(C); break;
+                case 0x92: Sub(D); break;
+                case 0x93: Sub(E); break;
+                case 0x94: Sub(H); break;
+                case 0x95: Sub(L); break;
+                case 0x96: Sub(AddrHL); break;
+                case 0xBE: Cp(AddrHL); break;
                 case 0xFE: Cp(Imm8()); break;
                 #endregion
                 #region Control
+                case 0x18: Jr(); break;
                 case 0x20: Jr(Cond.NZ); break;
                 case 0x28: Jr(Cond.Z); break;
                 case 0xCD: Call(); break;

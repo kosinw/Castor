@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
-    public partial class Z80
+    public partial class Z80 : ICPU
     {
         #region References
         public ref byte A => ref _registers.A;
@@ -178,7 +178,7 @@ namespace Castor.Emulator.CPU
 
         public void DecodeStep()
         {
-            if (PC == 0xa7)
+            if (PC == 0xa3)
             {
                 ;
             }
@@ -201,7 +201,7 @@ namespace Castor.Emulator.CPU
 
         public void Add(byte in8)
         {
-            throw new NotImplementedException();
+            A = Utility.Math.Add.Addt(in8, ref _registers);
         }
 
         public void Adc(byte in8)
@@ -211,7 +211,7 @@ namespace Castor.Emulator.CPU
 
         public void Sub(byte in8)
         {
-            throw new NotImplementedException();
+            A = Utility.Math.Sub.Subt(in8, ref _registers);
         }
 
         public void Sbc(byte in8)
@@ -324,7 +324,7 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void Bit(uint num, byte in8)
+        public void Bit(int num, byte in8)
         {
             Utility.Bit.Value(in8, num, ref _registers.F);
         }
@@ -351,7 +351,10 @@ namespace Castor.Emulator.CPU
 
         public void Jr()
         {
-            throw new NotImplementedException();
+            var offset = (sbyte)ReadByte(_registers.Bump());
+            ushort value = (ushort)(PC + offset);
+
+            Jump(value);
         }
 
         public void Call()

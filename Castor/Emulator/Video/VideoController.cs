@@ -54,7 +54,7 @@ namespace Castor.Emulator.Video
         private int _wx;
         private int _wy;
 
-        private Device _system;
+        private Device _d;
         #endregion
 
         #region IO Registers
@@ -148,7 +148,7 @@ namespace Castor.Emulator.Video
         {
             _vram = new byte[0x2000];
             _oam = new byte[0xA0];
-            _system = system;
+            _d = system;
             _line = 0;
             _mode = 2;
             _modeclock = 0;
@@ -157,20 +157,31 @@ namespace Castor.Emulator.Video
         #endregion
 
         #region Memory Mapping
-        public ref byte this[int idx]
+        public byte this[int idx]
         {
             get
             {
                 if (idx >= 0x8000 && idx < 0xA000)
                 {
-                    return ref _vram[idx - 0x8000];
+                    return _vram[idx - 0x8000];
                 }
                 else if (idx >= 0xFE00 && idx < 0xFEA0)
                 {
-                    return ref _oam[idx - 0xFE00];
+                    return _oam[idx - 0xFE00];
                 }
 
                 throw new Exception("This memory address should not be mapped to this component.");
+            }
+            set
+            {
+                if (idx >= 0x8000 && idx < 0xA000)
+                {
+                    _vram[idx - 0x8000] = value;
+                }
+                else if (idx >= 0xFE00 && idx < 0xFEA0)
+                {
+                    _oam[idx - 0xFE00] = value;
+                }
             }
         }
         #endregion
@@ -180,6 +191,9 @@ namespace Castor.Emulator.Video
             // Check if Bit0 (BG Display Flag) is set
             if (_lcdc.BitValue(0) == 1)
                 RenderBackground();
+            else
+                Array.Clear(_framebuffer, 0, _framebuffer.Length);
+
             if (_lcdc.BitValue(1) == 1)
                 RenderSprites();
         }
@@ -237,9 +251,9 @@ namespace Castor.Emulator.Video
                 // Here find the index of the tile that will be rendered
                 int tileIdx = 0;
                 if (usingSignedIndices)
-                    tileIdx = (sbyte)_system.MMU[tileAddress];
+                    tileIdx = (sbyte)_d.MMU[tileAddress];
                 else
-                    tileIdx = (byte)_system.MMU[tileAddress];
+                    tileIdx = (byte)_d.MMU[tileAddress];
 
                 // Here find start location of the tile by index
                 int tileLocation = 0;
@@ -252,8 +266,8 @@ namespace Castor.Emulator.Video
                 int vline = yPosition % 8; // Each tile is 8 pixels high
                 vline *= 2; // Each line takes up two bytes
 
-                byte b1 = _system.MMU[tileDataZero + tileLocation + vline]; // read the first half of the line
-                byte b2 = _system.MMU[tileDataZero + tileLocation + vline + 1]; // read the second half of the line
+                byte b1 = _d.MMU[tileDataZero + tileLocation + vline]; // read the first half of the line
+                byte b2 = _d.MMU[tileDataZero + tileLocation + vline + 1]; // read the second half of the line
 
                 int currentBit = 7 - (xPosition % 8); // the most significant bit is the first bit rendered
                 int colorValue = 2 * b1.BitValue(currentBit) + b2.BitValue(currentBit);
@@ -293,7 +307,7 @@ namespace Castor.Emulator.Video
 
                         // handle h-blank interrupt if stat bit 3
                         if (_stat.BitValue(3) == 1)
-                            _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                            _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                     }
                     break;
 
@@ -309,7 +323,7 @@ namespace Castor.Emulator.Video
                         {
                             // trigger lcd stat interrupt if bit 6 is set
                             if (_stat.BitValue(6) == 1)
-                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
 
                             _stat.SetBit(2);
                         }
@@ -322,11 +336,11 @@ namespace Castor.Emulator.Video
                             _mode = 1;
                             OnRenderEvent();
 
-                            _system.ISR.EnableInterrupt(InterruptFlags.VBlank);
+                            _d.ISR.EnableInterrupt(InterruptFlags.VBlank);
 
                             // trigger another interrupt if stat bit 3 is set
                             if (_stat.BitValue(4) == 1)
-                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                         else // otherwise just enter OAM read
                         {
@@ -334,7 +348,7 @@ namespace Castor.Emulator.Video
 
                             // handle oam interrupt if stat bit 5 is set
                             if (_stat.BitValue(5) == 1)
-                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }
                     break;
@@ -356,7 +370,7 @@ namespace Castor.Emulator.Video
 
                             // handle oam interrupt if stat bit 5 is set
                             if (_stat.BitValue(5) == 1)
-                                _system.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }
                     break;

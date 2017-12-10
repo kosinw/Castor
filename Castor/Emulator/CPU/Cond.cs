@@ -12,10 +12,10 @@ namespace Castor.Emulator.CPU
         Z = 1 << 7,
         N = 1 << 6,
         H = 1 << 5,
-        C = 1 << 4,    
-        
-        NZ = 1 << 7,
-        NC = 1 << 4
+        C = 1 << 4,
+
+        NZ,
+        NC
     }
 
     public static class CondImpl
@@ -27,10 +27,25 @@ namespace Castor.Emulator.CPU
 
         public static bool FlagSet(this Cond c, byte F)
         {
-            var ret = ((byte)c & F) == (byte)c;
+            bool ret = false;
+            var newCond = c;
+
+            if (c == Cond.NZ)
+            {
+                newCond = Cond.Z;
+            }
+
+            if (c == Cond.NC)
+            {
+                newCond = Cond.C;
+            }
+
+            ret = ((byte)newCond & F) == (byte)newCond;
 
             if (c == Cond.NZ || c == Cond.NC)
+            {
                 ret = !ret;
+            }
 
             return ret;
         }

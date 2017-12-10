@@ -79,7 +79,7 @@ namespace Castor.Emulator.Utility
                 Bit.AlterFlag(ref R.F, Cond.Z, result == 0);
                 Bit.AlterFlag(ref R.F, Cond.N, true);
                 Bit.AlterFlag(ref R.F, Cond.H, result % 16 == 15);
-                Bit.AlterFlag(ref R.C, Cond.C, (result & 0xFF) > (value & 0xFF));
+                Bit.AlterFlag(ref R.F, Cond.C, (result & 0xFF) > (value & 0xFF));
 
                 return result;
             }
@@ -87,6 +87,18 @@ namespace Castor.Emulator.Utility
 
         public static class Add
         {
+            public static byte Addt(byte value, ref Registers R)
+            {
+                var result = (byte)(R.A + value);
+
+                Bit.AlterFlag(ref R.F, Cond.Z, result == 0);
+                Bit.AlterFlag(ref R.F, Cond.N, false);
+                Bit.AlterFlag(ref R.F, Cond.H, result % 16 == 0);
+                Bit.AlterFlag(ref R.F, Cond.C, (result & 0xFF) < (value & 0xFF));
+
+                return result;
+            }
+
             public static byte Inc(byte value, ref byte F)
             {
                 var result = (byte)(value + 1);
