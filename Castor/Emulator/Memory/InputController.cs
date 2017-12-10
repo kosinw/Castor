@@ -4,16 +4,53 @@ namespace Castor.Emulator.Memory
 {
     public class InputController
     {
-        JoypadSelectState _selected;
+        JoypadSelectState _pressedKeys;
         GamePadState _gamepad;
         KeyboardState _keyboard;
-        bool usingGamepad;
+        SelectedKeys _selectedKeys;
+        bool usingGamepad;        
         int _gamepadIndex;
+
+        
+        public byte P1
+        {
+            get
+            {
+                byte header = (byte)((byte)_selectedKeys << 4);
+                byte body = 0;
+
+                if (!_selectedKeys.HasFlag(SelectedKeys.Buttons))
+                {
+                    body |= (byte)(body | (byte)JoypadSelectState.A);
+                    body |= (byte)(body | (byte)JoypadSelectState.B);
+                    body |= (byte)(body | (byte)JoypadSelectState.Select);
+                    body |= (byte)(body | (byte)JoypadSelectState.Start);
+                }
+
+                if (!_selectedKeys.HasFlag(SelectedKeys.Direction))
+                {
+                    body |= (byte)(body | (byte)JoypadSelectState.Down);
+                    body |= (byte)(body | (byte)JoypadSelectState.Up);
+                    body |= (byte)(body | (byte)JoypadSelectState.Left);
+                    body |= (byte)(body | (byte)JoypadSelectState.Right);
+                }
+                
+                return (byte)~(header | body);
+            }
+
+            set
+            {
+                byte header = (byte)(~((value >> 4) & 0b11) & 0b11);
+
+                _selectedKeys |= (SelectedKeys)header;
+            }
+        }
 
         public InputController()
         {
-            _selected = JoypadSelectState.None;
+            _pressedKeys = JoypadSelectState.None;
             usingGamepad = false;
+            _selectedKeys = SelectedKeys.Buttons | SelectedKeys.Direction;
         }
 
         public void Initialize()

@@ -47,6 +47,8 @@ namespace Castor.Emulator.Memory
                 {
                     switch (idx)
                     {
+                        case 0xFF00:
+                            return _d.IN.P1;
                         case 0xFF0F:
                             return _d.ISR.IF;
                         case 0xFF40:
@@ -101,6 +103,9 @@ namespace Castor.Emulator.Memory
                 {
                     switch (idx)
                     {
+                        case 0xFF00:
+                            _d.IN.P1 = value;
+                            break;
                         case 0xFF0F:
                             _d.ISR.IF = value;
                             break;
