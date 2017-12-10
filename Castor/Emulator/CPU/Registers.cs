@@ -10,14 +10,17 @@ namespace Castor.Emulator.CPU
     [StructLayout(LayoutKind.Explicit)]
     public struct Registers
     {
-        [FieldOffset(0)] public byte A;
-        [FieldOffset(1)] public byte F;
-        [FieldOffset(2)] public byte B;
-        [FieldOffset(3)] public byte C;
-        [FieldOffset(4)] public byte D;
-        [FieldOffset(5)] public byte E;
-        [FieldOffset(6)] public byte H;
-        [FieldOffset(7)] public byte L;
+        [FieldOffset(1)] public byte A;
+        [FieldOffset(0)] public byte F;
+
+        [FieldOffset(3)] public byte B;
+        [FieldOffset(2)] public byte C;
+
+        [FieldOffset(5)] public byte D;
+        [FieldOffset(4)] public byte E;
+
+        [FieldOffset(7)] public byte H;
+        [FieldOffset(6)] public byte L;
 
         [FieldOffset(0)] public ushort AF;
         [FieldOffset(2)] public ushort BC;

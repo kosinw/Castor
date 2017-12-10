@@ -41,7 +41,7 @@ namespace Castor.Emulator
             for (int _counter = 0; _counter < 70_224;)
             {
                 int cycles = CPU.Step();
-                GPU.Step(cycles);
+                GPU.Step(cycles);                               
                 DMA.Step(cycles);
 
                 _counter += cycles; // need to add the cycles used up

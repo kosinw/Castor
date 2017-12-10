@@ -180,8 +180,6 @@ namespace Castor.Emulator.Video
             // Check if Bit0 (BG Display Flag) is set
             if (_lcdc.BitValue(0) == 1)
                 RenderBackground();
-            else
-                Array.Clear(_framebuffer, 0, _framebuffer.Length);
             if (_lcdc.BitValue(1) == 1)
                 RenderSprites();
         }

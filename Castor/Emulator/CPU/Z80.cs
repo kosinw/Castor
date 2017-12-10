@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Castor.Emulator.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
-    public class Z80 : OpcodeBuilder
+    public partial class Z80
     {
         #region References
         public ref byte A => ref _registers.A;
@@ -25,17 +26,6 @@ namespace Castor.Emulator.CPU
 
         public ref ushort SP => ref _registers.SP;
         public ref ushort PC => ref _registers.PC;
-
-        public ushort HLI
-        {
-            get => HL++;
-            set { HL = value; HL++; }
-        }
-        public ushort HLD
-        {
-            get => HL--;
-            set { HL = value; HL--; }
-        }
         #endregion
 
         #region Memory Accessors
@@ -58,13 +48,13 @@ namespace Castor.Emulator.CPU
             get
             {
                 InternalDelay();
-                return _d.MMU[HLI];
+                return _d.MMU[HL++];
             }
 
             set
             {
                 InternalDelay();
-                _d.MMU[HLI] = value;
+                _d.MMU[HL++] = value;
             }
         }
         public byte AddrHLD
@@ -72,24 +62,34 @@ namespace Castor.Emulator.CPU
             get
             {
                 InternalDelay();
-                return _d.MMU[HLD];
+                return _d.MMU[HL--];
             }
 
             set
             {
                 InternalDelay();
-                _d.MMU[HLD] = value;
+                _d.MMU[HL--] = value;
             }
         }
-        public byte Imm8
-        {
-            get => ReadByte(_registers.Bump());
-            set => WriteByte(_registers.Bump(), value);
-        }        
         public byte ZeroPageC
         {
             get => ReadByte(C + 0xFF00);
             set => WriteByte(C + 0xFF00, value);
+        }
+        public byte ZeroPage
+        {
+            get => ReadByte(Imm8() + 0xFF00);
+            set => WriteByte(Imm8() + 0xFF00, value);
+        }
+        public byte AddrBC
+        {
+            get => ReadByte(BC);
+            set => WriteByte(BC, value);
+        }
+        public byte AddrDE
+        {
+            get => ReadByte(DE);
+            set => WriteByte(DE, value);
         }
         #endregion
 
@@ -111,15 +111,40 @@ namespace Castor.Emulator.CPU
             InternalDelay(delay);
             return (ushort)(_d.MMU[addr + 1] << 8 | _d.MMU[addr]);
         }
+        private void WriteWord(int addr, ushort value, int delay = 2)
+        {
+            InternalDelay(delay);
+            _d.MMU[addr] = value.LSB();
+            _d.MMU[addr + 1] = value.MSB();
+        }
         private void Jump(ushort value)
         {
             InternalDelay();
             PC = value;
         }
+        private void Push(ushort value)
+        {
+            SP -= 2;
+            WriteWord(SP, value);
+        }
+        private ushort Pop()
+        {
+            var ret = ReadWord(SP);
+            SP += 2;
+            return ret;
+        }
+        private byte Imm8()
+        {
+            return ReadByte(_registers.Bump());
+        }
+        private ushort Imm16()
+        {
+            return ReadWord(_registers.Bump(2));
+        }
         #endregion
 
         #region Internal Members
-        private Registers _registers;        
+        private Registers _registers;
         private Device _d;
 
         private int _cycles;
@@ -153,312 +178,323 @@ namespace Castor.Emulator.CPU
 
         public void DecodeStep()
         {
+            if (PC == 0xa7)
+            {
+                ;
+            }
             var opcode = DecodeInstruction();
 
             Decode(_d, opcode);
         }
 
         #region Opcode Methods
-        public override void Load(ref byte out8, byte in8)
+        public void Load(ref byte out8, byte in8)
         {
             out8 = in8;
         }
 
-        public override void Load(int indr, byte in8, int hlAction = 0)
+        public void Load(int indr, byte in8, int hlAction = 0)
         {
             WriteByte(indr, in8);
             HL += (ushort)hlAction;
         }
 
-        public override void Add(byte in8)
+        public void Add(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Adc(byte in8)
+        public void Adc(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Sub(byte in8)
+        public void Sub(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Sbc(byte in8)
+        public void Sbc(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Cp(byte in8)
+        public void Cp(byte in8)
+        {
+            Utility.Math.Sub.Subt(in8, ref _registers);
+        }
+
+        public void And(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void And(byte in8)
+        public void Or(byte in8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Or(byte in8)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Xor(byte in8)
+        public void Xor(byte in8)
         {
             var result = A ^ in8;
             F = Cond.Z.Test(result == 0);
             A = in8;
         }
 
-        public override void Inc(ref byte io8)
+        public void Inc(ref byte io8)
         {
             io8 = Utility.Math.Add.Inc(io8, ref _registers.F);
         }
 
-        public override void Inc(int indr)
+        public void Inc(int indr)
         {
             var in8 = ReadByte(indr);
-            WriteByte(indr, Utility.Math.Add.Inc(in8,, ref _registers.F));
+            WriteByte(indr, Utility.Math.Add.Inc(in8, ref _registers.F));
         }
 
-        public override void Dec(ref byte io8)
+        public void Dec(ref byte io8)
+        {
+            io8 = Utility.Math.Sub.Dec(io8, ref _registers.F);
+        }
+
+        public void Dec(int indr)
+        {
+            var in8 = ReadByte(indr);
+            WriteByte(indr, Utility.Math.Sub.Dec(in8, ref _registers.F));
+        }
+
+        public void Rlca()
         {
             throw new NotImplementedException();
         }
 
-        public override void Rlca()
+        public void Rla()
+        {
+            A = Utility.Bit.Rl(A, ref F, true);
+            F &= (byte)~Cond.Z; // unset the zero flag
+        }
+
+        public void Rrca()
         {
             throw new NotImplementedException();
         }
 
-        public override void Rla()
+        public void Rra()
         {
             throw new NotImplementedException();
         }
 
-        public override void Rrca()
+        public void Rlc(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rra()
+        public void Rl(ref byte io8)
+        {
+            io8 = Utility.Bit.Rl(io8, ref F, true);
+        }
+
+        public void Rrc(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rlc(ref byte io8)
+        public void Rr(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rl(ref byte io8)
+        public void Sla(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rrc(ref byte io8)
+        public void Sra(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rr(ref byte io8)
+        public void Srl(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Sla(ref byte io8)
+        public void Swap(ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Sra(ref byte io8)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Srl(ref byte io8)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Swap(ref byte io8)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Bit(uint num, byte in8)
+        public void Bit(uint num, byte in8)
         {
             Utility.Bit.Value(in8, num, ref _registers.F);
         }
 
-        public override void Set(uint num, ref byte io8)
+        public void Set(uint num, ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Res(uint num, ref byte io8)
+        public void Res(uint num, ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public override void Jp()
+        public void Jp()
         {
             throw new NotImplementedException();
         }
 
-        public override void JpHL()
+        public void JpHL()
         {
             throw new NotImplementedException();
         }
 
-        public override void Jr()
+        public void Jr()
         {
             throw new NotImplementedException();
         }
 
-        public override void Call()
+        public void Call()
+        {
+            ushort addr = ReadWord(_registers.Bump(2)); // memory access low + hi byte (2 M-cycles)
+            InternalDelay(); // extra internal delay (1 M-cycle)
+            Push(PC); // memory access pc hi + low byte (2 M-cycles);
+            PC = addr;
+        }
+
+        public void Ret()
+        {
+            InternalDelay();
+            PC = Pop();
+        }
+
+        public void Reti()
         {
             throw new NotImplementedException();
         }
 
-        public override void Ret()
+        public void Jp(Cond cond)
         {
             throw new NotImplementedException();
         }
 
-        public override void Reti()
+        public void Jr(Cond cond)
         {
-            throw new NotImplementedException();
-        }
+            var offset = (sbyte)ReadByte(_registers.Bump());
+            ushort value = (ushort)(PC + offset);
 
-        public override void Jp(Cond cond)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Jr(Cond cond)
-        {
-            ushort value = (ushort)((sbyte)ReadByte(_registers.Bump()) + PC);
-
-            if (cond == Cond.NC || cond == Cond.NZ)
-            {
-                if (!((Cond)_registers.F).HasFlag(cond))
-                    Jump(value);
-            }
-            else if (((Cond)_registers.F).HasFlag(cond))
-            {
+            if (cond.FlagSet(F))
                 Jump(value);
-            }
         }
 
-        public override void Call(Cond cond)
+        public void Call(Cond cond)
         {
             throw new NotImplementedException();
         }
 
-        public override void Ret(Cond cond)
+        public void Ret(Cond cond)
         {
             throw new NotImplementedException();
         }
 
-        public override void Rst(byte vec)
+        public void Rst(byte vec)
         {
             throw new NotImplementedException();
         }
 
-        public override void Halt()
+        public void Halt()
         {
             throw new NotImplementedException();
         }
 
-        public override void Stop()
+        public void Stop()
         {
             throw new NotImplementedException();
         }
 
-        public override void Di()
+        public void Di()
         {
             throw new NotImplementedException();
         }
 
-        public override void Ei()
+        public void Ei()
         {
             throw new NotImplementedException();
         }
 
-        public override void Ccf()
+        public void Ccf()
         {
             throw new NotImplementedException();
         }
 
-        public override void Scf()
+        public void Scf()
         {
             throw new NotImplementedException();
         }
 
-        public override void Nop()
+        public void Nop()
         {
             throw new NotImplementedException();
         }
 
-        public override void Daa()
+        public void Daa()
         {
             throw new NotImplementedException();
         }
 
-        public override void Cpl()
+        public void Cpl()
         {
             throw new NotImplementedException();
         }
 
-        public override void Load16(ref ushort io16)
+        public void Load16(ref ushort io16)
         {
             io16 = ReadWord(_registers.Bump(2));
         }
 
-        public override void Load16SPHL()
+        public void Load16SPHL()
         {
             throw new NotImplementedException();
         }
 
-        public override void Load16IndrSP()
+        public void Load16IndrSP()
         {
             throw new NotImplementedException();
         }
 
-        public override void Load16HLSPe()
+        public void Load16HLSPe()
         {
             throw new NotImplementedException();
         }
 
-        public override void Push16(ref ushort io16)
+        public void Push16(ushort io16)
+        {
+            InternalDelay();
+            Push(io16);
+        }
+
+        public void Pop16(ref ushort io16)
+        {
+            io16 = Pop();
+        }
+
+        public void Add16(ref ushort io16)
         {
             throw new NotImplementedException();
         }
 
-        public override void Pop16(ref ushort io16)
+        public void Add16SPe()
         {
             throw new NotImplementedException();
         }
 
-        public override void Add16(ref ushort io16)
+        public void Inc16(ref ushort io16)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+            io16++;
         }
 
-        public override void Add16SPe()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Inc16(ref ushort io16)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Dec16(ref ushort io16)
+        public void Dec16(ref ushort io16)
         {
             throw new NotImplementedException();
         }

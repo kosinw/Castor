@@ -24,5 +24,15 @@ namespace Castor.Emulator.CPU
         {
             return condition ? (byte)c : (byte)0;
         }
+
+        public static bool FlagSet(this Cond c, byte F)
+        {
+            var ret = ((byte)c & F) == (byte)c;
+
+            if (c == Cond.NZ || c == Cond.NC)
+                ret = !ret;
+
+            return ret;
+        }
     }
 }

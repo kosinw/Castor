@@ -22,8 +22,8 @@ namespace Castor.Emulator.CPULegacy
             get => Convert.ToUInt16(A << 8 | F);
             set
             {                
-                A = value.MostSignificantByte();
-                F = value.LeastSignificantByte();
+                A = value.MSB();
+                F = value.LSB();
             }
         }
         public ushort BC
@@ -31,8 +31,8 @@ namespace Castor.Emulator.CPULegacy
             get => Convert.ToUInt16(B << 8 | C);
             set
             {
-                B = value.MostSignificantByte();
-                C = value.LeastSignificantByte();
+                B = value.MSB();
+                C = value.LSB();
             }
         }
         public ushort DE
@@ -40,8 +40,8 @@ namespace Castor.Emulator.CPULegacy
             get => Convert.ToUInt16(D << 8 | E);
             set
             {
-                D = value.MostSignificantByte();
-                E = value.LeastSignificantByte();
+                D = value.MSB();
+                E = value.LSB();
             }
         }
         public ushort HL
@@ -49,8 +49,8 @@ namespace Castor.Emulator.CPULegacy
             get => Convert.ToUInt16(H << 8 | L);
             set
             {
-                H = value.MostSignificantByte();
-                L = value.LeastSignificantByte();
+                H = value.MSB();
+                L = value.LSB();
             }
         }
         public ushort SP;
@@ -452,8 +452,8 @@ namespace Castor.Emulator.CPULegacy
 
         private void WriteUshort(int addr, ushort value)
         {
-            byte byte1 = value.MostSignificantByte();
-            byte byte2 = value.LeastSignificantByte();
+            byte byte1 = value.MSB();
+            byte byte2 = value.LSB();
 
             _system.MMU[addr] = byte2;
             _system.MMU[addr + 1] = byte1;
