@@ -15,6 +15,7 @@ namespace Castor.Emulator
         public VideoController GPU;
         public InterruptController ISR;
         public DMAController DMA;
+        public InputController IN;
 
         public Device()
         {                        
@@ -24,16 +25,19 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             ISR = new InterruptController(this);
+            IN = new InputController();
         }
 
         public void LoadROM(byte[] bytecode)
         {
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
+            IN.Initialize();
         }
 
         /// <summary>
         /// This method tells the gameboy system to emulate one frame.
         /// (70,224 clock cycles ~= One emulator video frame.)
+        /// Poll a gamepad/keyboard input after every vsync.
         /// </summary>
         public void Frame()
         {
@@ -41,10 +45,12 @@ namespace Castor.Emulator
             {
                 int cycles = CPU.Step();
                 GPU.Step(cycles);                               
-                DMA.Step(cycles);
+                DMA.Step(cycles);                
 
                 _counter += cycles; // need to add the cycles used up
             }
+
+            IN.Step();
         }
     }
 }
