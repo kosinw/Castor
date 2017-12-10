@@ -50,11 +50,11 @@ namespace Castor.View
 
         private void GPU_OnRenderEvent()
         {
-            Dispatcher.BeginInvoke((Action)delegate ()
+            Dispatcher.BeginInvoke((Action)(() =>
             {
                 _writableBuffer.WritePixels(_renderingRect, _system.GPU.Screen, 
                     VideoController.RENDER_WIDTH * VideoController.RENDER_HEIGHT, _writableBuffer.BackBufferStride);
-            });
+            }));
         }
 
         private void Menu_LoadROM_Click(object sender, RoutedEventArgs e)
@@ -76,19 +76,21 @@ namespace Castor.View
 
                 _systemThread = new Thread(new ThreadStart(() =>
                 {
-                    Stopwatch watch = new Stopwatch();
+                    Stopwatch watch = Stopwatch.StartNew();
+                    TimeSpan dt = TimeSpan.FromSeconds(1.0/60.0);
+                    TimeSpan elapsedTime = TimeSpan.Zero;
+
                     while (true)
                     {
-                        watch.Reset();
+                        watch.Restart();                        
 
-                        watch.Start();
                         _system.Frame();
-                        watch.Stop();
 
-                        if (watch.ElapsedMilliseconds < 16)
+                        elapsedTime = watch.Elapsed;
+                        if (elapsedTime < dt)
                         {
-                            timeBeginPeriod(1); // this is to increase the resolution of Window's system clock
-                            Thread.Sleep(16 - (int)watch.ElapsedMilliseconds);
+                            timeBeginPeriod(1); // this is to increase the resolution of Windows' system clock
+                            Thread.Sleep(dt - elapsedTime);
                             timeEndPeriod(1);
                         }
                     }

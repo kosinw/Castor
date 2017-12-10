@@ -10,8 +10,8 @@ namespace Castor.Emulator.Utility
     {
         public static byte GetGrayShade(int colorValue, byte reg)
         {
-            int i = reg.BitValue(colorValue * 2 + 1) << 1 |
-                reg.BitValue(colorValue * 2);
+            int i = Bit.BitValue(reg, colorValue * 2 + 1) << 1 |
+                Bit.BitValue(reg, colorValue * 2);
 
             return (byte)GetColor(i);
         }

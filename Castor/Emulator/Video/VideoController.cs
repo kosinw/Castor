@@ -77,7 +77,7 @@ namespace Castor.Emulator.Video
             get => _lcdc;
             set
             {
-                if (value.BitValue(7) == 0)
+                if (Bit.BitValue(value, 7) == 0)
                 {
                     _line = 0;
                     _mode = 0;
@@ -189,12 +189,12 @@ namespace Castor.Emulator.Video
         private void RenderScanline()
         {
             // Check if Bit0 (BG Display Flag) is set
-            if (_lcdc.BitValue(0) == 1)
+            if (Bit.BitValue(_lcdc, 0) == 1)
                 RenderBackground();
             else
                 Array.Clear(_framebuffer, 0, _framebuffer.Length);
 
-            if (_lcdc.BitValue(1) == 1)
+            if (Bit.BitValue(_lcdc, 1) == 1)
                 RenderSprites();
         }
 
@@ -207,28 +207,28 @@ namespace Castor.Emulator.Video
             // Here check which data set is being used
             // For 0x8000 the tile indices are numbered from 0 to 255
             // For 0x8800 the tile indices are numbered from -128 to 127
-            var tileDataZero = _lcdc.BitValue(4) == 1 ? 0x8000 : 0x8800;
-            var usingSignedIndices = _lcdc.BitValue(4) == 0;
+            var tileDataZero = Bit.BitValue(_lcdc,4) == 1 ? 0x8000 : 0x8800;
+            var usingSignedIndices = Bit.BitValue(_lcdc, 4) == 0;
 
             // Check if the window is enabled, if so then calculate when the wx and wy start
             var usingWindow = false;
 
             // If the window is on screen and the window y is greater than the scroll y register
             // enable using windows
-            if (_lcdc.BitValue(5) == 1 && _wy > _scy)
+            if (Bit.BitValue(_lcdc, 5) == 1 && _wy > _scy)
             {
                 usingWindow = true;
             }
 
             // Here check which map set contains the background tile map
-            var tileMapZero = _lcdc.BitValue(3) == 0 ? 0x9800 : 0x9C00;            
+            var tileMapZero = Bit.BitValue(_lcdc, 3) == 0 ? 0x9800 : 0x9C00;            
 
             // This is used to calculate which row of 32 tiles the GPU is currently on
             var yPosition = (_scy + _line) % 256;
 
             if (usingWindow)
             {
-                tileMapZero = _lcdc.BitValue(6) == 0 ? 0x9800 : 0x9C00;
+                tileMapZero = Bit.BitValue(_lcdc, 6) == 0 ? 0x9800 : 0x9C00;
                 yPosition = (_scy - _wy) % 256;
             }
 
@@ -270,7 +270,7 @@ namespace Castor.Emulator.Video
                 byte b2 = _d.MMU[tileDataZero + tileLocation + vline + 1]; // read the second half of the line
 
                 int currentBit = 7 - (xPosition % 8); // the most significant bit is the first bit rendered
-                int colorValue = 2 * b1.BitValue(currentBit) + b2.BitValue(currentBit);
+                int colorValue = 2 * Bit.BitValue(b1, currentBit) + Bit.BitValue(b2, currentBit);
 
                 _framebuffer[_line * 160 + x] = Utility.Video.GetGrayShade(colorValue, _bgp);
             }
@@ -279,7 +279,7 @@ namespace Castor.Emulator.Video
         public void Step(int cycles)
         {
             // check if lcd is even enabled, if not return
-            if (_lcdc.BitValue(7) == 0)
+            if (Bit.BitValue(_lcdc, 7) == 0)
                 return;
 
             // increment modeclock, used to switch between gpu modes
@@ -306,7 +306,7 @@ namespace Castor.Emulator.Video
                         RenderScanline();
 
                         // handle h-blank interrupt if stat bit 3
-                        if (_stat.BitValue(3) == 1)
+                        if (Bit.BitValue(_stat, 3) == 1)
                             _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                     }
                     break;
@@ -322,14 +322,14 @@ namespace Castor.Emulator.Video
                         if (_line == _lyc)
                         {
                             // trigger lcd stat interrupt if bit 6 is set
-                            if (_stat.BitValue(6) == 1)
+                            if (Bit.BitValue(_stat, 6) == 1)
                                 _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
 
-                            _stat.SetBit(2);
+                            Bit.SetBit(_stat, 2);
                         }
                         // otherwise unset ly coincidence flag
                         else
-                            _stat.ClearBit(2);
+                            Bit.ClearBit(_stat, 2);
 
                         if (_line == 143) // if this is last line then enter vblank
                         {
@@ -339,7 +339,7 @@ namespace Castor.Emulator.Video
                             _d.ISR.EnableInterrupt(InterruptFlags.VBlank);
 
                             // trigger another interrupt if stat bit 3 is set
-                            if (_stat.BitValue(4) == 1)
+                            if (Bit.BitValue(_stat, 4) == 1)
                                 _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                         else // otherwise just enter OAM read
@@ -347,7 +347,7 @@ namespace Castor.Emulator.Video
                             _mode = 2;
 
                             // handle oam interrupt if stat bit 5 is set
-                            if (_stat.BitValue(5) == 1)
+                            if (Bit.BitValue(_stat, 5) == 1)
                                 _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }
@@ -369,7 +369,7 @@ namespace Castor.Emulator.Video
                             _mode = 2; // reenter oam read                            
 
                             // handle oam interrupt if stat bit 5 is set
-                            if (_stat.BitValue(5) == 1)
+                            if (Bit.BitValue(_stat, 5) == 1)
                                 _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
                         }
                     }

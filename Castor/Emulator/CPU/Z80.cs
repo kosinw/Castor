@@ -146,6 +146,7 @@ namespace Castor.Emulator.CPU
         #region Internal Members
         private Registers _registers;
         private Device _d;
+        private IME _ime;
 
         private int _cycles;
         private bool _halted;
@@ -231,7 +232,7 @@ namespace Castor.Emulator.CPU
 
         public void Or(byte in8)
         {
-            throw new NotImplementedException();
+            A = Utility.Math.Or(in8, ref _registers);
         }
 
         public void Xor(byte in8)
@@ -341,7 +342,9 @@ namespace Castor.Emulator.CPU
 
         public void Jp()
         {
-            throw new NotImplementedException();
+            ushort value = ReadWord(_registers.Bump(2));
+
+            Jump(value);
         }
 
         public void JpHL()
@@ -417,12 +420,12 @@ namespace Castor.Emulator.CPU
 
         public void Di()
         {
-            throw new NotImplementedException();
+            _ime = IME.Disabled;
         }
 
         public void Ei()
         {
-            throw new NotImplementedException();
+            _ime = IME.Enabling;
         }
 
         public void Ccf()
@@ -437,7 +440,7 @@ namespace Castor.Emulator.CPU
 
         public void Nop()
         {
-            throw new NotImplementedException();
+            // do nothing
         }
 
         public void Daa()
@@ -447,7 +450,10 @@ namespace Castor.Emulator.CPU
 
         public void Cpl()
         {
-            throw new NotImplementedException();
+            A = (byte)~A;
+
+            Utility.Bit.AlterFlag(ref _registers.F, Cond.N, true);
+            Utility.Bit.AlterFlag(ref _registers.F, Cond.H, true);            
         }
 
         public void Load16(ref ushort io16)
@@ -499,7 +505,8 @@ namespace Castor.Emulator.CPU
 
         public void Dec16(ref ushort io16)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+            io16--;
         }
         #endregion
     }

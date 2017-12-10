@@ -21,6 +21,8 @@ namespace Castor.Emulator.CPU
                 case 0x7C: Load(ref A, H); break;
                 case 0x7D: Load(ref A, L); break;
                 case 0x7E: Load(ref A, AddrHL); break;
+                case 0x2A: Load(ref A, AddrHLI); break;
+                case 0x3A: Load(ref A, AddrHLD); break;
                 case 0x3E: Load(ref A, Imm8()); break;
                 case 0xF2: Load(ref A, ZeroPageC); break;
                 case 0xF0: Load(ref A, ZeroPage); break;
@@ -86,6 +88,7 @@ namespace Castor.Emulator.CPU
                 case 0x73: Load(HL, E); break;
                 case 0x74: Load(HL, H); break;
                 case 0x75: Load(HL, L); break;
+                case 0x36: Load(HL, Imm8()); break;
                 case 0x22: Load(HL, A, 1); break;
                 case 0x32: Load(HL, A, -1); break;
                 case 0xE2: Load(C + 0xFF00, A); break;
@@ -153,15 +156,20 @@ namespace Castor.Emulator.CPU
                 case 0xBE: Cp(AddrHL); break;
                 case 0xFE: Cp(Imm8()); break;
                 #endregion
-                #region Control
+                #region Control                
                 case 0x18: Jr(); break;
                 case 0x20: Jr(Cond.NZ); break;
                 case 0x28: Jr(Cond.Z); break;
+                case 0xC3: Jp(); break;
                 case 0xCD: Call(); break;
                 case 0xC9: Ret(); break;
                 #endregion
                 #region Miscellaneous
+                case 0x00: Nop(); break;
+                case 0x2F: Cpl(); break;
                 case 0xCB: DecodeCB(d, DecodeInstruction()); break;
+                case 0xF3: Di(); break;
+                case 0xFB: Ei(); break;
                 #endregion
                 #region 16-bit loads
                 case 0x01: Load16(ref BC); break;
@@ -182,6 +190,10 @@ namespace Castor.Emulator.CPU
                 case 0x13: Inc16(ref DE); break;
                 case 0x23: Inc16(ref HL); break;
                 case 0x33: Inc16(ref SP); break;
+                case 0x0B: Dec16(ref BC); break;
+                case 0x1B: Dec16(ref DE); break;
+                case 0x2B: Dec16(ref HL); break;
+                case 0x3B: Dec16(ref SP); break;
                 #endregion
 
                 default: Unimplemented(d, op); break;

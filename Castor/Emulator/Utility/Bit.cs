@@ -9,6 +9,21 @@ namespace Castor.Emulator.Utility
 {
     public static class Bit
     {
+        public static byte BitValue(byte d8, int index)
+        {
+            return (byte)((d8 >> index) & 1);
+        }
+
+        public static byte SetBit(byte d8, int index)
+        {
+            return (byte)(d8 | (1 << index));
+        }
+
+        public static byte ClearBit(byte d8, int index)
+        {
+            return (byte)(d8 & ~(1 << index));
+        }
+
         public static byte MSB(this ushort d16)
         {
             return Convert.ToByte((d16 >> 8) & 0xFF);
@@ -29,12 +44,7 @@ namespace Castor.Emulator.Utility
 
             return result;
         }
-
-        private static byte BitValue(byte d8, int index)
-        {
-            return (byte)((d8 >> index) & 1);
-        }
-
+       
         public static void AlterFlag(ref byte F, Cond cond, bool parameter)
         {
             if (parameter)

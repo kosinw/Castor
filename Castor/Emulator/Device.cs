@@ -8,8 +8,7 @@ using Castor.Emulator.Video;
 namespace Castor.Emulator
 {
     public class Device
-    {
-        //public CPULegacy.Z80 CPU;
+    {       
         public Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
