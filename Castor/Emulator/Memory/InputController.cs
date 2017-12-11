@@ -8,10 +8,10 @@ namespace Castor.Emulator.Memory
         GamePadState _gamepad;
         KeyboardState _keyboard;
         SelectedKeys _selectedKeys;
-        bool usingGamepad;        
+        bool usingGamepad;
         int _gamepadIndex;
 
-        
+
         public byte P1
         {
             get
@@ -21,20 +21,20 @@ namespace Castor.Emulator.Memory
 
                 if (_selectedKeys.HasFlag(SelectedKeys.Buttons))
                 {
-                    body |= (byte)(body | (byte)JoypadSelectState.A);
-                    body |= (byte)(body | (byte)JoypadSelectState.B);
-                    body |= (byte)(body | (byte)JoypadSelectState.Select);
-                    body |= (byte)(body | (byte)JoypadSelectState.Start);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.A);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.B);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Select);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Start);
                 }
 
                 if (_selectedKeys.HasFlag(SelectedKeys.Direction))
                 {
-                    body |= (byte)(body | (byte)JoypadSelectState.Down);
-                    body |= (byte)(body | (byte)JoypadSelectState.Up);
-                    body |= (byte)(body | (byte)JoypadSelectState.Left);
-                    body |= (byte)(body | (byte)JoypadSelectState.Right);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Down);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Up);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Left);
+                    body |= (byte)(_pressedKeys | JoypadSelectState.Right);
                 }
-                
+
                 return (byte)~(header | body);
             }
 
@@ -69,7 +69,6 @@ namespace Castor.Emulator.Memory
                 usingGamepad = false;
                 _keyboard = Keyboard.GetState();
             }
-
             else
             {
                 _gamepadIndex = gamepadIndex - 1;
@@ -88,9 +87,10 @@ namespace Castor.Emulator.Memory
         {
             _gamepad = GamePad.GetState(_gamepadIndex);
 
-            if (_gamepad.Buttons.A == ButtonState.Pressed)
+            if (!_gamepad.IsConnected)
             {
-                ;
+                usingGamepad = false;
+                StepKeyboard();
             }
         }
 
@@ -98,10 +98,44 @@ namespace Castor.Emulator.Memory
         {
             _keyboard = Keyboard.GetState();
 
-            if (_keyboard.IsKeyDown(Key.A))
+            if (_keyboard.IsAnyKeyDown)
             {
-                ;
+                if (_keyboard.IsKeyDown(Key.Up))
+                    _pressedKeys |= JoypadSelectState.Up;
+                if (_keyboard.IsKeyDown(Key.Down))
+                    _pressedKeys |= JoypadSelectState.Down;
+                if (_keyboard.IsKeyDown(Key.Left))
+                    _pressedKeys |= JoypadSelectState.Left;
+                if (_keyboard.IsKeyDown(Key.Right))
+                    _pressedKeys |= JoypadSelectState.Right;
+
+                if (_keyboard.IsKeyDown(Key.Z))
+                    _pressedKeys |= JoypadSelectState.A;
+                if (_keyboard.IsKeyDown(Key.X))
+                    _pressedKeys |= JoypadSelectState.B;
+                if (_keyboard.IsKeyDown(Key.Enter))
+                    _pressedKeys |= JoypadSelectState.Start;
+                if (_keyboard.IsKeyDown(Key.BackSpace))
+                    _pressedKeys |= JoypadSelectState.Select;
             }
+
+            if (_keyboard.IsKeyUp(Key.Up))
+                _pressedKeys &= ~JoypadSelectState.Up;
+            if (_keyboard.IsKeyUp(Key.Up))
+                _pressedKeys &= ~JoypadSelectState.Up;
+            if (_keyboard.IsKeyUp(Key.Left))
+                _pressedKeys &= ~JoypadSelectState.Left;
+            if (_keyboard.IsKeyUp(Key.Right))
+                _pressedKeys &= ~JoypadSelectState.Right;
+
+            if (_keyboard.IsKeyUp(Key.Z))
+                _pressedKeys &= ~JoypadSelectState.A;
+            if (_keyboard.IsKeyUp(Key.X))
+                _pressedKeys &= ~JoypadSelectState.B;
+            if (_keyboard.IsKeyUp(Key.Enter))
+                _pressedKeys &= ~JoypadSelectState.Start;
+            if (_keyboard.IsKeyUp(Key.BackSpace))
+                _pressedKeys &= ~JoypadSelectState.Select;
         }
     }
 }

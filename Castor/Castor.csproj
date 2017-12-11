@@ -69,7 +69,7 @@
     <Compile Include="Emulator\Memory\BootROM.cs" />
     <Compile Include="Emulator\Memory\InterruptFlags.cs" />
     <Compile Include="Emulator\Memory\InputController.cs" />
-    <Compile Include="Emulator\Memory\JoypadSelectState.cs" />
+    <Compile Include="Emulator\Memory\InputEnums.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
     <Compile Include="Emulator\Utility\Bit.cs" />
     <Compile Include="Emulator\Utility\Consts.cs" />
