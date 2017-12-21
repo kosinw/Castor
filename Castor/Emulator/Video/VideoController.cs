@@ -192,7 +192,12 @@ namespace Castor.Emulator.Video
             if (Bit.BitValue(_lcdc, 0) == 1)
                 RenderBackground();
             else
-                Array.Clear(_framebuffer, 0, _framebuffer.Length);
+            {
+                for (int i = 0; i < _framebuffer.Length; ++i)
+                {
+                    _framebuffer[i] = 255;
+                }
+            }
 
             if (Bit.BitValue(_lcdc, 1) == 1)
                 RenderSprites();
@@ -307,7 +312,7 @@ namespace Castor.Emulator.Video
 
                         // handle h-blank interrupt if stat bit 3
                         if (Bit.BitValue(_stat, 3) == 1)
-                            _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                            _d.ISR.RequestInterrupt(InterruptFlags.STAT);
                     }
                     break;
 
@@ -323,7 +328,7 @@ namespace Castor.Emulator.Video
                         {
                             // trigger lcd stat interrupt if bit 6 is set
                             if (Bit.BitValue(_stat, 6) == 1)
-                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
 
                             Bit.SetBit(_stat, 2);
                         }
@@ -336,11 +341,11 @@ namespace Castor.Emulator.Video
                             _mode = 1;
                             OnRenderEvent();
 
-                            _d.ISR.EnableInterrupt(InterruptFlags.VBlank);
+                            _d.ISR.RequestInterrupt(InterruptFlags.VBL);
 
                             // trigger another interrupt if stat bit 3 is set
                             if (Bit.BitValue(_stat, 4) == 1)
-                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
                         }
                         else // otherwise just enter OAM read
                         {
@@ -348,7 +353,7 @@ namespace Castor.Emulator.Video
 
                             // handle oam interrupt if stat bit 5 is set
                             if (Bit.BitValue(_stat, 5) == 1)
-                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
                         }
                     }
                     break;
@@ -370,7 +375,7 @@ namespace Castor.Emulator.Video
 
                             // handle oam interrupt if stat bit 5 is set
                             if (Bit.BitValue(_stat, 5) == 1)
-                                _d.ISR.EnableInterrupt(InterruptFlags.LCDStat);
+                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
                         }
                     }
                     break;

@@ -9,11 +9,12 @@ Castor is a Gameboy interpreter written using .NET Framework, C#, and WPF. The p
 * oam dma support
 * functional bootrom
 * window rendering
+* input
 
 # Unimplemented Features
 * complete CPU decoding
 * any type of testing
-* input
+* interrupt support
 * timers
 * cartridge types
 * oam support (sprites)

@@ -63,9 +63,9 @@ namespace Castor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] DMG_ROM {
+        internal static byte[] dmg {
             get {
-                object obj = ResourceManager.GetObject("DMG_ROM", resourceCulture);
+                object obj = ResourceManager.GetObject("dmg", resourceCulture);
                 return ((byte[])(obj));
             }
         }

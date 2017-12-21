@@ -35,19 +35,19 @@ namespace Castor.Emulator.Memory
         /// Set flag bit on interrupt register.
         /// </summary>
         /// <param name="flag"></param>
-        public void EnableInterrupt(InterruptFlags flag)
+        public void RequestInterrupt(InterruptFlags flag)
         {
-            _ie |= flag;
+            _if |= flag;
+        }
+
+        public void DisableInterrupt(InterruptFlags flag)
+        {
+            _if &= ~flag;
         }
 
         public bool CanServiceInterrupts
         {
             get => (_ie & _if) != 0;
-        }
-
-        public void DisableInterrupt(InterruptFlags flag)
-        {
-            _ie &= ~flag;
         }
     }
 }

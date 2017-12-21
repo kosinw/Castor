@@ -4,10 +4,33 @@ namespace Castor.Emulator.Memory
 {
     public class InputController
     {
-        JoypadSelectState _pressedKeys;
+        JoypadSelectState _pressedKeysDirectional;
+        JoypadSelectState _pressedKeysButtons;
+
+        private JoypadSelectState Directional
+        {
+            get => _pressedKeysDirectional;
+            set
+            {
+                _d.ISR.RequestInterrupt(InterruptFlags.Joypad);
+                _pressedKeysDirectional |= value;
+            }
+        }
+
+        private JoypadSelectState Buttons
+        {
+            get => _pressedKeysButtons;
+            set
+            {
+                _d.ISR.RequestInterrupt(InterruptFlags.Joypad);
+                _pressedKeysButtons |= value;
+            }
+        }
+
         GamePadState _gamepad;
         KeyboardState _keyboard;
         SelectedKeys _selectedKeys;
+        Device _d;
         bool usingGamepad;
         int _gamepadIndex;
 
@@ -21,18 +44,18 @@ namespace Castor.Emulator.Memory
 
                 if (_selectedKeys.HasFlag(SelectedKeys.Buttons))
                 {
-                    body |= (byte)(_pressedKeys | JoypadSelectState.A);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.B);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Select);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Start);
+                    body |= (byte)(_pressedKeysButtons | JoypadSelectState.A);
+                    body |= (byte)(_pressedKeysButtons | JoypadSelectState.B);
+                    body |= (byte)(_pressedKeysButtons | JoypadSelectState.Select);
+                    body |= (byte)(_pressedKeysButtons | JoypadSelectState.Start);
                 }
 
                 if (_selectedKeys.HasFlag(SelectedKeys.Direction))
                 {
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Down);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Up);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Left);
-                    body |= (byte)(_pressedKeys | JoypadSelectState.Right);
+                    body |= (byte)(_pressedKeysDirectional | JoypadSelectState.Down);
+                    body |= (byte)(_pressedKeysDirectional | JoypadSelectState.Up);
+                    body |= (byte)(_pressedKeysDirectional | JoypadSelectState.Left);
+                    body |= (byte)(_pressedKeysDirectional | JoypadSelectState.Right);
                 }
 
                 return (byte)~(header | body);
@@ -46,9 +69,11 @@ namespace Castor.Emulator.Memory
             }
         }
 
-        public InputController()
+        public InputController(Device d)
         {
-            _pressedKeys = JoypadSelectState.None;
+            _d = d;
+            _pressedKeysDirectional = JoypadSelectState.None;
+            _pressedKeysButtons = JoypadSelectState.None;
             usingGamepad = false;
             _selectedKeys = SelectedKeys.Buttons | SelectedKeys.Direction;
         }
@@ -71,7 +96,7 @@ namespace Castor.Emulator.Memory
             }
             else
             {
-                _gamepadIndex = gamepadIndex - 1;
+                _gamepadIndex--;
             }
         }
 
@@ -101,41 +126,41 @@ namespace Castor.Emulator.Memory
             if (_keyboard.IsAnyKeyDown)
             {
                 if (_keyboard.IsKeyDown(Key.Up))
-                    _pressedKeys |= JoypadSelectState.Up;
+                    Directional |= JoypadSelectState.Up;
                 if (_keyboard.IsKeyDown(Key.Down))
-                    _pressedKeys |= JoypadSelectState.Down;
+                    Directional |= JoypadSelectState.Down;
                 if (_keyboard.IsKeyDown(Key.Left))
-                    _pressedKeys |= JoypadSelectState.Left;
+                    Directional |= JoypadSelectState.Left;
                 if (_keyboard.IsKeyDown(Key.Right))
-                    _pressedKeys |= JoypadSelectState.Right;
+                    Directional |= JoypadSelectState.Right;
 
                 if (_keyboard.IsKeyDown(Key.Z))
-                    _pressedKeys |= JoypadSelectState.A;
+                    Buttons |= JoypadSelectState.A;
                 if (_keyboard.IsKeyDown(Key.X))
-                    _pressedKeys |= JoypadSelectState.B;
+                    Buttons |= JoypadSelectState.B;
                 if (_keyboard.IsKeyDown(Key.Enter))
-                    _pressedKeys |= JoypadSelectState.Start;
+                    Buttons |= JoypadSelectState.Start;
                 if (_keyboard.IsKeyDown(Key.BackSpace))
-                    _pressedKeys |= JoypadSelectState.Select;
+                    Buttons |= JoypadSelectState.Select;
             }
 
             if (_keyboard.IsKeyUp(Key.Up))
-                _pressedKeys &= ~JoypadSelectState.Up;
-            if (_keyboard.IsKeyUp(Key.Up))
-                _pressedKeys &= ~JoypadSelectState.Up;
+                Directional &= ~JoypadSelectState.Up;
+            if (_keyboard.IsKeyUp(Key.Down))
+                Directional &= ~JoypadSelectState.Down;
             if (_keyboard.IsKeyUp(Key.Left))
-                _pressedKeys &= ~JoypadSelectState.Left;
+                Directional &= ~JoypadSelectState.Left;
             if (_keyboard.IsKeyUp(Key.Right))
-                _pressedKeys &= ~JoypadSelectState.Right;
+                Directional &= ~JoypadSelectState.Right;
 
             if (_keyboard.IsKeyUp(Key.Z))
-                _pressedKeys &= ~JoypadSelectState.A;
+                Buttons &= ~JoypadSelectState.A;
             if (_keyboard.IsKeyUp(Key.X))
-                _pressedKeys &= ~JoypadSelectState.B;
+                Buttons &= ~JoypadSelectState.B;
             if (_keyboard.IsKeyUp(Key.Enter))
-                _pressedKeys &= ~JoypadSelectState.Start;
+                Buttons &= ~JoypadSelectState.Start;
             if (_keyboard.IsKeyUp(Key.BackSpace))
-                _pressedKeys &= ~JoypadSelectState.Select;
+                Buttons &= ~JoypadSelectState.Select;
         }
     }
 }

@@ -8,7 +8,7 @@ using Castor.Emulator.Video;
 namespace Castor.Emulator
 {
     public class Device
-    {       
+    {
         public Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
@@ -18,14 +18,14 @@ namespace Castor.Emulator
         public InputController IN;
 
         public Device()
-        {                        
+        {
             CPU = new Z80(this);
             DMA = new DMAController(this);
             MMU = new MemoryMapper(this);
             Cartridge = null;
             GPU = new VideoController(this);
             ISR = new InterruptController(this);
-            IN = new InputController();
+            IN = new InputController(this);
         }
 
         public void LoadROM(byte[] bytecode)
@@ -44,8 +44,8 @@ namespace Castor.Emulator
             for (int _counter = 0; _counter < 70_224;)
             {
                 int cycles = CPU.Step();
-                GPU.Step(cycles);                               
-                DMA.Step(cycles);                
+                GPU.Step(cycles);
+                DMA.Step(cycles);
 
                 _counter += cycles; // need to add the cycles used up
             }

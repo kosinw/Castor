@@ -13,7 +13,7 @@ namespace Castor.Emulator.Memory
 
         public BootROM()
         {
-            _bytecode = Castor.Properties.Resources.DMG_ROM;
+            _bytecode = Castor.Properties.Resources.dmg;
         }
 
         public int Count() => _bytecode.Length;

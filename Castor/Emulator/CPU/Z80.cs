@@ -141,6 +141,20 @@ namespace Castor.Emulator.CPU
         {
             return ReadWord(_registers.Bump(2));
         }
+
+        private void InterruptVec(byte vec)
+        {
+            _halted = false;
+
+            if (_ime == IME.Enabled)
+            {                
+                InternalDelay(3);
+                Push16(PC);
+                PC = vec;            
+                _ime = IME.Disabled;
+                _d.ISR.IF = 0x00;
+            }            
+        }
         #endregion
 
         #region Internal Members
@@ -163,29 +177,53 @@ namespace Castor.Emulator.CPU
         public int Step()
         {
             _cycles = 0;
-
+           
             if (!_halted)
                 DecodeStep();
             else
                 HaltedStep();
+
+            for (int i = 0; i < _cycles / 4; ++i)
+            {
+                switch (_ime)
+                {
+                    case IME.Enabling:
+                        _ime = IME.Enabled;
+                        break;
+                }
+            }
 
             return _cycles;
         }
 
         private void HaltedStep()
         {
+            HandleInterrupts();
             InternalDelay();
         }
 
-        public void DecodeStep()
+        private void DecodeStep()
         {
-            if (PC == 0xa3)
-            {
-                ;
-            }
+            HandleInterrupts();
             var opcode = DecodeInstruction();
+            Decode(opcode);
+        }
 
-            Decode(_d, opcode);
+        private void HandleInterrupts()
+        {
+            if (_d.ISR.CanServiceInterrupts) // if any interrupts are available
+            {
+                if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.VBL))
+                    InterruptVec(0x40);
+                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.STAT))
+                    InterruptVec(0x48);
+                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Timer))
+                    InterruptVec(0x50);
+                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Serial))
+                    InterruptVec(0x58);
+                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Joypad))
+                    InterruptVec(0x60);
+            }
         }
 
         #region Opcode Methods

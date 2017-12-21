@@ -8,7 +8,7 @@ namespace Castor.Emulator.CPU
 {
     public partial class Z80
     {        
-        public void Decode(Device d, byte op)
+        public void Decode(byte op)
         {
             switch (op)
             {
@@ -177,7 +177,7 @@ namespace Castor.Emulator.CPU
                 #region Miscellaneous
                 case 0x00: Nop(); break;
                 case 0x2F: Cpl(); break;
-                case 0xCB: DecodeCB(d, DecodeInstruction()); break;
+                case 0xCB: DecodeCB(DecodeInstruction()); break;
                 case 0xF3: Di(); break;
                 case 0xFB: Ei(); break;
                 #endregion
@@ -210,11 +210,11 @@ namespace Castor.Emulator.CPU
                 case 0x39: Add16(SP); break;
                 #endregion
 
-                default: Unimplemented(d, op); break;
+                default: Unimplemented(op); break;
             }
         }
 
-        private void DecodeCB(Device d, byte op)
+        private void DecodeCB(byte op)
         {
             switch (op)
             {
@@ -235,16 +235,16 @@ namespace Castor.Emulator.CPU
                 case 0x7C: Bit(7, H); break;
                 #endregion
 
-                default: UnimplementedCB(d, op); break;
+                default: UnimplementedCB(op); break;
             }
         }
 
-        private void Unimplemented(Device d, byte op)
+        private void Unimplemented(byte op)
         {
             throw new Exception($"Opcode not defined: 0x{op:X2} at PC: 0x{PC - 1:X2}.");
         }
 
-        private void UnimplementedCB(Device d, byte op)
+        private void UnimplementedCB(byte op)
         {
             throw new Exception($"Opcode not defined: 0xCB 0x{op:X2} at PC: 0x{PC - 2:X2}.");
         }
