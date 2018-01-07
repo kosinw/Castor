@@ -1,9 +1,5 @@
 ﻿using Castor.Emulator.Utility;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
@@ -95,7 +91,7 @@ namespace Castor.Emulator.CPU
 
         #region Utility Functions
         private void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
-        public byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
+        private byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
         private byte ReadByte(int addr, int delay = 1)
         {
             InternalDelay(delay);
@@ -147,13 +143,13 @@ namespace Castor.Emulator.CPU
             _halted = false;
 
             if (_ime == IME.Enabled)
-            {                
+            {
                 InternalDelay(3);
                 Push16(PC);
-                PC = vec;            
+                PC = vec;
                 _ime = IME.Disabled;
-                _d.ISR.IF = 0x00;
-            }            
+                _d.IRQ.IF = 0x00;
+            }
         }
         #endregion
 
@@ -164,6 +160,10 @@ namespace Castor.Emulator.CPU
 
         private int _cycles;
         private bool _halted;
+
+#if DEBUG
+        private ushort lastPC;
+#endif
         #endregion;
 
         public Z80(Device d)
@@ -176,8 +176,14 @@ namespace Castor.Emulator.CPU
 
         public int Step()
         {
+            
+            if (PC == 0x2501)
+                ;
+
+            lastPC = PC;
+
             _cycles = 0;
-           
+
             if (!_halted)
                 DecodeStep();
             else
@@ -192,7 +198,7 @@ namespace Castor.Emulator.CPU
                         break;
                 }
             }
-
+            
             return _cycles;
         }
 
@@ -211,17 +217,17 @@ namespace Castor.Emulator.CPU
 
         private void HandleInterrupts()
         {
-            if (_d.ISR.CanServiceInterrupts) // if any interrupts are available
+            if (_d.IRQ.CanServiceInterrupts) // if any interrupts are available
             {
-                if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.VBL))
+                if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.VBL))
                     InterruptVec(0x40);
-                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.STAT))
+                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.STAT))
                     InterruptVec(0x48);
-                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Timer))
+                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Timer))
                     InterruptVec(0x50);
-                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Serial))
+                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Serial))
                     InterruptVec(0x58);
-                else if (_d.ISR.CanHandleInterrupt(Memory.InterruptFlags.Joypad))
+                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Joypad))
                     InterruptVec(0x60);
             }
         }
@@ -245,7 +251,8 @@ namespace Castor.Emulator.CPU
 
         public void Adc(byte in8)
         {
-            throw new NotImplementedException();
+            byte cy = (F & (byte)Cond.C) != 0 ? (byte)1 : (byte)0;
+            A = Utility.Math.Add.Add8((byte)(in8 + cy), ref _registers);
         }
 
         public void Sub(byte in8)
@@ -373,14 +380,14 @@ namespace Castor.Emulator.CPU
             Utility.Bit.Value(in8, num, ref _registers.F);
         }
 
-        public void Set(uint num, ref byte io8)
+        public void Set(int num, ref byte io8)
         {
             throw new NotImplementedException();
         }
 
-        public void Res(uint num, ref byte io8)
+        public void Res(int num, ref byte io8)
         {
-            throw new NotImplementedException();
+            io8 = Utility.Bit.ClearBit(io8, num);
         }
 
         public void Jp()
@@ -419,7 +426,9 @@ namespace Castor.Emulator.CPU
 
         public void Reti()
         {
-            throw new NotImplementedException();
+            InternalDelay();
+            PC = Pop();
+            _ime = IME.Enabled;
         }
 
         public void Jp(Cond cond)
@@ -443,7 +452,10 @@ namespace Castor.Emulator.CPU
 
         public void Ret(Cond cond)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+
+            if (cond.FlagSet(F))
+                PC = Pop();
         }
 
         public void Rst(byte vec)
@@ -490,7 +502,33 @@ namespace Castor.Emulator.CPU
 
         public void Daa()
         {
-            throw new NotImplementedException();
+            var carry = false;
+
+            if ((_registers.F & (byte)Cond.N) == 0)
+            {
+                if ((_registers.F & (byte)Cond.C) != 0 || _registers.A > 0x99)
+                {
+                    _registers.A += 0x60;
+                    carry = true;
+                }
+                if ((_registers.F & (byte)Cond.H) != 0 || (_registers.A & 0xF) > 0x09)
+                {
+                    _registers.A += 0x6;
+                }
+            }
+
+            else if ((_registers.F & (byte)Cond.C) != 0)
+            {
+                carry = true;
+                _registers.A += (_registers.F & (byte)Cond.H) != 0 ? (byte)0x9a : (byte)0x0a;
+            }
+
+            else if ((_registers.F & (byte)Cond.H) != 0)
+            {
+                _registers.A += 0xfa;
+            }
+
+            F = (byte)(Cond.Z.Test(A == 0) | ((byte)Cond.N & F) | Cond.C.Test(carry));
         }
 
         public void Cpl()
@@ -498,7 +536,7 @@ namespace Castor.Emulator.CPU
             A = (byte)~A;
 
             Utility.Bit.AlterFlag(ref _registers.F, Cond.N, true);
-            Utility.Bit.AlterFlag(ref _registers.F, Cond.H, true);            
+            Utility.Bit.AlterFlag(ref _registers.F, Cond.H, true);
         }
 
         public void Load16(ref ushort io16)

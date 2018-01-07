@@ -100,7 +100,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="ROMs\dmg.rom" />
-    <None Include="ROMs\DMG_ROM.bin" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

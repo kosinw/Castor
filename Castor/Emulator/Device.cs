@@ -13,9 +13,9 @@ namespace Castor.Emulator
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
-        public InterruptController ISR;
+        public InterruptController IRQ;
         public DMAController DMA;
-        public InputController IN;
+        public InputController JOY;
 
         public Device()
         {
@@ -24,14 +24,14 @@ namespace Castor.Emulator
             MMU = new MemoryMapper(this);
             Cartridge = null;
             GPU = new VideoController(this);
-            ISR = new InterruptController(this);
-            IN = new InputController(this);
+            IRQ = new InterruptController(this);
+            JOY = new InputController(this);
         }
 
         public void LoadROM(byte[] bytecode)
         {
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
-            IN.Initialize();
+            JOY.Initialize();
         }
 
         /// <summary>
@@ -46,11 +46,10 @@ namespace Castor.Emulator
                 int cycles = CPU.Step();
                 GPU.Step(cycles);
                 DMA.Step(cycles);
+                JOY.Step();
 
                 _counter += cycles; // need to add the cycles used up
-            }
-
-            IN.Step();
+            }            
         }
     }
 }

@@ -7,13 +7,23 @@ namespace Castor.Emulator.Memory
         JoypadSelectState _pressedKeysDirectional;
         JoypadSelectState _pressedKeysButtons;
 
+        JoypadSelectState _previousKeysDirectional;
+        JoypadSelectState _previousKeysButtons;
+
         private JoypadSelectState Directional
         {
             get => _pressedKeysDirectional;
             set
             {
-                _d.ISR.RequestInterrupt(InterruptFlags.Joypad);
-                _pressedKeysDirectional |= value;
+                var previousState = _pressedKeysDirectional;
+                _pressedKeysDirectional = value;
+
+                if (previousState == JoypadSelectState.None
+                    && _selectedKeys != SelectedKeys.None
+                    && _previousKeysDirectional != _pressedKeysDirectional)
+                {
+                    _d.IRQ.RequestInterrupt(InterruptFlags.Joypad);
+                }
             }
         }
 
@@ -22,8 +32,15 @@ namespace Castor.Emulator.Memory
             get => _pressedKeysButtons;
             set
             {
-                _d.ISR.RequestInterrupt(InterruptFlags.Joypad);
-                _pressedKeysButtons |= value;
+                var previousState = _pressedKeysButtons;
+                _pressedKeysButtons = value;
+
+                if (previousState == JoypadSelectState.None
+                    && _selectedKeys != SelectedKeys.None
+                    && _previousKeysButtons != _pressedKeysButtons)
+                {
+                    _d.IRQ.RequestInterrupt(InterruptFlags.Joypad);
+                }
             }
         }
 
@@ -102,6 +119,9 @@ namespace Castor.Emulator.Memory
 
         public void Step()
         {
+            _previousKeysButtons = _pressedKeysButtons;
+            _previousKeysDirectional = _pressedKeysDirectional;
+
             if (usingGamepad)
                 StepGamepad();
             else
@@ -122,6 +142,7 @@ namespace Castor.Emulator.Memory
         private void StepKeyboard()
         {
             _keyboard = Keyboard.GetState();
+
 
             if (_keyboard.IsAnyKeyDown)
             {
@@ -144,23 +165,29 @@ namespace Castor.Emulator.Memory
                     Buttons |= JoypadSelectState.Select;
             }
 
-            if (_keyboard.IsKeyUp(Key.Up))
-                Directional &= ~JoypadSelectState.Up;
-            if (_keyboard.IsKeyUp(Key.Down))
-                Directional &= ~JoypadSelectState.Down;
-            if (_keyboard.IsKeyUp(Key.Left))
-                Directional &= ~JoypadSelectState.Left;
-            if (_keyboard.IsKeyUp(Key.Right))
-                Directional &= ~JoypadSelectState.Right;
+            if (_selectedKeys.HasFlag(SelectedKeys.Direction))
+            {
+                if (_keyboard.IsKeyUp(Key.Up))
+                    Directional &= ~JoypadSelectState.Up;
+                if (_keyboard.IsKeyUp(Key.Down))
+                    Directional &= ~JoypadSelectState.Down;
+                if (_keyboard.IsKeyUp(Key.Left))
+                    Directional &= ~JoypadSelectState.Left;
+                if (_keyboard.IsKeyUp(Key.Right))
+                    Directional &= ~JoypadSelectState.Right;
+            }
 
-            if (_keyboard.IsKeyUp(Key.Z))
-                Buttons &= ~JoypadSelectState.A;
-            if (_keyboard.IsKeyUp(Key.X))
-                Buttons &= ~JoypadSelectState.B;
-            if (_keyboard.IsKeyUp(Key.Enter))
-                Buttons &= ~JoypadSelectState.Start;
-            if (_keyboard.IsKeyUp(Key.BackSpace))
-                Buttons &= ~JoypadSelectState.Select;
+            if (_selectedKeys.HasFlag(SelectedKeys.Buttons))
+            {
+                if (_keyboard.IsKeyUp(Key.Z))
+                    Buttons &= ~JoypadSelectState.A;
+                if (_keyboard.IsKeyUp(Key.X))
+                    Buttons &= ~JoypadSelectState.B;
+                if (_keyboard.IsKeyUp(Key.Enter))
+                    Buttons &= ~JoypadSelectState.Start;
+                if (_keyboard.IsKeyUp(Key.BackSpace))
+                    Buttons &= ~JoypadSelectState.Select;
+            }
         }
     }
 }

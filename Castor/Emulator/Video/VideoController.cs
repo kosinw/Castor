@@ -212,7 +212,7 @@ namespace Castor.Emulator.Video
             // Here check which data set is being used
             // For 0x8000 the tile indices are numbered from 0 to 255
             // For 0x8800 the tile indices are numbered from -128 to 127
-            var tileDataZero = Bit.BitValue(_lcdc,4) == 1 ? 0x8000 : 0x8800;
+            var tileDataZero = Bit.BitValue(_lcdc, 4) == 1 ? 0x8000 : 0x8800;
             var usingSignedIndices = Bit.BitValue(_lcdc, 4) == 0;
 
             // Check if the window is enabled, if so then calculate when the wx and wy start
@@ -226,7 +226,7 @@ namespace Castor.Emulator.Video
             }
 
             // Here check which map set contains the background tile map
-            var tileMapZero = Bit.BitValue(_lcdc, 3) == 0 ? 0x9800 : 0x9C00;            
+            var tileMapZero = Bit.BitValue(_lcdc, 3) == 0 ? 0x9800 : 0x9C00;
 
             // This is used to calculate which row of 32 tiles the GPU is currently on
             var yPosition = (_scy + _line) % 256;
@@ -239,7 +239,7 @@ namespace Castor.Emulator.Video
 
             // This is used to calculate which line of whatever tile the GPU is rendering
             var tileRow = (yPosition / 8) * 32;
-            
+
             // For each pixel on this scanline
             for (int x = 0; x < 160; ++x)
             {
@@ -285,7 +285,10 @@ namespace Castor.Emulator.Video
         {
             // check if lcd is even enabled, if not return
             if (Bit.BitValue(_lcdc, 7) == 0)
+            {
+                Array.Clear(_framebuffer, 0, _framebuffer.Length);
                 return;
+            }
 
             // increment modeclock, used to switch between gpu modes
             _modeclock += cycles;
@@ -312,7 +315,7 @@ namespace Castor.Emulator.Video
 
                         // handle h-blank interrupt if stat bit 3
                         if (Bit.BitValue(_stat, 3) == 1)
-                            _d.ISR.RequestInterrupt(InterruptFlags.STAT);
+                            _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
                     }
                     break;
 
@@ -328,7 +331,7 @@ namespace Castor.Emulator.Video
                         {
                             // trigger lcd stat interrupt if bit 6 is set
                             if (Bit.BitValue(_stat, 6) == 1)
-                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
+                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
 
                             Bit.SetBit(_stat, 2);
                         }
@@ -341,11 +344,7 @@ namespace Castor.Emulator.Video
                             _mode = 1;
                             OnRenderEvent();
 
-                            _d.ISR.RequestInterrupt(InterruptFlags.VBL);
-
-                            // trigger another interrupt if stat bit 3 is set
-                            if (Bit.BitValue(_stat, 4) == 1)
-                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
+                            _d.IRQ.RequestInterrupt(InterruptFlags.VBL);
                         }
                         else // otherwise just enter OAM read
                         {
@@ -353,7 +352,7 @@ namespace Castor.Emulator.Video
 
                             // handle oam interrupt if stat bit 5 is set
                             if (Bit.BitValue(_stat, 5) == 1)
-                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
+                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
                         }
                     }
                     break;
@@ -361,21 +360,25 @@ namespace Castor.Emulator.Video
                 // Vblank period
                 case 1:
                     {
+                        // trigger stat mode 1 interrupt if stat bit 3 is set
+                        if (Bit.BitValue(_stat, 4) == 1)
+                            _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
+
                         if (_modeclock >= 456)
                         {
                             _modeclock = 0;
                             _line++; // still need to increment lines for LY reg
+
+                            // handle oam interrupt if stat bit 5 is set
+                            if (Bit.BitValue(_stat, 5) == 1)
+                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
                         }
 
                         if (_line > 153) // lasts 4560 clocks
                         {
                             _modeclock = 0;
                             _line = 0; // reset line
-                            _mode = 2; // reenter oam read                            
-
-                            // handle oam interrupt if stat bit 5 is set
-                            if (Bit.BitValue(_stat, 5) == 1)
-                                _d.ISR.RequestInterrupt(InterruptFlags.STAT);
+                            _mode = 2; // reenter oam read
                         }
                     }
                     break;

@@ -38,8 +38,8 @@ namespace Castor.Emulator.CPU
         void Swap(ref byte io8);
         void SwapHL();
         void Bit(int num, byte in8);
-        void Set(uint num, ref byte io8);
-        void Res(uint num, ref byte io8);
+        void Set(int num, ref byte io8);
+        void Res(int num, ref byte io8);
         // --- Control
         void Jp();
         void JpHL();

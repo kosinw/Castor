@@ -28,6 +28,7 @@ namespace Castor.Emulator.CPU
                 case 0xF0: Load(ref A, ZeroPage); break;
                 case 0x0A: Load(ref A, AddrBC); break;
                 case 0x1A: Load(ref A, AddrDE); break;
+                case 0xFA: Load(ref A, ReadByte(Imm16())); break;
                 case 0x47: Load(ref B, A); break;
                 case 0x40: Load(ref B, B); break;
                 case 0x41: Load(ref B, C); break;
@@ -94,6 +95,8 @@ namespace Castor.Emulator.CPU
                 case 0xE2: Load(C + 0xFF00, A); break;
                 case 0xE0: Load(Imm8() + 0xFF00, A); break;
                 case 0xEA: Load(Imm16(), A); break;
+                case 0x02: Load(BC, A); break;
+                case 0x12: Load(DE, A); break;
                 #endregion
                 #region 8-bit arithmetic
                 case 0x17: Rla(); break;
@@ -146,6 +149,7 @@ namespace Castor.Emulator.CPU
                 case 0x84: Add(H); break;
                 case 0x85: Add(L); break;
                 case 0x86: Add(AddrHL); break;
+                case 0x8E: Adc(AddrHL); break;
                 case 0x97: Sub(A); break;
                 case 0x90: Sub(B); break;
                 case 0x91: Sub(C); break;
@@ -164,7 +168,11 @@ namespace Castor.Emulator.CPU
                 case 0xC3: Jp(); break;
                 case 0xE9: JpHL(); break;
                 case 0xCD: Call(); break;
+                case 0xC0: Ret(Cond.NZ); break;
+                case 0xC8: Ret(Cond.Z); break;
+                case 0xD0: Ret(Cond.NC); break;
                 case 0xC9: Ret(); break;
+                case 0xD9: Reti(); break;
                 case 0xC7: Rst(0x00); break;
                 case 0xCF: Rst(0x08); break;
                 case 0xD7: Rst(0x10); break;
@@ -176,6 +184,7 @@ namespace Castor.Emulator.CPU
                 #endregion
                 #region Miscellaneous
                 case 0x00: Nop(); break;
+                case 0x27: Daa(); break;
                 case 0x2F: Cpl(); break;
                 case 0xCB: DecodeCB(DecodeInstruction()); break;
                 case 0xF3: Di(); break;
@@ -233,6 +242,10 @@ namespace Castor.Emulator.CPU
                 #endregion
                 #region Bit
                 case 0x7C: Bit(7, H); break;
+                case 0x41: Bit(0, C); break;
+                #endregion
+                #region Reset
+                case 0x87: Res(0, ref A); break;
                 #endregion
 
                 default: UnimplementedCB(op); break;
@@ -241,12 +254,12 @@ namespace Castor.Emulator.CPU
 
         private void Unimplemented(byte op)
         {
-            throw new Exception($"Opcode not defined: 0x{op:X2} at PC: 0x{PC - 1:X2}.");
+            throw new Exception($"Opcode not defined: 0x{op:X2} at PC: 0x{PC - 1:X4}.");
         }
 
         private void UnimplementedCB(byte op)
         {
-            throw new Exception($"Opcode not defined: 0xCB 0x{op:X2} at PC: 0x{PC - 2:X2}.");
+            throw new Exception($"Opcode not defined: 0xCB 0x{op:X2} at PC: 0x{PC - 2:X4}.");
         }
     }
 }

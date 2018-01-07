@@ -48,9 +48,9 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF00:
-                            return _d.IN.P1;
+                            return _d.JOY.P1;
                         case 0xFF0F:
-                            return _d.ISR.IF;
+                            return _d.IRQ.IF;
                         case 0xFF40:
                             return _d.GPU.LCDC;
                         case 0xFF41:
@@ -70,7 +70,7 @@ namespace Castor.Emulator.Memory
                         case 0xFF49:
                             return _d.GPU.OBP1;
                         default:
-                            return 0;
+                            throw new Exception("You may not read to this memory location.");
                     }
                 }
                 else if (idx < 0xFF80)
@@ -78,7 +78,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     return _zram[idx - 0xFF80];
                 else if (idx == 0xFFFF)
-                    return _d.ISR.IE;
+                    return _d.IRQ.IE;
 
                 throw new Exception("You may not read to this memory location.");
             }
@@ -104,10 +104,10 @@ namespace Castor.Emulator.Memory
                     switch (idx)
                     {
                         case 0xFF00:
-                            _d.IN.P1 = value;
+                            _d.JOY.P1 = value;
                             break;
                         case 0xFF0F:
-                            _d.ISR.IF = value;
+                            _d.IRQ.IF = value;
                             break;
                         case 0xFF40:
                             _d.GPU.LCDC = value;
@@ -150,7 +150,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _zram[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _d.ISR.IE = value;                
+                    _d.IRQ.IE = value;                
             }
         }
     }
