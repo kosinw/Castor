@@ -14,7 +14,7 @@ namespace Castor.Emulator.Memory
         private byte[] _zram;
         private BootROM _bootROM = new BootROM();
 
-        private bool _enableBIOS = true;
+        public bool _enableBIOS = true;
 
         public MemoryMapper(Device system)
         {

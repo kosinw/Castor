@@ -172,7 +172,7 @@ namespace Castor.Emulator.CPU
                 case 0xC8: Ret(Cond.Z); break;
                 case 0xD0: Ret(Cond.NC); break;
                 case 0xC9: Ret(); break;
-                case 0xD9: Reti(); break;
+                case 0xD9: Reti(); return;
                 case 0xC7: Rst(0x00); break;
                 case 0xCF: Rst(0x08); break;
                 case 0xD7: Rst(0x10); break;

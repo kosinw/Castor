@@ -176,11 +176,14 @@ namespace Castor.Emulator.CPU
 
         public int Step()
         {
-            
-            if (PC == 0x2501)
+            if (PC == 0x30 && !_d.MMU._enableBIOS)
+            {
                 ;
+            }
 
+#if DEBUG
             lastPC = PC;
+#endif
 
             _cycles = 0;
 
