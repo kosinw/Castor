@@ -16,6 +16,7 @@ namespace Castor.Emulator
         public InterruptController IRQ;
         public DMAController DMA;
         public InputController JOY;
+        public TimerController TIM;
 
         public Device()
         {
@@ -26,6 +27,7 @@ namespace Castor.Emulator
             GPU = new VideoController(this);
             IRQ = new InterruptController(this);
             JOY = new InputController(this);
+            TIM = new TimerController(this);
         }
 
         public void LoadROM(byte[] bytecode)
@@ -44,6 +46,7 @@ namespace Castor.Emulator
             for (int _counter = 0; _counter < 70_224;)
             {
                 int cycles = CPU.Step();
+                TIM.Step(cycles);
                 GPU.Step(cycles);
                 DMA.Step(cycles);
                 JOY.Step();

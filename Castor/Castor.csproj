@@ -72,8 +72,10 @@
     <Compile Include="Emulator\Memory\InputController.cs" />
     <Compile Include="Emulator\Memory\InputEnums.cs" />
     <Compile Include="Emulator\Memory\MemoryMapper.cs" />
+    <Compile Include="Emulator\Memory\TimerController.cs" />
     <Compile Include="Emulator\Utility\Bit.cs" />
     <Compile Include="Emulator\Utility\Consts.cs" />
+    <Compile Include="Emulator\Utility\HistoryQueue.cs" />
     <Compile Include="Emulator\Utility\Math.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />
     <Compile Include="Emulator\Video\DMAController.cs" />

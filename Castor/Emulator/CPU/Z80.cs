@@ -1,5 +1,9 @@
 ﻿using Castor.Emulator.Utility;
 using System;
+using System.Collections;
+using System.Linq;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Castor.Emulator.CPU
 {
@@ -158,12 +162,9 @@ namespace Castor.Emulator.CPU
         private Device _d;
         private IME _ime;
 
+
         private int _cycles;
         private bool _halted;
-
-#if DEBUG
-        private ushort lastPC;
-#endif
         #endregion;
 
         public Z80(Device d)
@@ -176,15 +177,6 @@ namespace Castor.Emulator.CPU
 
         public int Step()
         {
-            if (PC == 0x30 && !_d.MMU._enableBIOS)
-            {
-                ;
-            }
-
-#if DEBUG
-            lastPC = PC;
-#endif
-
             _cycles = 0;
 
             if (!_halted)
@@ -201,7 +193,7 @@ namespace Castor.Emulator.CPU
                         break;
                 }
             }
-            
+
             return _cycles;
         }
 
@@ -415,6 +407,7 @@ namespace Castor.Emulator.CPU
 
         public void Call()
         {
+
             ushort addr = ReadWord(_registers.Bump(2)); // memory access low + hi byte (2 M-cycles)
             InternalDelay(); // extra internal delay (1 M-cycle)
             Push(PC); // memory access pc hi + low byte (2 M-cycles);
@@ -435,8 +428,11 @@ namespace Castor.Emulator.CPU
         }
 
         public void Jp(Cond cond)
-        {
-            throw new NotImplementedException();
+        {            
+            ushort value = ReadWord(_registers.Bump(2));
+
+            if (cond.FlagSet(F))
+                Jump(value);
         }
 
         public void Jr(Cond cond)
@@ -464,7 +460,7 @@ namespace Castor.Emulator.CPU
         public void Rst(byte vec)
         {
             InternalDelay();
-            WriteWord(SP, PC);
+            Push(PC);
             PC = vec;
         }
 
@@ -506,32 +502,34 @@ namespace Castor.Emulator.CPU
         public void Daa()
         {
             var carry = false;
+            F &= (byte)~Cond.H;
 
-            if ((_registers.F & (byte)Cond.N) == 0)
+            if ((_registers.F & (byte)Cond.H) != 0 || (_registers.A & 0xF) > 0x09)
             {
-                if ((_registers.F & (byte)Cond.C) != 0 || _registers.A > 0x99)
-                {
-                    _registers.A += 0x60;
-                    carry = true;
-                }
-                if ((_registers.F & (byte)Cond.H) != 0 || (_registers.A & 0xF) > 0x09)
-                {
-                    _registers.A += 0x6;
-                }
+                _registers.A += 0x6;
             }
-
-            else if ((_registers.F & (byte)Cond.C) != 0)
+            if ((_registers.F & (byte)Cond.C) != 0 || _registers.A > 0x90)
             {
+                _registers.A += 0x60;
+
                 carry = true;
-                _registers.A += (_registers.F & (byte)Cond.H) != 0 ? (byte)0x9a : (byte)0x0a;
             }
 
-            else if ((_registers.F & (byte)Cond.H) != 0)
+            if (A == 0)
             {
-                _registers.A += 0xfa;
+                F |= (byte)Cond.Z;
             }
 
-            F = (byte)(Cond.Z.Test(A == 0) | ((byte)Cond.N & F) | Cond.C.Test(carry));
+            if (carry)
+            {
+                F |= (byte)Cond.C;
+            }
+            else
+            {
+                F &= (byte)~Cond.C;
+            }
+
+            return;
         }
 
         public void Cpl()
@@ -593,6 +591,11 @@ namespace Castor.Emulator.CPU
         {
             InternalDelay();
             io16--;
+        }
+
+        public void Res(int num, int indr)
+        {
+            WriteByte(indr, Utility.Bit.ClearBit(ReadByte(indr), num));
         }
         #endregion
     }

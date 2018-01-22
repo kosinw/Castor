@@ -40,6 +40,7 @@ namespace Castor.Emulator.CPU
         void Bit(int num, byte in8);
         void Set(int num, ref byte io8);
         void Res(int num, ref byte io8);
+        void Res(int num, int indr);
         // --- Control
         void Jp();
         void JpHL();

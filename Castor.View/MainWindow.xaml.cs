@@ -108,6 +108,8 @@ namespace Castor.View
             if (_systemThread != null)
             {
                 _systemThread.Abort();
+
+                
             }
         }
     }

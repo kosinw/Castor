@@ -164,13 +164,15 @@ namespace Castor.Emulator.CPU
                 #region Control                
                 case 0x18: Jr(); break;
                 case 0x20: Jr(Cond.NZ); break;
-                case 0x28: Jr(Cond.Z); break;
+                case 0x28: Jr(Cond.Z); break;                
                 case 0xC3: Jp(); break;
+                case 0xCA: Jp(Cond.Z); break;
                 case 0xE9: JpHL(); break;
                 case 0xCD: Call(); break;
                 case 0xC0: Ret(Cond.NZ); break;
                 case 0xC8: Ret(Cond.Z); break;
                 case 0xD0: Ret(Cond.NC); break;
+                case 0xD8: Ret(Cond.C); break;
                 case 0xC9: Ret(); break;
                 case 0xD9: Reti(); return;
                 case 0xC7: Rst(0x00); break;
@@ -246,6 +248,7 @@ namespace Castor.Emulator.CPU
                 #endregion
                 #region Reset
                 case 0x87: Res(0, ref A); break;
+                case 0xBE: Res(7, HL); break;
                 #endregion
 
                 default: UnimplementedCB(op); break;

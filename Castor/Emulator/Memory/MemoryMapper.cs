@@ -49,6 +49,14 @@ namespace Castor.Emulator.Memory
                     {
                         case 0xFF00:
                             return _d.JOY.P1;
+                        case 0xFF04:
+                            return _d.TIM.DIV;
+                        case 0xFF05:
+                            return _d.TIM.TIMA;
+                        case 0xFF06:
+                            return _d.TIM.TMA;
+                        case 0xFF07:
+                            return _d.TIM.TAC;
                         case 0xFF0F:
                             return _d.IRQ.IF;
                         case 0xFF40:
@@ -105,6 +113,18 @@ namespace Castor.Emulator.Memory
                     {
                         case 0xFF00:
                             _d.JOY.P1 = value;
+                            break;
+                        case 0xFF04:
+                            _d.TIM.DIV = value;
+                            break;
+                        case 0xFF05:
+                            _d.TIM.TIMA = value;
+                            break;
+                        case 0xFF06:
+                            _d.TIM.TMA = value;
+                            break;
+                        case 0xFF07:
+                            _d.TIM.TAC = value;
                             break;
                         case 0xFF0F:
                             _d.IRQ.IF = value;
