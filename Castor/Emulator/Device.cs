@@ -33,7 +33,6 @@ namespace Castor.Emulator
         public void LoadROM(byte[] bytecode)
         {
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
-            JOY.Initialize();
         }
 
         /// <summary>
@@ -46,10 +45,8 @@ namespace Castor.Emulator
             for (int _counter = 0; _counter < 70_224;)
             {
                 int cycles = CPU.Step();
-                TIM.Step(cycles);
                 GPU.Step(cycles);
                 DMA.Step(cycles);
-                JOY.Step();
 
                 _counter += cycles; // need to add the cycles used up
             }            

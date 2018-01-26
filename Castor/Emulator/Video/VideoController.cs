@@ -12,9 +12,6 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController
     {
-        public delegate void RenderEventHandler();
-        public event RenderEventHandler OnRenderEvent;
-
         public const int RENDER_WIDTH = 160;
         public const int RENDER_HEIGHT = 144;
 
@@ -26,6 +23,20 @@ namespace Castor.Emulator.Video
                 var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(_framebuffer, 0);
                 return ptr;
             }
+        }
+
+        public byte[] GetScreenBuffer()
+        {
+            byte[] framebuffer = new byte[_framebuffer.Length * 4];
+
+            for (int i = 0; i < _framebuffer.Length; ++i)
+            {
+                framebuffer[i * 4 + 0] = _framebuffer[i];
+                framebuffer[i * 4 + 1] = _framebuffer[i];
+                framebuffer[i * 4 + 2] = _framebuffer[i];
+            }
+
+            return framebuffer;
         }
 
         #region Private Members 
@@ -342,7 +353,6 @@ namespace Castor.Emulator.Video
                         if (_line == 143) // if this is last line then enter vblank
                         {
                             _mode = 1;
-                            OnRenderEvent();
 
                             _d.IRQ.RequestInterrupt(InterruptFlags.VBL);
                         }
