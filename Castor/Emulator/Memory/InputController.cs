@@ -1,4 +1,4 @@
-﻿using OpenTK.Input;
+﻿using System;
 
 namespace Castor.Emulator.Memory
 {
