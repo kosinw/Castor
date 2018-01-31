@@ -2,6 +2,10 @@
 
 Castor is a Gameboy interpreter written using .NET Framework, C#, and WPF. The primary purpose of this project is to learn about emulator systems and low-level operations.
 
+# Screenshot(s)
+
+![Nintendo Logo](Screenshot_1.png)
+
 # Implemented Features
 * partial CPU decoding
 * background rendering
