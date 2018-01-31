@@ -19,7 +19,7 @@ namespace Castor.GL
         [DllImport("winmm.dll")]
         internal static extern uint timeEndPeriod(uint period);
 
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetForegroundWindow(System.IntPtr hWnd);
 
