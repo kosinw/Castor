@@ -9,7 +9,7 @@ Castor is a Gameboy interpreter written using C# and Monogame. The primary purpo
 # Implemented Features
 * partial CPU decoding
 * background rendering
-* working ui using wpf
+* working ui using monogame
 * oam dma support
 * functional bootrom
 * window rendering
