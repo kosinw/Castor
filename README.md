@@ -1,6 +1,6 @@
 # Castor
 
-Castor is a Gameboy interpreter written using .NET Framework, C#, and WPF. The primary purpose of this project is to learn about emulator systems and low-level operations.
+Castor is a Gameboy interpreter written using C# and Monogame. The primary purpose of this project is to learn about emulator systems and low-level operations.
 
 # Implemented Features
 * partial CPU decoding
@@ -10,11 +10,11 @@ Castor is a Gameboy interpreter written using .NET Framework, C#, and WPF. The p
 * functional bootrom
 * window rendering
 * input
+* interrupt support
 
 # Unimplemented Features
 * complete CPU decoding
 * any type of testing
-* interrupt support
 * timers
 * cartridge types
 * oam support (sprites)
