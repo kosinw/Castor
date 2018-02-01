@@ -1,6 +1,7 @@
 ﻿using Castor.Emulator;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
 using System.IO;
@@ -18,10 +19,6 @@ namespace Castor.GL
         internal static extern uint timeBeginPeriod(uint period);
         [DllImport("winmm.dll")]
         internal static extern uint timeEndPeriod(uint period);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetForegroundWindow(System.IntPtr hWnd);
 
         GraphicsDeviceManager _graphics;
         SpriteBatch _spritebatch;
@@ -82,7 +79,6 @@ namespace Castor.GL
 
                 byte[] bytecode = File.ReadAllBytes(filename);
                 _emulator.LoadROM(bytecode);
-
                 _emulatorthread = new Thread(new ThreadStart(EmulatorRoutine));
                 _emulatorthread.Start();
             }
@@ -94,14 +90,7 @@ namespace Castor.GL
 
                 System.Environment.Exit(0);
             }
-            
-
-            //
-
-
         }
-
-        volatile bool HasStartedThread = false;
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -124,12 +113,6 @@ namespace Castor.GL
             {
                 byte[] backbuffer = _emulator.GPU.GetScreenBuffer();
                 _backbuffer.SetData(backbuffer);
-            }
-
-            if (HasStartedThread)
-            {
-                HasStartedThread = false;
-                SetForegroundWindow(Window.Handle);
             }
 
             base.Update(gameTime);
@@ -173,8 +156,6 @@ namespace Castor.GL
             Stopwatch watch = Stopwatch.StartNew();
             System.TimeSpan dt = System.TimeSpan.FromSeconds(1.0 / 60.0);
             System.TimeSpan elapsedTime = System.TimeSpan.Zero;
-
-            HasStartedThread = true;
 
             while (true)
             {

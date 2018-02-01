@@ -168,8 +168,9 @@ namespace Castor.Emulator.CPU
         #endregion;
 
         public Z80(Device d)
-        {
+        {            
             _d = d;
+            _idx = new Memory.MemoryIndexer(d);
             _cycles = 0;
             _registers = new Registers();
             _halted = false;
@@ -225,6 +226,11 @@ namespace Castor.Emulator.CPU
                 else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Joypad))
                     InterruptVec(0x60);
             }
+        }
+
+        public ushort BumpHL(ushort times = 1)
+        {
+            return _registers.BumpHL(times);    
         }
 
         #region Opcode Methods
@@ -428,7 +434,7 @@ namespace Castor.Emulator.CPU
         }
 
         public void Jp(Cond cond)
-        {            
+        {
             ushort value = ReadWord(_registers.Bump(2));
 
             if (cond.FlagSet(F))
