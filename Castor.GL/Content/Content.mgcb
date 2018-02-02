@@ -13,3 +13,8 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin opcodes.json
+/importer:
+/processor:
+/build:opcodes.json
+

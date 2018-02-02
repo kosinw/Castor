@@ -1,5 +1,4 @@
-﻿using Castor.Emulator.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,34 +7,19 @@ using System.Threading.Tasks;
 namespace Castor.Emulator.CPU
 {
     public partial class Z80
-    {
-        private MemoryIndexer _idx;
-
+    {        
         public void Decode(byte op)
         {
             switch (op)
             {
-                // ld reg,reg
-                case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x47: // ld b,reg
-                case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4f: // ld c,reg
-                case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x57: // ld d,reg
-                case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d: case 0x5f: // ld e,reg
-                case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x67: // ld h,reg
-                case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6f: // ld l,reg
-                case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7f: // ld a,reg
-                    {
-                        _idx[MemoryIndexer.Type.Register, (op >> 3) & 7] = _idx[MemoryIndexer.Type.Register, op & 7];
-                        break;
-                    }
-                
                 #region 8-bit loads
-                //case 0x7F: Load(ref A, A); break;
-                //case 0x78: Load(ref A, B); break;
-                //case 0x79: Load(ref A, C); break;
-                //case 0x7A: Load(ref A, D); break;
-                //case 0x7B: Load(ref A, E); break;
-                //case 0x7C: Load(ref A, H); break;
-                //case 0x7D: Load(ref A, L); break;
+                case 0x7F: Load(ref A, A); break;
+                case 0x78: Load(ref A, B); break;
+                case 0x79: Load(ref A, C); break;
+                case 0x7A: Load(ref A, D); break;
+                case 0x7B: Load(ref A, E); break;
+                case 0x7C: Load(ref A, H); break;
+                case 0x7D: Load(ref A, L); break;
                 case 0x7E: Load(ref A, AddrHL); break;
                 case 0x2A: Load(ref A, AddrHLI); break;
                 case 0x3A: Load(ref A, AddrHLD); break;
@@ -45,57 +29,57 @@ namespace Castor.Emulator.CPU
                 case 0x0A: Load(ref A, AddrBC); break;
                 case 0x1A: Load(ref A, AddrDE); break;
                 case 0xFA: Load(ref A, ReadByte(Imm16())); break;
-                //case 0x47: Load(ref B, A); break;
-                //case 0x40: Load(ref B, B); break;
-                //case 0x41: Load(ref B, C); break;
-                //case 0x42: Load(ref B, D); break;
-                //case 0x43: Load(ref B, E); break;
-                //case 0x44: Load(ref B, H); break;
-                //case 0x45: Load(ref B, L); break;
+                case 0x47: Load(ref B, A); break;
+                case 0x40: Load(ref B, B); break;
+                case 0x41: Load(ref B, C); break;
+                case 0x42: Load(ref B, D); break;
+                case 0x43: Load(ref B, E); break;
+                case 0x44: Load(ref B, H); break;
+                case 0x45: Load(ref B, L); break;
                 case 0x46: Load(ref B, AddrHL); break;
                 case 0x06: Load(ref B, Imm8()); break;
-                //case 0x4F: Load(ref C, A); break;
-                //case 0x48: Load(ref C, B); break;
-                //case 0x49: Load(ref C, C); break;
-                //case 0x4A: Load(ref C, D); break;
-                //case 0x4B: Load(ref C, E); break;
-                //case 0x4C: Load(ref C, H); break;
-                //case 0x4D: Load(ref C, L); break;
+                case 0x4F: Load(ref C, A); break;
+                case 0x48: Load(ref C, B); break;
+                case 0x49: Load(ref C, C); break;
+                case 0x4A: Load(ref C, D); break;
+                case 0x4B: Load(ref C, E); break;
+                case 0x4C: Load(ref C, H); break;
+                case 0x4D: Load(ref C, L); break;
                 case 0x4E: Load(ref C, AddrHL); break;
                 case 0x0E: Load(ref C, Imm8()); break;
-                //case 0x57: Load(ref D, A); break;
-                //case 0x50: Load(ref D, B); break;
-                //case 0x51: Load(ref D, C); break;
-                //case 0x52: Load(ref D, D); break;
-                //case 0x53: Load(ref D, E); break;
-                //case 0x54: Load(ref D, H); break;
-                //case 0x55: Load(ref D, L); break;
+                case 0x57: Load(ref D, A); break;
+                case 0x50: Load(ref D, B); break;
+                case 0x51: Load(ref D, C); break;
+                case 0x52: Load(ref D, D); break;
+                case 0x53: Load(ref D, E); break;
+                case 0x54: Load(ref D, H); break;
+                case 0x55: Load(ref D, L); break;
                 case 0x56: Load(ref D, AddrHL); break;
                 case 0x16: Load(ref D, Imm8()); break;
-                //case 0x5F: Load(ref E, A); break;
-                //case 0x58: Load(ref E, B); break;
-                //case 0x59: Load(ref E, C); break;
-                //case 0x5A: Load(ref E, D); break;
-                //case 0x5B: Load(ref E, E); break;
-                //case 0x5C: Load(ref E, H); break;
-                //case 0x5D: Load(ref E, L); break;
+                case 0x5F: Load(ref E, A); break;
+                case 0x58: Load(ref E, B); break;
+                case 0x59: Load(ref E, C); break;
+                case 0x5A: Load(ref E, D); break;
+                case 0x5B: Load(ref E, E); break;
+                case 0x5C: Load(ref E, H); break;
+                case 0x5D: Load(ref E, L); break;
                 case 0x5E: Load(ref E, AddrHL); break;
                 case 0x1E: Load(ref E, Imm8()); break;
-                //case 0x67: Load(ref H, A); break;
-                //case 0x60: Load(ref H, B); break;
-                //case 0x61: Load(ref H, C); break;
-                //case 0x62: Load(ref H, D); break;
-                //case 0x63: Load(ref H, E); break;
-                //case 0x64: Load(ref H, H); break;
-                //case 0x65: Load(ref H, L); break;
+                case 0x67: Load(ref H, A); break;
+                case 0x60: Load(ref H, B); break;
+                case 0x61: Load(ref H, C); break;
+                case 0x62: Load(ref H, D); break;
+                case 0x63: Load(ref H, E); break;
+                case 0x64: Load(ref H, H); break;
+                case 0x65: Load(ref H, L); break;
                 case 0x66: Load(ref H, AddrHL); break;
-                //case 0x6F: Load(ref L, A); break;
-                //case 0x68: Load(ref L, B); break;
-                //case 0x69: Load(ref L, C); break;
-                //case 0x6A: Load(ref L, D); break;
-                //case 0x6B: Load(ref L, E); break;
-                //case 0x6C: Load(ref L, H); break;
-                //case 0x6D: Load(ref L, L); break;
+                case 0x6F: Load(ref L, A); break;
+                case 0x68: Load(ref L, B); break;
+                case 0x69: Load(ref L, C); break;
+                case 0x6A: Load(ref L, D); break;
+                case 0x6B: Load(ref L, E); break;
+                case 0x6C: Load(ref L, H); break;
+                case 0x6D: Load(ref L, L); break;
                 case 0x6E: Load(ref L, AddrHL); break;
                 case 0x2E: Load(ref L, Imm8()); break;
                 case 0x77: Load(HL, A); break;

@@ -62,7 +62,6 @@
     <Compile Include="Emulator\CPU\Cond.cs" />
     <Compile Include="Emulator\CPU\ICPU.cs" />
     <Compile Include="Emulator\CPU\IME.cs" />
-    <Compile Include="Emulator\Memory\MemoryIndexer.cs" />
     <Compile Include="Emulator\CPU\Z80.Decoder.cs" />
     <Compile Include="Emulator\CPU\Registers.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
