@@ -10,22 +10,22 @@ namespace Castor.Emulator.CPU
     {
         private ushort NW
         {
-            get => ReadWord(_registers.Bump(2));
+            get => ReadWord(_r.Bump(2));
         }
 
         private byte NB
         {
-            get => ReadByte(_registers.Bump());
+            get => ReadByte(_r.Bump());
         }
 
         private ushort HLI
         {
-            get => _registers.BumpHL(1);
+            get => _r.BumpHL(1);
         }
 
         private ushort HLD
         {
-            get => _registers.BumpHL(-1);
+            get => _r.BumpHL(-1);
         }
 
         #region Register Dissassembly Tables

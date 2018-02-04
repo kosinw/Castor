@@ -37,11 +37,50 @@ namespace Castor.Emulator.CPU
             return ret;
         }
 
-       public ushort BumpHL(short times = 1)
+        public ushort BumpHL(short times = 1)
         {
             var ret = HL;
             HL = (ushort)(HL + times);
             return ret;
+        }
+
+        public bool MeetsFlagsConditions()
+        {
+
+        }
+
+        public static class Flags
+        {
+            public const int Z = 7;
+            public const int N = 6;
+            public const int H = 5;
+            public const int C = 4;
+        }
+
+        /// <summary>
+        /// This indexer is used to access the bits of the F register.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public bool this[int i]
+        {
+            get
+            {
+                return ((F & 1 << i) >> i == 0);
+            }
+
+            set
+            {
+                if (value)
+                {
+                    F = (byte)(F | (1 << i));
+                }
+
+                else
+                {
+                    F = (byte)(F & ~(1 << i));
+                }
+            }
         }
     }
 }

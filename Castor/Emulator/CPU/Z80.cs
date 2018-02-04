@@ -10,27 +10,27 @@ namespace Castor.Emulator.CPU
     public partial class Z80 : IInstructions
     {
         #region References
-        public ref byte A => ref _registers.A;
-        public ref byte F => ref _registers.F;
-        public ref byte B => ref _registers.B;
-        public ref byte C => ref _registers.C;
-        public ref byte D => ref _registers.D;
-        public ref byte E => ref _registers.E;
-        public ref byte H => ref _registers.H;
-        public ref byte L => ref _registers.L;
+        public ref byte A => ref _r.A;
+        public ref byte F => ref _r.F;
+        public ref byte B => ref _r.B;
+        public ref byte C => ref _r.C;
+        public ref byte D => ref _r.D;
+        public ref byte E => ref _r.E;
+        public ref byte H => ref _r.H;
+        public ref byte L => ref _r.L;
 
-        public ref ushort AF => ref _registers.AF;
-        public ref ushort BC => ref _registers.BC;
-        public ref ushort DE => ref _registers.DE;
-        public ref ushort HL => ref _registers.HL;
+        public ref ushort AF => ref _r.AF;
+        public ref ushort BC => ref _r.BC;
+        public ref ushort DE => ref _r.DE;
+        public ref ushort HL => ref _r.HL;
 
-        public ref ushort SP => ref _registers.SP;
-        public ref ushort PC => ref _registers.PC;
+        public ref ushort SP => ref _r.SP;
+        public ref ushort PC => ref _r.PC;
         #endregion                
 
         #region Utility Functions
         private void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
-        private byte DecodeInstruction() { InternalDelay(); return _d.MMU[_registers.Bump()]; }
+        private byte DecodeInstruction() { InternalDelay(); return _d.MMU[_r.Bump()]; }
         private byte ReadByte(int addr, int delay = 1)
         {
             InternalDelay(delay);
@@ -70,11 +70,11 @@ namespace Castor.Emulator.CPU
         }
         private byte Imm8()
         {
-            return ReadByte(_registers.Bump());
+            return ReadByte(_r.Bump());
         }
         private ushort Imm16()
         {
-            return ReadWord(_registers.Bump(2));
+            return ReadWord(_r.Bump(2));
         }
 
         private void InterruptVec(byte vec)
@@ -93,7 +93,7 @@ namespace Castor.Emulator.CPU
         #endregion
 
         #region Internal Members
-        private Registers _registers;
+        private Registers _r;
         private Device _d;
         private IME _ime;
 
@@ -105,7 +105,7 @@ namespace Castor.Emulator.CPU
         {
             _d = d;
             _cycles = 0;
-            _registers = new Registers();
+            _r = new Registers();
             _halted = false;
         }
 
@@ -616,7 +616,7 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void Rrac()
+        public void Rrca()
         {
             throw new NotImplementedException();
         }
@@ -678,7 +678,12 @@ namespace Castor.Emulator.CPU
 
         public void Xor(int i)
         {
-            throw new NotImplementedException();
+            A = (byte)(A ^ this[R, i]);
+
+            _r[Registers.Flags.Z] = (A == 0);
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = false;
         }
 
         public void Or(int i)
@@ -746,42 +751,42 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void Add()
+        public void Add8()
         {
             throw new NotImplementedException();
         }
 
-        public void Adc()
+        public void Adc8()
         {
             throw new NotImplementedException();
         }
 
-        public void Sub()
+        public void Sub8()
         {
             throw new NotImplementedException();
         }
 
-        public void Sbc()
+        public void Sbc8()
         {
             throw new NotImplementedException();
         }
 
-        public void And()
+        public void And8()
         {
             throw new NotImplementedException();
         }
 
-        public void Xor()
+        public void Xor8()
         {
             throw new NotImplementedException();
         }
 
-        public void Or()
+        public void Or8()
         {
             throw new NotImplementedException();
         }
 
-        public void Cp()
+        public void Cp8()
         {
             throw new NotImplementedException();
         }
@@ -833,7 +838,9 @@ namespace Castor.Emulator.CPU
 
         public void Bit(int n, int i)
         {
-            throw new NotImplementedException();
+            _r[Registers.Flags.Z] = Convert.ToBoolean(Utility.Bit.BitValue((byte)this[R, i], n));
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = true;
         }
 
         public void Res(int n, int i)

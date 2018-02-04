@@ -5,12 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
-{    
+{
+    public enum IME
+    {
+        Disabled,
+        Enabled,
+        Enabling
+    }
+
     public enum Cond
     {
         Z,
         C,
         NZ,
         NC
-    }        
+    }
 }

@@ -99,9 +99,9 @@ namespace Castor.Emulator.CPU
                             switch (y)
                             {
                                 case 0: Rlca(); return;
-                                case 1: Rrac(); return;
+                                case 1: Rrca(); return;
                                 case 2: Rla(); return;
-                                case 3: Rrac(); return;
+                                case 3: Rrca(); return;
                                 case 4: Daa(); return;
                                 case 5: Cpl(); return;
                                 case 6: Scf(); return;
@@ -248,14 +248,14 @@ namespace Castor.Emulator.CPU
                         {
                             switch (y)
                             {
-                                case 0: Add(); return;
-                                case 1: Adc(); return;
-                                case 2: Sub(); return;
-                                case 3: Sbc(); return;
-                                case 4: And(); return;
-                                case 5: Xor(); return;
-                                case 6: Or(); return;
-                                case 7: Cp(); return;
+                                case 0: Add8(); return;
+                                case 1: Adc8(); return;
+                                case 2: Sub8(); return;
+                                case 3: Sbc8(); return;
+                                case 4: And8(); return;
+                                case 5: Xor8(); return;
+                                case 6: Or8(); return;
+                                case 7: Cp8(); return;
                             }
 
                             break;

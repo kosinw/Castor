@@ -28,7 +28,7 @@ namespace Castor.Emulator.CPU
         void Rla();
         void Rlca();
         void Rra();
-        void Rrac();
+        void Rrca();
         void Daa();
         void Cpl();
         void Scf();
@@ -46,14 +46,14 @@ namespace Castor.Emulator.CPU
         void Or(int i);
         void Cp(int i);
 
-        void Add();
-        void Adc();
-        void Sub();
-        void Sbc();
-        void And();
-        void Xor();
-        void Or();
-        void Cp();
+        void Add8();
+        void Adc8();
+        void Sub8();
+        void Sbc8();
+        void And8();
+        void Xor8();
+        void Or8();
+        void Cp8();
 
         void Call();
         void Call(int i);
