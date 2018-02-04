@@ -25,16 +25,14 @@ namespace Castor.Emulator.CPU
         void Increment(int t, int i);
         void Decrement(int t, int i);
 
-        void RotateLeftAkk();
-        void RotateLeftAkC();
-
-        void RotateRightAkk();
-        void RotateRightAkC();
-
-        void DecimalAdjustAkk();
-        void Complement();
-        void SetCarryFlag();
-        void XorCarryFlag();
+        void Rla();
+        void Rlca();
+        void Rra();
+        void Rrac();
+        void Daa();
+        void Cpl();
+        void Scf();
+        void Ccf();
 
         void Stop();
         void Halt();
@@ -73,5 +71,18 @@ namespace Castor.Emulator.CPU
         void Ei();
 
         void Nop();
+
+        void Rlc(int i);
+        void Rrc(int i);
+        void Rl(int i);
+        void Rr(int i);
+        void Sla(int i);
+        void Sra(int i);
+        void Swap(int i);
+        void Srl(int i);
+
+        void Bit(int n, int i);
+        void Res(int n, int i);
+        void Set(int n, int i);
     }
 }

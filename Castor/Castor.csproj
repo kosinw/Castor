@@ -61,7 +61,6 @@
     <Compile Include="Emulator\Cartridge\MBC0.cs" />
     <Compile Include="Emulator\CPU\Cond.cs" />
     <Compile Include="Emulator\CPU\IInstructions.cs" />
-    <Compile Include="Emulator\CPU\IZ80.cs" />
     <Compile Include="Emulator\CPU\IME.cs" />
     <Compile Include="Emulator\CPU\Z80.Decoder.cs" />
     <Compile Include="Emulator\CPU\Registers.cs" />
@@ -77,7 +76,6 @@
     <Compile Include="Emulator\Memory\TimerController.cs" />
     <Compile Include="Emulator\Utility\Bit.cs" />
     <Compile Include="Emulator\Utility\Consts.cs" />
-    <Compile Include="Emulator\Utility\Math.cs" />
     <Compile Include="Emulator\Utility\Video.cs" />
     <Compile Include="Emulator\Video\DMAController.cs" />
     <Compile Include="Emulator\Video\VideoController.cs" />

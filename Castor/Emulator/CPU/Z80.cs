@@ -26,72 +26,7 @@ namespace Castor.Emulator.CPU
 
         public ref ushort SP => ref _registers.SP;
         public ref ushort PC => ref _registers.PC;
-        #endregion
-
-        #region Memory Accessors
-        //public byte AddrHL
-        //{
-        //    get
-        //    {
-        //        InternalDelay();
-        //        return _d.MMU[HL];
-        //    }
-
-        //    set
-        //    {
-        //        InternalDelay();
-        //        _d.MMU[HL] = value;
-        //    }
-        //}
-        //public byte AddrHLI
-        //{
-        //    get
-        //    {
-        //        InternalDelay();
-        //        return _d.MMU[HL++];
-        //    }
-
-        //    set
-        //    {
-        //        InternalDelay();
-        //        _d.MMU[HL++] = value;
-        //    }
-        //}
-        //public byte AddrHLD
-        //{
-        //    get
-        //    {
-        //        InternalDelay();
-        //        return _d.MMU[HL--];
-        //    }
-
-        //    set
-        //    {
-        //        InternalDelay();
-        //        _d.MMU[HL--] = value;
-        //    }
-        //}
-        //public byte ZeroPageC
-        //{
-        //    get => ReadByte(C + 0xFF00);
-        //    set => WriteByte(C + 0xFF00, value);
-        //}
-        //public byte ZeroPage
-        //{
-        //    get => ReadByte(Imm8() + 0xFF00);
-        //    set => WriteByte(Imm8() + 0xFF00, value);
-        //}
-        //public byte AddrBC
-        //{
-        //    get => ReadByte(BC);
-        //    set => WriteByte(BC, value);
-        //}
-        //public byte AddrDE
-        //{
-        //    get => ReadByte(DE);
-        //    set => WriteByte(DE, value);
-        //}
-        #endregion
+        #endregion                
 
         #region Utility Functions
         private void InternalDelay(int cycles = 1) => _cycles += cycles * 4;
@@ -161,7 +96,6 @@ namespace Castor.Emulator.CPU
         private Registers _registers;
         private Device _d;
         private IME _ime;
-
 
         private int _cycles;
         private bool _halted;
@@ -667,42 +601,42 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void RotateLeftAkk()
+        public void Rla()
         {
             throw new NotImplementedException();
         }
 
-        public void RotateLeftAkC()
+        public void Rlca()
         {
             throw new NotImplementedException();
         }
 
-        public void RotateRightAkk()
+        public void Rra()
         {
             throw new NotImplementedException();
         }
 
-        public void RotateRightAkC()
+        public void Rrac()
         {
             throw new NotImplementedException();
         }
 
-        public void DecimalAdjustAkk()
+        public void Daa()
         {
             throw new NotImplementedException();
         }
 
-        public void Complement()
+        public void Cpl()
         {
             throw new NotImplementedException();
         }
 
-        public void SetCarryFlag()
+        public void Scf()
         {
             throw new NotImplementedException();
         }
 
-        public void XorCarryFlag()
+        public void Ccf()
         {
             throw new NotImplementedException();
         }
@@ -853,6 +787,61 @@ namespace Castor.Emulator.CPU
         }
 
         public void Rst(ushort adr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rlc(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rrc(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rl(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rr(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Sla(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Sra(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Swap(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Srl(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Bit(int n, int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Res(int n, int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Set(int n, int i)
         {
             throw new NotImplementedException();
         }
