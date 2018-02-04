@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
-    public interface ICPU
+    public interface IZ80
     {
         // --- 8-bit operations
         // 8-bit loads
         void Load(ref byte out8, byte in8);
         void Load(int indr, byte in8, int hlAction = 0);
+
+        
         // 8-bit arithmetic
         void Add(byte in8);
         void Adc(byte in8);
@@ -75,6 +77,6 @@ namespace Castor.Emulator.CPU
         void Add16(ushort io16);
         void Add16SPe();
         void Inc16(ref ushort io16);
-        void Dec16(ref ushort io16);
+        void Dec16(ref ushort io16);        
     }
 }

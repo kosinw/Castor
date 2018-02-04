@@ -60,11 +60,13 @@
     <Compile Include="Emulator\Cartridge\ICartridge.cs" />
     <Compile Include="Emulator\Cartridge\MBC0.cs" />
     <Compile Include="Emulator\CPU\Cond.cs" />
-    <Compile Include="Emulator\CPU\ICPU.cs" />
+    <Compile Include="Emulator\CPU\IInstructions.cs" />
+    <Compile Include="Emulator\CPU\IZ80.cs" />
     <Compile Include="Emulator\CPU\IME.cs" />
     <Compile Include="Emulator\CPU\Z80.Decoder.cs" />
     <Compile Include="Emulator\CPU\Registers.cs" />
     <Compile Include="Emulator\CPU\Z80.cs" />
+    <Compile Include="Emulator\CPU\Z80.Tables.cs" />
     <Compile Include="Emulator\Memory\InterruptController.cs" />
     <Compile Include="Emulator\Device.cs" />
     <Compile Include="Emulator\Memory\BootROM.cs" />

@@ -19,10 +19,6 @@ namespace Castor.GL
         [DllImport("winmm.dll")]
         internal static extern uint timeEndPeriod(uint period);
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetForegroundWindow(System.IntPtr hWnd);
-
         GraphicsDeviceManager _graphics;
         SpriteBatch _spritebatch;
 
@@ -51,9 +47,9 @@ namespace Castor.GL
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize()
-        {            
+        {
             // TODO: Add your initialization logic here
-            
+
             base.Initialize();
         }
 
@@ -64,10 +60,10 @@ namespace Castor.GL
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            _spritebatch = new SpriteBatch(GraphicsDevice);                        
-            
+            _spritebatch = new SpriteBatch(GraphicsDevice);
+
             _backbuffer = new Texture2D(GraphicsDevice, 160, 144);
-            
+
             System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog
             {
                 DefaultExt = ".gb",
@@ -94,14 +90,7 @@ namespace Castor.GL
 
                 System.Environment.Exit(0);
             }
-            
-
-            //
-
-
         }
-
-        volatile bool HasStartedThread = false;
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -124,12 +113,6 @@ namespace Castor.GL
             {
                 byte[] backbuffer = _emulator.GPU.GetScreenBuffer();
                 _backbuffer.SetData(backbuffer);
-            }
-
-            if (HasStartedThread)
-            {
-                HasStartedThread = false;
-                SetForegroundWindow(Window.Handle);
             }
 
             base.Update(gameTime);
@@ -173,8 +156,6 @@ namespace Castor.GL
             Stopwatch watch = Stopwatch.StartNew();
             System.TimeSpan dt = System.TimeSpan.FromSeconds(1.0 / 60.0);
             System.TimeSpan elapsedTime = System.TimeSpan.Zero;
-
-            HasStartedThread = true;
 
             while (true)
             {

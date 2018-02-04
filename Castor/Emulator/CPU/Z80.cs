@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Castor.Emulator.CPU
 {
-    public partial class Z80 : ICPU
+    public partial class Z80 : IInstructions
     {
         #region References
         public ref byte A => ref _registers.A;
@@ -29,68 +29,68 @@ namespace Castor.Emulator.CPU
         #endregion
 
         #region Memory Accessors
-        public byte AddrHL
-        {
-            get
-            {
-                InternalDelay();
-                return _d.MMU[HL];
-            }
+        //public byte AddrHL
+        //{
+        //    get
+        //    {
+        //        InternalDelay();
+        //        return _d.MMU[HL];
+        //    }
 
-            set
-            {
-                InternalDelay();
-                _d.MMU[HL] = value;
-            }
-        }
-        public byte AddrHLI
-        {
-            get
-            {
-                InternalDelay();
-                return _d.MMU[HL++];
-            }
+        //    set
+        //    {
+        //        InternalDelay();
+        //        _d.MMU[HL] = value;
+        //    }
+        //}
+        //public byte AddrHLI
+        //{
+        //    get
+        //    {
+        //        InternalDelay();
+        //        return _d.MMU[HL++];
+        //    }
 
-            set
-            {
-                InternalDelay();
-                _d.MMU[HL++] = value;
-            }
-        }
-        public byte AddrHLD
-        {
-            get
-            {
-                InternalDelay();
-                return _d.MMU[HL--];
-            }
+        //    set
+        //    {
+        //        InternalDelay();
+        //        _d.MMU[HL++] = value;
+        //    }
+        //}
+        //public byte AddrHLD
+        //{
+        //    get
+        //    {
+        //        InternalDelay();
+        //        return _d.MMU[HL--];
+        //    }
 
-            set
-            {
-                InternalDelay();
-                _d.MMU[HL--] = value;
-            }
-        }
-        public byte ZeroPageC
-        {
-            get => ReadByte(C + 0xFF00);
-            set => WriteByte(C + 0xFF00, value);
-        }
-        public byte ZeroPage
-        {
-            get => ReadByte(Imm8() + 0xFF00);
-            set => WriteByte(Imm8() + 0xFF00, value);
-        }
-        public byte AddrBC
-        {
-            get => ReadByte(BC);
-            set => WriteByte(BC, value);
-        }
-        public byte AddrDE
-        {
-            get => ReadByte(DE);
-            set => WriteByte(DE, value);
-        }
+        //    set
+        //    {
+        //        InternalDelay();
+        //        _d.MMU[HL--] = value;
+        //    }
+        //}
+        //public byte ZeroPageC
+        //{
+        //    get => ReadByte(C + 0xFF00);
+        //    set => WriteByte(C + 0xFF00, value);
+        //}
+        //public byte ZeroPage
+        //{
+        //    get => ReadByte(Imm8() + 0xFF00);
+        //    set => WriteByte(Imm8() + 0xFF00, value);
+        //}
+        //public byte AddrBC
+        //{
+        //    get => ReadByte(BC);
+        //    set => WriteByte(BC, value);
+        //}
+        //public byte AddrDE
+        //{
+        //    get => ReadByte(DE);
+        //    set => WriteByte(DE, value);
+        //}
         #endregion
 
         #region Utility Functions
@@ -149,7 +149,7 @@ namespace Castor.Emulator.CPU
             if (_ime == IME.Enabled)
             {
                 InternalDelay(3);
-                Push16(PC);
+                Push(PC);
                 PC = vec;
                 _ime = IME.Disabled;
                 _d.IRQ.IF = 0x00;
@@ -227,244 +227,482 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        #region Opcode Methods
-        public void Load(ref byte out8, byte in8)
+        #region Legacy Instruction Implementations
+        //public void Load(ref byte out8, byte in8)
+        //{
+        //    out8 = in8;
+        //}
+
+        //public void Load(int indr, byte in8, int hlAction = 0)
+        //{
+        //    WriteByte(indr, in8);
+        //    HL += (ushort)hlAction;
+        //}
+
+        //public void Add(byte in8)
+        //{
+        //    A = Utility.Math.Add.Add8(in8, ref _registers);
+        //}
+
+        //public void Adc(byte in8)
+        //{
+        //    byte cy = (F & (byte)Cond.C) != 0 ? (byte)1 : (byte)0;
+        //    A = Utility.Math.Add.Add8((byte)(in8 + cy), ref _registers);
+        //}
+
+        //public void Sub(byte in8)
+        //{
+        //    A = Utility.Math.Sub.Subt(in8, ref _registers);
+        //}
+
+        //public void Sbc(byte in8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Cp(byte in8)
+        //{
+        //    Utility.Math.Sub.Subt(in8, ref _registers);
+        //}
+
+        //public void And(byte in8)
+        //{
+        //    A = Utility.Math.And(in8, ref _registers);
+        //}
+
+        //public void Or(byte in8)
+        //{
+        //    A = Utility.Math.Or(in8, ref _registers);
+        //}
+
+        //public void Xor(byte in8)
+        //{
+        //    var result = A ^ in8;
+        //    F = Cond.Z.Test(result == 0);
+        //    A = in8;
+        //}
+
+        //public void Inc(ref byte io8)
+        //{
+        //    io8 = Utility.Math.Add.Inc(io8, ref _registers.F);
+        //}
+
+        //public void Inc(int indr)
+        //{
+        //    var in8 = ReadByte(indr);
+        //    WriteByte(indr, Utility.Math.Add.Inc(in8, ref _registers.F));
+        //}
+
+        //public void Dec(ref byte io8)
+        //{
+        //    io8 = Utility.Math.Sub.Dec(io8, ref _registers.F);
+        //}
+
+        //public void Dec(int indr)
+        //{
+        //    var in8 = ReadByte(indr);
+        //    WriteByte(indr, Utility.Math.Sub.Dec(in8, ref _registers.F));
+        //}
+
+        //public void Rlca()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Rla()
+        //{
+        //    A = Utility.Bit.Rl(A, ref F, true);
+        //    F &= (byte)~Cond.Z; // unset the zero flag
+        //}
+
+        //public void Rrca()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Rra()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Rlc(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Rl(ref byte io8)
+        //{
+        //    io8 = Utility.Bit.Rl(io8, ref F, true);
+        //}
+
+        //public void Rrc(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Rr(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Sla(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Sra(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Srl(ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Swap(ref byte io8)
+        //{
+        //    io8 = Utility.Bit.Swap(io8, ref _registers.F);
+        //}
+
+        //public void SwapHL()
+        //{
+        //    AddrHL = Utility.Bit.Swap(AddrHL, ref _registers.F);
+        //}
+
+        //public void Bit(int num, byte in8)
+        //{
+        //    Utility.Bit.Value(in8, num, ref _registers.F);
+        //}
+
+        //public void Set(int num, ref byte io8)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Res(int num, ref byte io8)
+        //{
+        //    io8 = Utility.Bit.ClearBit(io8, num);
+        //}
+
+        //public void Jp()
+        //{
+        //    ushort value = ReadWord(_registers.Bump(2));
+
+        //    Jump(value);
+        //}
+
+        //public void JpHL()
+        //{
+        //    PC = HL;
+        //}
+
+        //public void Jr()
+        //{
+        //    var offset = (sbyte)ReadByte(_registers.Bump());
+        //    ushort value = (ushort)(PC + offset);
+
+        //    Jump(value);
+        //}
+
+        //public void Call()
+        //{
+
+        //    ushort addr = ReadWord(_registers.Bump(2)); // memory access low + hi byte (2 M-cycles)
+        //    InternalDelay(); // extra internal delay (1 M-cycle)
+        //    Push(PC); // memory access pc hi + low byte (2 M-cycles);
+        //    PC = addr;
+        //}
+
+        //public void Ret()
+        //{
+        //    InternalDelay();
+        //    PC = Pop();
+        //}
+
+        //public void Reti()
+        //{
+        //    InternalDelay();
+        //    PC = Pop();
+        //    _ime = IME.Enabled;
+        //}
+
+        //public void Jp(Cond cond)
+        //{            
+        //    ushort value = ReadWord(_registers.Bump(2));
+
+        //    if (cond.FlagSet(F))
+        //        Jump(value);
+        //}
+
+        //public void Jr(Cond cond)
+        //{
+        //    var offset = (sbyte)ReadByte(_registers.Bump());
+        //    ushort value = (ushort)(PC + offset);
+
+        //    if (cond.FlagSet(F))
+        //        Jump(value);
+        //}
+
+        //public void Call(Cond cond)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Ret(Cond cond)
+        //{
+        //    InternalDelay();
+
+        //    if (cond.FlagSet(F))
+        //        PC = Pop();
+        //}
+
+        //public void Rst(byte vec)
+        //{
+        //    InternalDelay();
+        //    Push(PC);
+        //    PC = vec;
+        //}
+
+        //public void Halt()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Stop()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Di()
+        //{
+        //    _ime = IME.Disabled;
+        //}
+
+        //public void Ei()
+        //{
+        //    _ime = IME.Enabling;
+        //}
+
+        //public void Ccf()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Scf()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Nop()
+        //{
+        //    // do nothing
+        //}
+
+        //public void Daa()
+        //{
+        //    var carry = false;
+        //    F &= (byte)~Cond.H;
+
+        //    if ((_registers.F & (byte)Cond.H) != 0 || (_registers.A & 0xF) > 0x09)
+        //    {
+        //        _registers.A += 0x6;
+        //    }
+        //    if ((_registers.F & (byte)Cond.C) != 0 || _registers.A > 0x90)
+        //    {
+        //        _registers.A += 0x60;
+
+        //        carry = true;
+        //    }
+
+        //    if (A == 0)
+        //    {
+        //        F |= (byte)Cond.Z;
+        //    }
+
+        //    if (carry)
+        //    {
+        //        F |= (byte)Cond.C;
+        //    }
+        //    else
+        //    {
+        //        F &= (byte)~Cond.C;
+        //    }
+
+        //    return;
+        //}
+
+        //public void Cpl()
+        //{
+        //    A = (byte)~A;
+
+        //    Utility.Bit.AlterFlag(ref _registers.F, Cond.N, true);
+        //    Utility.Bit.AlterFlag(ref _registers.F, Cond.H, true);
+        //}
+
+        //public void Load16(ref ushort io16)
+        //{
+        //    io16 = ReadWord(_registers.Bump(2));
+        //}
+
+        //public void Load16SPHL()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Load16IndrSP()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Load16HLSPe()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Push16(ushort io16)
+        //{
+        //    InternalDelay();
+        //    Push(io16);
+        //}
+
+        //public void Pop16(ref ushort io16)
+        //{
+        //    io16 = Pop();
+        //}
+
+        //public void Add16(ushort io16)
+        //{
+        //    HL = Utility.Math.Add.Add16(io16, ref _registers);
+        //}
+
+        //public void Add16SPe()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public void Inc16(ref ushort io16)
+        //{
+        //    InternalDelay();
+        //    io16++;
+        //}
+
+        //public void Dec16(ref ushort io16)
+        //{
+        //    InternalDelay();
+        //    io16--;
+        //}
+
+        //public void Res(int num, int indr)
+        //{
+        //    WriteByte(indr, Utility.Bit.ClearBit(ReadByte(indr), num));
+        //}
+
+
+        #endregion
+
+        #region Instruction Implementations
+        public void Load(int t1, int i1, int t2, int i2)
         {
-            out8 = in8;
+            this[t1, i1] = this[t2, i2];
         }
 
-        public void Load(int indr, byte in8, int hlAction = 0)
+        public void Load8(int t, int i)
         {
-            WriteByte(indr, in8);
-            HL += (ushort)hlAction;
+            this[t, i] = NB;
         }
 
-        public void Add(byte in8)
+        public void Load16(int t, int i)
         {
-            A = Utility.Math.Add.Add8(in8, ref _registers);
+            this[t, i] = NW;
         }
 
-        public void Adc(byte in8)
-        {
-            byte cy = (F & (byte)Cond.C) != 0 ? (byte)1 : (byte)0;
-            A = Utility.Math.Add.Add8((byte)(in8 + cy), ref _registers);
-        }
-
-        public void Sub(byte in8)
-        {
-            A = Utility.Math.Sub.Subt(in8, ref _registers);
-        }
-
-        public void Sbc(byte in8)
+        public void LoadHL()
         {
             throw new NotImplementedException();
         }
 
-        public void Cp(byte in8)
-        {
-            Utility.Math.Sub.Subt(in8, ref _registers);
-        }
-
-        public void And(byte in8)
-        {
-            A = Utility.Math.And(in8, ref _registers);
-        }
-
-        public void Or(byte in8)
-        {
-            A = Utility.Math.Or(in8, ref _registers);
-        }
-
-        public void Xor(byte in8)
-        {
-            var result = A ^ in8;
-            F = Cond.Z.Test(result == 0);
-            A = in8;
-        }
-
-        public void Inc(ref byte io8)
-        {
-            io8 = Utility.Math.Add.Inc(io8, ref _registers.F);
-        }
-
-        public void Inc(int indr)
-        {
-            var in8 = ReadByte(indr);
-            WriteByte(indr, Utility.Math.Add.Inc(in8, ref _registers.F));
-        }
-
-        public void Dec(ref byte io8)
-        {
-            io8 = Utility.Math.Sub.Dec(io8, ref _registers.F);
-        }
-
-        public void Dec(int indr)
-        {
-            var in8 = ReadByte(indr);
-            WriteByte(indr, Utility.Math.Sub.Dec(in8, ref _registers.F));
-        }
-
-        public void Rlca()
+        public void LoadSP()
         {
             throw new NotImplementedException();
         }
 
-        public void Rla()
-        {
-            A = Utility.Bit.Rl(A, ref F, true);
-            F &= (byte)~Cond.Z; // unset the zero flag
-        }
-
-        public void Rrca()
+        public void JumpAbsolute()
         {
             throw new NotImplementedException();
         }
 
-        public void Rra()
+        public void JumpAbsolute(int i)
         {
             throw new NotImplementedException();
         }
 
-        public void Rlc(ref byte io8)
+        public void JumpRelative()
         {
             throw new NotImplementedException();
         }
 
-        public void Rl(ref byte io8)
-        {
-            io8 = Utility.Bit.Rl(io8, ref F, true);
-        }
-
-        public void Rrc(ref byte io8)
+        public void JumpRelative(int i)
         {
             throw new NotImplementedException();
         }
 
-        public void Rr(ref byte io8)
+        public void JumpHL()
         {
             throw new NotImplementedException();
         }
 
-        public void Sla(ref byte io8)
+        public void AddHL(int i)
         {
             throw new NotImplementedException();
         }
 
-        public void Sra(ref byte io8)
+        public void Increment(int t, int i)
         {
             throw new NotImplementedException();
         }
 
-        public void Srl(ref byte io8)
+        public void Decrement(int t, int i)
         {
             throw new NotImplementedException();
         }
 
-        public void Swap(ref byte io8)
-        {
-            io8 = Utility.Bit.Swap(io8, ref _registers.F);
-        }
-
-        public void SwapHL()
-        {
-            AddrHL = Utility.Bit.Swap(AddrHL, ref _registers.F);
-        }
-
-        public void Bit(int num, byte in8)
-        {
-            Utility.Bit.Value(in8, num, ref _registers.F);
-        }
-
-        public void Set(int num, ref byte io8)
+        public void RotateLeftAkk()
         {
             throw new NotImplementedException();
         }
 
-        public void Res(int num, ref byte io8)
-        {
-            io8 = Utility.Bit.ClearBit(io8, num);
-        }
-
-        public void Jp()
-        {
-            ushort value = ReadWord(_registers.Bump(2));
-
-            Jump(value);
-        }
-
-        public void JpHL()
-        {
-            PC = HL;
-        }
-
-        public void Jr()
-        {
-            var offset = (sbyte)ReadByte(_registers.Bump());
-            ushort value = (ushort)(PC + offset);
-
-            Jump(value);
-        }
-
-        public void Call()
-        {
-
-            ushort addr = ReadWord(_registers.Bump(2)); // memory access low + hi byte (2 M-cycles)
-            InternalDelay(); // extra internal delay (1 M-cycle)
-            Push(PC); // memory access pc hi + low byte (2 M-cycles);
-            PC = addr;
-        }
-
-        public void Ret()
-        {
-            InternalDelay();
-            PC = Pop();
-        }
-
-        public void Reti()
-        {
-            InternalDelay();
-            PC = Pop();
-            _ime = IME.Enabled;
-        }
-
-        public void Jp(Cond cond)
-        {            
-            ushort value = ReadWord(_registers.Bump(2));
-
-            if (cond.FlagSet(F))
-                Jump(value);
-        }
-
-        public void Jr(Cond cond)
-        {
-            var offset = (sbyte)ReadByte(_registers.Bump());
-            ushort value = (ushort)(PC + offset);
-
-            if (cond.FlagSet(F))
-                Jump(value);
-        }
-
-        public void Call(Cond cond)
+        public void RotateLeftAkC()
         {
             throw new NotImplementedException();
         }
 
-        public void Ret(Cond cond)
+        public void RotateRightAkk()
         {
-            InternalDelay();
-
-            if (cond.FlagSet(F))
-                PC = Pop();
+            throw new NotImplementedException();
         }
 
-        public void Rst(byte vec)
+        public void RotateRightAkC()
         {
-            InternalDelay();
-            Push(PC);
-            PC = vec;
+            throw new NotImplementedException();
         }
 
-        public void Halt()
+        public void DecimalAdjustAkk()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Complement()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetCarryFlag()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void XorCarryFlag()
         {
             throw new NotImplementedException();
         }
@@ -474,128 +712,149 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void Di()
-        {
-            _ime = IME.Disabled;
-        }
-
-        public void Ei()
-        {
-            _ime = IME.Enabling;
-        }
-
-        public void Ccf()
+        public void Halt()
         {
             throw new NotImplementedException();
         }
 
-        public void Scf()
+        public void Add(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Adc(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Sub(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Sbc(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void And(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Xor(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Or(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Cp(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Call()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Call(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Ret()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Ret(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Reti()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddSP()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Push(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Pop(int i)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Di()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Ei()
         {
             throw new NotImplementedException();
         }
 
         public void Nop()
         {
-            // do nothing
+            throw new NotImplementedException();
         }
 
-        public void Daa()
-        {
-            var carry = false;
-            F &= (byte)~Cond.H;
-
-            if ((_registers.F & (byte)Cond.H) != 0 || (_registers.A & 0xF) > 0x09)
-            {
-                _registers.A += 0x6;
-            }
-            if ((_registers.F & (byte)Cond.C) != 0 || _registers.A > 0x90)
-            {
-                _registers.A += 0x60;
-
-                carry = true;
-            }
-
-            if (A == 0)
-            {
-                F |= (byte)Cond.Z;
-            }
-
-            if (carry)
-            {
-                F |= (byte)Cond.C;
-            }
-            else
-            {
-                F &= (byte)~Cond.C;
-            }
-
-            return;
-        }
-
-        public void Cpl()
-        {
-            A = (byte)~A;
-
-            Utility.Bit.AlterFlag(ref _registers.F, Cond.N, true);
-            Utility.Bit.AlterFlag(ref _registers.F, Cond.H, true);
-        }
-
-        public void Load16(ref ushort io16)
-        {
-            io16 = ReadWord(_registers.Bump(2));
-        }
-
-        public void Load16SPHL()
+        public void Add()
         {
             throw new NotImplementedException();
         }
 
-        public void Load16IndrSP()
+        public void Adc()
         {
             throw new NotImplementedException();
         }
 
-        public void Load16HLSPe()
+        public void Sub()
         {
             throw new NotImplementedException();
         }
 
-        public void Push16(ushort io16)
-        {
-            InternalDelay();
-            Push(io16);
-        }
-
-        public void Pop16(ref ushort io16)
-        {
-            io16 = Pop();
-        }
-
-        public void Add16(ushort io16)
-        {
-            HL = Utility.Math.Add.Add16(io16, ref _registers);
-        }
-
-        public void Add16SPe()
+        public void Sbc()
         {
             throw new NotImplementedException();
         }
 
-        public void Inc16(ref ushort io16)
+        public void And()
         {
-            InternalDelay();
-            io16++;
+            throw new NotImplementedException();
         }
 
-        public void Dec16(ref ushort io16)
+        public void Xor()
         {
-            InternalDelay();
-            io16--;
+            throw new NotImplementedException();
         }
 
-        public void Res(int num, int indr)
+        public void Or()
         {
-            WriteByte(indr, Utility.Bit.ClearBit(ReadByte(indr), num));
+            throw new NotImplementedException();
+        }
+
+        public void Cp()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Rst(ushort adr)
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }

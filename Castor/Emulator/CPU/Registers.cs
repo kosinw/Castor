@@ -36,5 +36,12 @@ namespace Castor.Emulator.CPU
             PC += times;
             return ret;
         }
+
+       public ushort BumpHL(short times = 1)
+        {
+            var ret = HL;
+            HL = (ushort)(HL + times);
+            return ret;
+        }
     }
 }
