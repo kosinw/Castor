@@ -15,8 +15,6 @@ namespace Castor.Emulator
         public VideoController GPU;
         public InterruptController IRQ;
         public DMAController DMA;
-        public InputController JOY;
-        public TimerController TIM;
 
         public Device()
         {
@@ -26,8 +24,6 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             IRQ = new InterruptController(this);
-            JOY = new InputController(this);
-            TIM = new TimerController(this);
         }
 
         public void LoadROM(byte[] bytecode)

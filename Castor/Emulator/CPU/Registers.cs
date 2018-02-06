@@ -44,9 +44,17 @@ namespace Castor.Emulator.CPU
             return ret;
         }
 
-        public bool MeetsFlagsConditions()
+        public bool CanJump(Cond condition)
         {
+            switch (condition)
+            {
+                case Cond.C: return this[Flags.C];
+                case Cond.NC: return !this[Flags.C];
+                case Cond.Z: return this[Flags.Z];
+                case Cond.NZ: return !this[Flags.Z];
 
+                default: return false;
+            }            
         }
 
         public static class Flags
@@ -66,7 +74,7 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                return ((F & 1 << i) >> i == 0);
+                return ((F >> i) & 1) != 0;
             }
 
             set

@@ -32,7 +32,7 @@ namespace Castor.Emulator.CPU
         const int R = 0;
         const int RP = 1;
         const int RP2 = 2;
-        const int ADR = 6;
+        const int ADDR = 6;
 
         const int b = 0;
         const int c = 1;
@@ -112,7 +112,7 @@ namespace Castor.Emulator.CPU
                             }
                         }
 
-                    case ADR: return ReadByte(index);
+                    case ADDR: return ReadByte(index);
                 }
 
                 return 0;
@@ -196,7 +196,7 @@ namespace Castor.Emulator.CPU
                             break;
                         }
 
-                    case ADR: WriteByte(index, (byte)value); break;
+                    case ADDR: WriteByte(index, (byte)value); break;
                 }
             }
         }

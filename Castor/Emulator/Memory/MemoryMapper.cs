@@ -47,8 +47,8 @@ namespace Castor.Emulator.Memory
                 {
                     switch (idx)
                     {
-                        case 0xFF00:
-                            return _d.JOY.P1;
+                        //case 0xFF00:
+                        //    return _d.JOY.P1;
                         case 0xFF04:
                             return 0;
                         case 0xFF05:
@@ -111,9 +111,9 @@ namespace Castor.Emulator.Memory
                 {
                     switch (idx)
                     {
-                        case 0xFF00:
-                            _d.JOY.P1 = value;
-                            break;
+                        //case 0xFF00:
+                        //    _d.JOY.P1 = value;
+                        //    break;
                         case 0xFF04:
                             //_d.TIM.DIV = value;
                             break;

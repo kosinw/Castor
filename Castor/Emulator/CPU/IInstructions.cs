@@ -9,8 +9,8 @@ namespace Castor.Emulator.CPU
     public interface IInstructions
     {
         void Load(int t1, int i1, int t2, int i2);
-        void Load8(int t, int i);
-        void Load16(int t, int i);
+        void Load8(int i);
+        void Load16(int i);
         void LoadHL();
         void LoadSP();
 
