@@ -39,6 +39,7 @@ namespace Castor.GL
 
             Window.AllowUserResizing = true;
             Window.Title = "Castor";
+            IsMouseVisible = true;
         }
 
         /// <summary>
@@ -80,7 +81,7 @@ namespace Castor.GL
                 byte[] bytecode = File.ReadAllBytes(filename);
                 _emulator.LoadROM(bytecode);
 
-                _emulatorthread = new Thread(new ThreadStart(EmulatorRoutine));
+                _emulatorthread = new Thread(new ThreadStart(EmulatorCoroutine));
                 _emulatorthread.Start();
             }
 
@@ -163,7 +164,7 @@ namespace Castor.GL
             base.Draw(gameTime);
         }
 
-        private void EmulatorRoutine()
+        private void EmulatorCoroutine()
         {
             Stopwatch watch = Stopwatch.StartNew();
             System.TimeSpan dt = System.TimeSpan.FromSeconds(1.0 / 60.0);

@@ -1,9 +1,5 @@
-﻿using Castor.Emulator.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Castor.Emulator.Cartridge
 {
@@ -44,8 +40,5 @@ namespace Castor.Emulator.Cartridge
                 return builder.ToString().Trim();
             }
         }
-        
-        public void SetMemoryModel(byte value) => throw new Exception("This cartridge types does not support this feature.");
-        public void SwitchROMBank(byte index) => throw new Exception("This cartridge types does not support this feature.");
     }
 }

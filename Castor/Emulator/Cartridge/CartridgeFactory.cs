@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Castor.Emulator.Cartridge
 {
@@ -16,6 +12,8 @@ namespace Castor.Emulator.Cartridge
             {
                 case 0x00:
                     return new MBC0(bytecode);
+                case 0x01:
+                    return new MBC1(bytecode);
                 default:
                     throw new Exception("Unsupported MBC Type was found!");
             }

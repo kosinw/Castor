@@ -101,6 +101,7 @@ namespace Castor.Emulator.CPU
             _cycles = 0;
             _r = new Registers();
             _halted = false;
+            _ime = IME.Disabled;
         }
 
         public int Step()
@@ -233,17 +234,17 @@ namespace Castor.Emulator.CPU
         {
             InternalDelay();
 
-            var v = this[RP, i];
-            var r = HL + v;
+            var t16 = this[RP, i];
+            var result = (ushort)(HL + t16);
 
-            var hc = ((HL & 0xFF) + (HL & 0xFF) & 0x100) == 0x100;
-            var c = (HL + v) > ushort.MaxValue;
+            var hc = ((HL & 0xFFF) + (HL & 0xFFF) & 0x1000) == 0x1000;
+            var c = ((HL + t16) & 0x10_000) == 0x10_000;
             
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = hc;
             _r[Registers.Flags.C] = c;
 
-            HL = (ushort)r;
+            HL = result;
         }
 
         public void Increment(int t, int i)
@@ -306,7 +307,19 @@ namespace Castor.Emulator.CPU
 
         public void Rrca()
         {
-            throw new NotImplementedException();
+            int r = A;
+            var bit0 = Utility.Bit.BitValue(A, 0);
+
+            _r[Registers.Flags.C] = bit0 == 1;
+
+            r = r << 1;
+            r |= bit0;
+
+            A = (byte)r;
+
+            _r[Registers.Flags.Z] = false;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
         }
 
         public void Daa()
@@ -344,23 +357,35 @@ namespace Castor.Emulator.CPU
 
         public void Add(int i)
         {           
-            var v = this[R, i];
-            var r = A + v;
+            var r8 = this[R, i];
+            var result = A + r8;
 
-            var hc = ((A & 0xF) + (v & 0xF) & 0x10) == 0x10;
-            var c = (A + v) > byte.MaxValue;
+            var h = ((A & 0xF) + (r8 & 0xF) & 0x10) == 0x10;
+            var c = ((A + r8) & 0x100) == 0x100;
 
-            _r[Registers.Flags.Z] = (byte)r == 0;
+            _r[Registers.Flags.Z] = (byte)result == 0;
             _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = hc;
+            _r[Registers.Flags.H] = h;
             _r[Registers.Flags.C] = c;
 
-            A = (byte)r;
+            A = (byte)result;
         }
 
         public void Adc(int i)
         {
-            throw new NotImplementedException();
+            var r8 = this[R, i];
+            var cy = Utility.Bit.BitValue(F, Registers.Flags.C);
+            var result = (A + r8 + cy);
+
+            var h = ((A & 0xF + r8 & 0xF + cy) & 0x10) == 0x10;
+            var c = ((A + r8 + cy) & 0x100) == 0x100;
+
+            A = (byte)result;
+
+            _r[Registers.Flags.Z] = (byte)result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = h;
+            _r[Registers.Flags.C] = c;
         }
 
         public void Sub(int i)
@@ -494,17 +519,51 @@ namespace Castor.Emulator.CPU
 
         public void Add8()
         {
-            throw new NotImplementedException();
+            var n8 = NB;
+            var result = (byte)(n8 + A);
+
+            var h = (((A & 0xF) + (n8 & 0xF) & 0x10)) == 0x10;
+            var c = ((A + n8) & 0x100) == 0x100;
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = h;
+            _r[Registers.Flags.C] = c;
+
+            A = result;
         }
 
         public void Adc8()
         {
-            throw new NotImplementedException();
+            var cy = Utility.Bit.BitValue(F, Registers.Flags.C);
+            var n8 = NB;
+
+            var result = (byte)(n8 + A + cy);
+            var h = ((n8 & 0xF + A & 0xF + cy) & 0x10) == 0x10;
+            var c = ((n8 + A + cy) & 0x100) == 0x100;
+
+            A = result;
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = h;
+            _r[Registers.Flags.C] = c;
         }
 
         public void Sub8()
         {
-            throw new NotImplementedException();
+            var v = NB;
+            var r = A - v;
+
+            var hc = (A & 0xF) < (v & 0xF);
+            var c = A < v;
+
+            _r[Registers.Flags.Z] = (byte)r == 0;
+            _r[Registers.Flags.N] = true;
+            _r[Registers.Flags.H] = hc;
+            _r[Registers.Flags.C] = c;
+
+            A = (byte)r;
         }
 
         public void Sbc8()
