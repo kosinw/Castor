@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace Castor.Emulator.Memory
 {
@@ -13,7 +8,7 @@ namespace Castor.Emulator.Memory
 
         public BootROM()
         {
-            _bytecode = Castor.Properties.Resources.dmg;
+            _bytecode = Properties.Resources.BIOS;
         }
 
         public int Count() => _bytecode.Length;

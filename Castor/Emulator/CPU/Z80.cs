@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using Castor.Emulator.Memory;
 
 namespace Castor.Emulator.CPU
 {
@@ -70,7 +71,7 @@ namespace Castor.Emulator.CPU
             return ret;
         }
 
-        private void InterruptVec(byte vec)
+        private void InterruptVec(byte vec, InterruptFlags flag)
         {
             _halted = false;
 
@@ -80,7 +81,7 @@ namespace Castor.Emulator.CPU
                 Push(PC);
                 PC = vec;
                 _ime = IME.Disabled;
-                _d.IRQ.IF = 0x00;
+                _d.IRQ.DisableInterrupt(flag);
             }
         }
         #endregion
@@ -131,13 +132,13 @@ namespace Castor.Emulator.CPU
 
         private void HaltedStep()
         {
-            HandleInterrupts();
+            //HandleInterrupts();
             InternalDelay();
         }
 
         private void DecodeStep()
         {
-            HandleInterrupts();
+            //HandleInterrupts();
             var opcode = DecodeInstruction();
             Decode(opcode);
         }
@@ -146,16 +147,16 @@ namespace Castor.Emulator.CPU
         {
             if (_d.IRQ.CanServiceInterrupts) // if any interrupts are available
             {
-                if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.VBL))
-                    InterruptVec(0x40);
-                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.STAT))
-                    InterruptVec(0x48);
-                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Timer))
-                    InterruptVec(0x50);
-                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Serial))
-                    InterruptVec(0x58);
-                else if (_d.IRQ.CanHandleInterrupt(Memory.InterruptFlags.Joypad))
-                    InterruptVec(0x60);
+                if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
+                    InterruptVec(0x40, InterruptFlags.VBL);
+                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.STAT))
+                    InterruptVec(0x48, InterruptFlags.STAT);
+                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
+                    InterruptVec(0x50, InterruptFlags.Timer);
+                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Serial))
+                    InterruptVec(0x58, InterruptFlags.Serial);
+                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Joypad))
+                    InterruptVec(0x60, InterruptFlags.Joypad);
             }
         }
 
@@ -187,12 +188,21 @@ namespace Castor.Emulator.CPU
 
         public void JumpAbsolute()
         {
-            throw new NotImplementedException();
+            ushort a = NW;
+
+            InternalDelay();
+            PC = a;
         }
 
         public void JumpAbsolute(int i)
         {
-            throw new NotImplementedException();
+            ushort a = NW;
+
+            if (_r.CanJump(CC[i]))
+            {
+                InternalDelay();
+                PC = a;
+            }
         }
 
         public void JumpRelative()
@@ -216,12 +226,24 @@ namespace Castor.Emulator.CPU
 
         public void JumpHL()
         {
-            throw new NotImplementedException();
+            PC = HL;
         }
 
         public void AddHL(int i)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+
+            var v = this[RP, i];
+            var r = HL + v;
+
+            var hc = ((HL & 0xFF) + (HL & 0xFF) & 0x100) == 0x100;
+            var c = (HL + v) > ushort.MaxValue;
+            
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = hc;
+            _r[Registers.Flags.C] = c;
+
+            HL = (ushort)r;
         }
 
         public void Increment(int t, int i)
@@ -233,9 +255,9 @@ namespace Castor.Emulator.CPU
 
             if (t == R)
             {
-                _r[Registers.Flags.Z] = r == 0;
+                _r[Registers.Flags.Z] = (byte)r == 0;
                 _r[Registers.Flags.N] = false;
-                _r[Registers.Flags.H] = r % 16 == 0;
+                _r[Registers.Flags.H] = (byte)r % 16 == 0;
             }
         }
 
@@ -248,9 +270,9 @@ namespace Castor.Emulator.CPU
 
             if (t == R)
             {
-                _r[Registers.Flags.Z] = r == 0;
+                _r[Registers.Flags.Z] = (byte)r == 0;
                 _r[Registers.Flags.N] = true;
-                _r[Registers.Flags.H] = r % 16 == 15;
+                _r[Registers.Flags.H] = (byte)r % 16 == 15;
             }
         }
 
@@ -294,7 +316,10 @@ namespace Castor.Emulator.CPU
 
         public void Cpl()
         {
-            throw new NotImplementedException();
+            A = (byte)(A ^ 0xFF);
+
+            _r[Registers.Flags.N] = true;
+            _r[Registers.Flags.H] = true;
         }
 
         public void Scf()
@@ -314,25 +339,23 @@ namespace Castor.Emulator.CPU
 
         public void Halt()
         {
-            throw new NotImplementedException();
+            //_halted = true;
         }
 
         public void Add(int i)
-        {
-            throw new NotImplementedException();
+        {           
+            var v = this[R, i];
+            var r = A + v;
 
-            //var v = this[R, i];
-            //var r = A + v;
+            var hc = ((A & 0xF) + (v & 0xF) & 0x10) == 0x10;
+            var c = (A + v) > byte.MaxValue;
 
-            //var hc = ((A & 0xF) + (v & 0xF) & 0x10) == 0x10;
-            //var c = (A + v) > byte.MaxValue;
+            _r[Registers.Flags.Z] = (byte)r == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = hc;
+            _r[Registers.Flags.C] = c;
 
-            //_r[Registers.Flags.Z] = r == 0;
-            //_r[Registers.Flags.N] = false;
-            //_r[Registers.Flags.H] = hc;
-            //_r[Registers.Flags.C] = c;
-
-            //this[R, i] = r;
+            A = (byte)r;
         }
 
         public void Adc(int i)
@@ -348,12 +371,12 @@ namespace Castor.Emulator.CPU
             var hc = (A & 0xF) < (v & 0xF);
             var c = A < v;
 
-            _r[Registers.Flags.Z] = r == 0;
+            _r[Registers.Flags.Z] = (byte)r == 0;
             _r[Registers.Flags.N] = true;
             _r[Registers.Flags.H] = hc;
             _r[Registers.Flags.C] = c;
 
-            this[R, i] = r;
+            A = (byte)r;
         }
 
         public void Sbc(int i)
@@ -363,14 +386,19 @@ namespace Castor.Emulator.CPU
 
         public void And(int i)
         {
-            throw new NotImplementedException();
+            A = (byte)(A & this[R, i]);
+
+            _r[Registers.Flags.Z] = A == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = true;
+            _r[Registers.Flags.C] = false;
         }
 
         public void Xor(int i)
         {
             A = (byte)(A ^ this[R, i]);
 
-            _r[Registers.Flags.Z] = (A == 0);
+            _r[Registers.Flags.Z] = A == 0;
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = false;
             _r[Registers.Flags.C] = false;
@@ -378,7 +406,12 @@ namespace Castor.Emulator.CPU
 
         public void Or(int i)
         {
-            throw new NotImplementedException();
+            A = (byte)(A | this[R, i]);
+
+            _r[Registers.Flags.Z] = A == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = false;
         }
 
         public void Cp(int i)
@@ -388,7 +421,7 @@ namespace Castor.Emulator.CPU
             var hc = (A & 0xF) < (v & 0xF);
             var c = A < v;
 
-            _r[Registers.Flags.Z] = r == 0;
+            _r[Registers.Flags.Z] = (byte)r == 0;
             _r[Registers.Flags.N] = true;
             _r[Registers.Flags.H] = hc;
             _r[Registers.Flags.C] = c;
@@ -414,12 +447,19 @@ namespace Castor.Emulator.CPU
 
         public void Ret(int i)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+
+            if (_r.CanJump(CC[i]))
+            {
+                InternalDelay();
+                PC = Pop();
+            }
         }
 
         public void Reti()
         {
-            throw new NotImplementedException();
+            _ime = IME.Enabling;
+            Ret();
         }
 
         public void AddSP()
@@ -440,12 +480,12 @@ namespace Castor.Emulator.CPU
 
         public void Di()
         {
-            throw new NotImplementedException();
+            _ime = IME.Disabled;
         }
 
         public void Ei()
         {
-            throw new NotImplementedException();
+            _ime = IME.Enabling;
         }
 
         public void Nop()
@@ -474,7 +514,12 @@ namespace Castor.Emulator.CPU
 
         public void And8()
         {
-            throw new NotImplementedException();
+            A = (byte)(A & NB);
+
+            _r[Registers.Flags.Z] = A == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = true;
+            _r[Registers.Flags.C] = false;
         }
 
         public void Xor8()
@@ -495,7 +540,7 @@ namespace Castor.Emulator.CPU
             var hc = (A & 0xF) < (v & 0xF);
             var c = A < v;
 
-            _r[Registers.Flags.Z] = r == 0;
+            _r[Registers.Flags.Z] = (byte)r == 0;
             _r[Registers.Flags.N] = true;
             _r[Registers.Flags.H] = hc;
             _r[Registers.Flags.C] = c;
@@ -503,7 +548,9 @@ namespace Castor.Emulator.CPU
 
         public void Rst(ushort adr)
         {
-            throw new NotImplementedException();
+            InternalDelay();
+            Push(PC);
+            PC = adr;
         }
 
         public void Rlc(int i)
@@ -530,7 +577,7 @@ namespace Castor.Emulator.CPU
 
             this[R, i] = r;
 
-            _r[Registers.Flags.Z] = r == 0;
+            _r[Registers.Flags.Z] = (byte)r == 0;
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = false;
         }
@@ -552,7 +599,19 @@ namespace Castor.Emulator.CPU
 
         public void Swap(int i)
         {
-            throw new NotImplementedException();
+            var v = this[R, i];
+
+            var hi = (byte)(v >> 4) & 0xF;
+            var lo = (byte)(v >> 0) & 0xF;
+
+            var r = (lo << 4 | hi);
+
+            this[R, i] = r;
+
+            _r[Registers.Flags.Z] = (byte)r == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = false;
         }
 
         public void Srl(int i)
@@ -564,7 +623,7 @@ namespace Castor.Emulator.CPU
         {
             var r = (this[R, i] >> n) & 1;
 
-            _r[Registers.Flags.Z] = r == 0;
+            _r[Registers.Flags.Z] = (byte)r == 0;
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = true;
         }

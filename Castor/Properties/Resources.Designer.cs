@@ -63,9 +63,9 @@ namespace Castor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] dmg {
+        internal static byte[] BIOS {
             get {
-                object obj = ResourceManager.GetObject("dmg", resourceCulture);
+                object obj = ResourceManager.GetObject("BIOS", resourceCulture);
                 return ((byte[])(obj));
             }
         }

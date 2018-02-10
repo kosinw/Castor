@@ -107,12 +107,560 @@
     </None>
     <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="ROMs\dmg.rom" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\cgb_sound.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\01-registers.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\02-len ctr.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\03-trigger.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\04-sweep.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\05-sweep details.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\06-overflow on trigger.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\07-len sweep period sync.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\08-len ctr during power.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\09-wave read while on.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\10-wave trigger while on.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\11-regs after power.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\12-wave.gb" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\cpu_instrs.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\01-special.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\02-interrupts.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\03-op sp,hl.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\04-op r,imm.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\05-op rp.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\06-ld r,r.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\07-jr,jp,call,ret,rst.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\08-misc instrs.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\09-op r,r.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\10-bit ops.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\individual\11-op a,%28hl%29.gb" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\dmg_sound.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\01-registers.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\02-len ctr.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\03-trigger.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\04-sweep.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\05-sweep details.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\06-overflow on trigger.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\07-len sweep period sync.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\08-len ctr during power.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\09-wave read while on.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\10-wave trigger while on.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\11-regs after power.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\rom_singles\12-wave write while on.gb" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\halt_bug.gb" />
+    <None Include="ROMs\gb-test-roms\instr_timing\instr_timing.gb" />
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\instr_timing\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\interrupt_time\interrupt_time.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\mem_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\rom_singles\01-read_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\rom_singles\02-write_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\rom_singles\03-modify_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\mem_timing\individual\01-read_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing\individual\02-write_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing\individual\03-modify_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing\mem_timing.gb" />
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\mem_timing\source\linkfile" />
+    <None Include="ROMs\gb-test-roms\oam_bug\oam_bug.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\1-lcd_sync.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\2-causes.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\3-non_causes.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\4-scanline_timing.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\5-timing_bug.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\6-timing_no_bug.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\7-timing_effect.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\rom_singles\8-instr_effect.gb" />
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\console.bin" />
+    <None Include="ROMs\gb-test-roms\oam_bug\source\linkfile" />
+    <None Include="ROMs\tetris.gb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Castor\Castor.csproj">
       <Project>{e40d69bd-816c-42ba-9ae1-45f4aaf3a96c}</Project>
       <Name>Castor</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\shell.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\01-registers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\02-len ctr.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\03-trigger.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\04-sweep.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\05-sweep details.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\06-overflow on trigger.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\07-len sweep period sync.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\08-len ctr during power.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\09-wave read while on.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\10-wave trigger while on.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\11-regs after power.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\12-wave.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cgb_sound\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\apu.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\checksums.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\cpu_speed.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\crc_fast.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\instr_test.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\multi_custom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\runtime.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\01-special.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\02-interrupts.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\03-op sp,hl.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\04-op r,imm.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\05-op rp.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\06-ld r,r.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\07-jr,jp,call,ret,rst.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\08-misc instrs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\09-op r,r.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\10-bit ops.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\11-op a,%28hl%29.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\cpu_instrs\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\shell.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\01-registers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\02-len ctr.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\03-trigger.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\04-sweep.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\05-sweep details.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\06-overflow on trigger.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\07-len sweep period sync.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\08-len ctr during power.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\09-wave read while on.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\10-wave trigger while on.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\11-regs after power.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\12-wave write while on.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\dmg_sound\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\runtime.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\common\timer.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\instr_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\instr_timing\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\interrupt_time\interrupt_time.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\runtime.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\common\tima_64.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\01-read_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\02-write_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\03-modify_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\shell.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\common\tima_64.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\01-read_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\02-write_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\03-modify_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\mem_timing-2\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\build_gbs.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\build_rom.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\console.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\crc.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\delay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\gb.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\macros.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\numbers.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\ppu.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\printing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\shell.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\common\testing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\1-lcd_sync.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\2-causes.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\3-non_causes.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\4-scanline_timing.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\5-timing_bug.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\6-timing_no_bug.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\7-timing_effect.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\8-instr_effect.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\source\shell.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\oam_bug\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ROMs\gb-test-roms\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ROMs\gb-test-roms\.git\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

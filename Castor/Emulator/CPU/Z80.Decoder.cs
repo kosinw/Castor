@@ -180,7 +180,7 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch ((q << 2 | p))
                                     {
-                                        case 0: Pop(y); return;
+                                        case var r when r >= 0 && r <= 3: Pop(y); return;
                                         case 4: Ret(); return;
                                         case 5: Reti(); return;
                                         case 6: JumpHL(); return;
@@ -240,7 +240,7 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch ((q << 2 | p))
                                     {
-                                        case 0: Push(y); return;
+                                        case var r when r >= 0 && r <= 3: Push(p); return;
                                         case 4: Call(); return;
                                     }
 

@@ -1,4 +1,5 @@
 ﻿using Castor.Emulator;
+using Castor.Emulator.Memory;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -109,6 +110,17 @@ namespace Castor.GL
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            GamePadState gps = GamePad.GetState(PlayerIndex.One);
+
+            _emulator.JOYP[InputController.Index.A] = gps.IsButtonDown(Buttons.A);
+            _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B);
+            _emulator.JOYP[InputController.Index.UP] = gps.IsButtonDown(Buttons.DPadUp);
+            _emulator.JOYP[InputController.Index.DOWN] = gps.IsButtonDown(Buttons.DPadDown);
+            _emulator.JOYP[InputController.Index.LEFT] = gps.IsButtonDown(Buttons.DPadLeft);
+            _emulator.JOYP[InputController.Index.RIGHT] = gps.IsButtonDown(Buttons.DPadRight);
+            _emulator.JOYP[InputController.Index.START] = gps.IsButtonDown(Buttons.Start);
+            _emulator.JOYP[InputController.Index.SELECT] = gps.IsButtonDown(Buttons.Back);
+
             if (_backbuffer != null)
             {
                 byte[] backbuffer = _emulator.GPU.GetScreenBuffer();

@@ -1,12 +1,6 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Castor.Emulator.Video
 {
@@ -192,6 +186,7 @@ namespace Castor.Emulator.Video
             // Check if Bit0 (BG Display Flag) is set
             if (Bit.BitValue(_lcdc, 0) == 1)
                 RenderBackground();
+
             else
             {
                 for (int i = 0; i < _framebuffer.Length; ++i)
@@ -216,15 +211,15 @@ namespace Castor.Emulator.Video
             var tileDataZero = Bit.BitValue(_lcdc, 4) == 1 ? 0x8000 : 0x8800;
             var usingSignedIndices = Bit.BitValue(_lcdc, 4) == 0;
 
-            //// Check if the window is enabled, if so then calculate when the wx and wy start
-            //var usingWindow = false;
+            // Check if the window is enabled, if so then calculate when the wx and wy start
+            var usingWindow = false;
 
-            //// If the window is on screen and the window y is greater than the scroll y register
-            //// enable using windows
-            //if (Bit.BitValue(_lcdc, 5) == 1 && _wy > _scy)
-            //{
-            //    usingWindow = true;
-            //}
+            // If the window is on screen and the window y is greater than the scroll y register
+            // enable using windows
+            if (Bit.BitValue(_lcdc, 5) == 1 && _wy > _scy)
+            {
+                usingWindow = true;
+            }
 
             // Here check which map set contains the background tile map
             var tileMapZero = Bit.BitValue(_lcdc, 3) == 0 ? 0x9800 : 0x9C00;
@@ -232,11 +227,11 @@ namespace Castor.Emulator.Video
             // This is used to calculate which row of 32 tiles the GPU is currently on
             var yPosition = (_scy + _line) % 256;
 
-            //if (usingWindow)
-            //{
-            //    tileMapZero = Bit.BitValue(_lcdc, 6) == 0 ? 0x9800 : 0x9C00;
-            //    yPosition = (_scy - _wy) % 256;
-            //}
+            if (usingWindow)
+            {
+                tileMapZero = Bit.BitValue(_lcdc, 6) == 0 ? 0x9800 : 0x9C00;
+                yPosition = (_scy - _wy) % 256;
+            }
 
             // This is used to calculate which line of whatever tile the GPU is rendering
             var tileRow = (yPosition / 8) * 32;
@@ -246,10 +241,10 @@ namespace Castor.Emulator.Video
             {
                 var xPosition = (x + _scx) % 256;
 
-                //if (usingWindow && x >= _wx)
-                //{
-                //    xPosition = x - _wx;
-                //}
+                if (usingWindow && x >= _wx)
+                {
+                    xPosition = x - _wx;
+                }
 
                 var tileColumn = (xPosition / 8) % 256;
                 int tileAddress = tileMapZero + tileRow + tileColumn;
@@ -287,6 +282,7 @@ namespace Castor.Emulator.Video
             // check if lcd is even enabled, if not return
             if (Bit.BitValue(_lcdc, 7) == 0)
             {
+                Array.Clear(_framebuffer, 0, _framebuffer.Length);
                 return;
             }
 

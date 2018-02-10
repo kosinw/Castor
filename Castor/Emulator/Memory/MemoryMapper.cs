@@ -21,7 +21,7 @@ namespace Castor.Emulator.Memory
             _d = system;
             _wram = new byte[0x2000];
             _zram = new byte[0x80];
-        }                
+        }
 
         public byte this[int idx]
         {
@@ -42,13 +42,13 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFEA0)
                     return _d.GPU[idx];
                 else if (idx < 0xFF00)
-                    return Consts.NullRef;
+                    return 0;
                 else if (idx < 0xFF4C) // here we get a little more complex
                 {
                     switch (idx)
                     {
-                        //case 0xFF00:
-                        //    return _d.JOY.P1;
+                        case 0xFF00:
+                            return _d.JOYP.P1;
                         case 0xFF04:
                             return 0;
                         case 0xFF05:
@@ -90,7 +90,7 @@ namespace Castor.Emulator.Memory
 
                 throw new Exception("You may not read to this memory location.");
             }
-            
+
             set
             {
                 if (idx < 0x8000)
@@ -111,9 +111,9 @@ namespace Castor.Emulator.Memory
                 {
                     switch (idx)
                     {
-                        //case 0xFF00:
-                        //    _d.JOY.P1 = value;
-                        //    break;
+                        case 0xFF00:
+                            _d.JOYP.P1 = value;
+                            break;
                         case 0xFF04:
                             //_d.TIM.DIV = value;
                             break;
@@ -170,7 +170,7 @@ namespace Castor.Emulator.Memory
                 else if (idx < 0xFFFF)
                     _zram[idx - 0xFF80] = value;
                 else if (idx == 0xFFFF)
-                    _d.IRQ.IE = value;                
+                    _d.IRQ.IE = value;
             }
         }
     }

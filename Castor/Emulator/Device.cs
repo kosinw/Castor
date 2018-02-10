@@ -1,20 +1,21 @@
 ﻿using Castor.Emulator.Cartridge;
 using Castor.Emulator.CPU;
 using Castor.Emulator.Memory;
-using System;
-using System.Drawing;
 using Castor.Emulator.Video;
 
 namespace Castor.Emulator
 {
     public class Device
     {
+        const int MAX_CYCLES = 4_194_304;
+
         public Z80 CPU;
         public MemoryMapper MMU;
         public ICartridge Cartridge;
         public VideoController GPU;
         public InterruptController IRQ;
         public DMAController DMA;
+        public InputController JOYP;
 
         public Device()
         {
@@ -24,6 +25,7 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             IRQ = new InterruptController(this);
+            JOYP = new InputController(this);
         }
 
         public void LoadROM(byte[] bytecode)
@@ -38,7 +40,7 @@ namespace Castor.Emulator
         /// </summary>
         public void Frame()
         {
-            for (int _counter = 0; _counter < 70_224;)
+            for (int _counter = 0; _counter < MAX_CYCLES / 60;)
             {
                 int cycles = CPU.Step();
                 GPU.Step(cycles);

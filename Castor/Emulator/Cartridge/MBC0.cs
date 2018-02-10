@@ -16,14 +16,19 @@ namespace Castor.Emulator.Cartridge
 
         private byte[] _bytecode;        
 
-        public ref byte this[int idx]
+        public byte this[int idx]
         {
             get
             {
                 if (idx < 0x8000)
-                    return ref _bytecode[idx];
+                    return _bytecode[idx];
 
-                return ref Consts.NullRef;
+                return 0;
+            }
+
+            set
+            {
+
             }
         }
 
