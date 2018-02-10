@@ -8,7 +8,7 @@ using Castor.Emulator.Memory;
 
 namespace Castor.Emulator.CPU
 {
-    public partial class Z80 : IInstructions
+    public partial class Z80
     {
         #region References
         public ref byte A => ref _r.A;
@@ -64,6 +64,7 @@ namespace Castor.Emulator.CPU
             SP -= 2;
             WriteWord(SP, value);
         }
+
         private ushort Pop()
         {
             var ret = ReadWord(SP);
@@ -71,16 +72,25 @@ namespace Castor.Emulator.CPU
             return ret;
         }
 
+#if DEBUG
+        private ushort Peek()
+        {
+            InternalDelay(-1);
+            var ret = ReadWord(SP);
+            return ret;
+        }
+#endif
+
         private void InterruptVec(byte vec, InterruptFlags flag)
         {
             _halted = false;
 
-            if (_ime == IME.Enabled)
+            if (_ime == InterruptMasterEnable.Enabled)
             {
                 InternalDelay(3);
                 Push(PC);
                 PC = vec;
-                _ime = IME.Disabled;
+                _ime = InterruptMasterEnable.Disabled;
                 _d.IRQ.DisableInterrupt(flag);
             }
         }
@@ -89,21 +99,24 @@ namespace Castor.Emulator.CPU
         #region Internal Members
         private Registers _r;
         private Device _d;
-        private IME _ime;
+        private InterruptMasterEnable _ime;
 
         private int _cycles;
         private bool _halted;
         #endregion;
 
+        #region Constructor
         public Z80(Device d)
         {
             _d = d;
             _cycles = 0;
             _r = new Registers();
             _halted = false;
-            _ime = IME.Disabled;
+            _ime = InterruptMasterEnable.Disabled;
         }
+        #endregion
 
+        #region Step Methods
         public int Step()
         {
             _cycles = 0;
@@ -122,8 +135,8 @@ namespace Castor.Emulator.CPU
             {
                 switch (_ime)
                 {
-                    case IME.Enabling:
-                        _ime = IME.Enabled;
+                    case InterruptMasterEnable.Enabling:
+                        _ime = InterruptMasterEnable.Enabled;
                         break;
                 }
             }
@@ -160,8 +173,45 @@ namespace Castor.Emulator.CPU
                     InterruptVec(0x60, InterruptFlags.Joypad);
             }
         }
+        #endregion
 
         #region Instruction Implementations
+        public void Adc(int i)
+        {
+            AluAdd(this[R, i], true);
+        }
+
+        public void Adc8()
+        {
+            AluAdd(N8, true);
+        }
+
+        public void Add(int i)
+        {
+            AluAdd(this[R, i], false);
+        }
+
+        public void Add8()
+        {
+            AluAdd(N8, false);
+        }
+
+        public void AddHL(int i)
+        {
+            InternalDelay();
+
+            AluAddHL(this[RP, i]);
+        }
+
+        public void AddSP()
+        {
+            InternalDelay(2);
+
+            AluAddSP(N8);
+        }
+
+
+
         public void Load(int t1, int i1, int t2, int i2)
         {
             this[t1, i1] = this[t2, i2];
@@ -169,12 +219,12 @@ namespace Castor.Emulator.CPU
 
         public void Load8(int i)
         {
-            this[R, i] = NB;
+            this[R, i] = N8;
         }
 
         public void Load16(int i)
         {
-            this[RP, i] = NW;
+            this[RP, i] = N16;
         }
 
         public void LoadHL()
@@ -187,17 +237,17 @@ namespace Castor.Emulator.CPU
             throw new NotImplementedException();
         }
 
-        public void JumpAbsolute()
+        public void JP()
         {
-            ushort a = NW;
+            ushort a = N16;
 
             InternalDelay();
             PC = a;
         }
 
-        public void JumpAbsolute(int i)
+        public void JP(int i)
         {
-            ushort a = NW;
+            ushort a = N16;
 
             if (_r.CanJump(CC[i]))
             {
@@ -206,17 +256,17 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void JumpRelative()
+        public void JR()
         {
-            sbyte r = (sbyte)NB;
+            sbyte r = (sbyte)N8;
 
             InternalDelay();
             PC = (ushort)(PC + r);
         }
 
-        public void JumpRelative(int i)
+        public void JR(int i)
         {
-            sbyte r = (sbyte)NB;
+            sbyte r = (sbyte)N8;
 
             if (_r.CanJump(CC[i]))
             {
@@ -225,29 +275,14 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void JumpHL()
+        public void JPHL()
         {
             PC = HL;
         }
 
-        public void AddHL(int i)
-        {
-            InternalDelay();
+        
 
-            var t16 = this[RP, i];
-            var result = (ushort)(HL + t16);
-
-            var hc = ((HL & 0xFFF) + (HL & 0xFFF) & 0x1000) == 0x1000;
-            var c = ((HL + t16) & 0x10_000) == 0x10_000;
-            
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = hc;
-            _r[Registers.Flags.C] = c;
-
-            HL = result;
-        }
-
-        public void Increment(int t, int i)
+        public void Inc(int t, int i)
         {
             var v = this[t, i];
             var r = v + 1;
@@ -262,7 +297,7 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void Decrement(int t, int i)
+        public void Dec(int t, int i)
         {
             var v = this[t, i];
             var r = v - 1;
@@ -355,38 +390,9 @@ namespace Castor.Emulator.CPU
             //_halted = true;
         }
 
-        public void Add(int i)
-        {           
-            var r8 = this[R, i];
-            var result = A + r8;
+        
 
-            var h = ((A & 0xF) + (r8 & 0xF) & 0x10) == 0x10;
-            var c = ((A + r8) & 0x100) == 0x100;
-
-            _r[Registers.Flags.Z] = (byte)result == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = h;
-            _r[Registers.Flags.C] = c;
-
-            A = (byte)result;
-        }
-
-        public void Adc(int i)
-        {
-            var r8 = this[R, i];
-            var cy = Utility.Bit.BitValue(F, Registers.Flags.C);
-            var result = (A + r8 + cy);
-
-            var h = ((A & 0xF + r8 & 0xF + cy) & 0x10) == 0x10;
-            var c = ((A + r8 + cy) & 0x100) == 0x100;
-
-            A = (byte)result;
-
-            _r[Registers.Flags.Z] = (byte)result == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = h;
-            _r[Registers.Flags.C] = c;
-        }
+        
 
         public void Sub(int i)
         {
@@ -454,7 +460,7 @@ namespace Castor.Emulator.CPU
 
         public void Call()
         {
-            var nw = NW;
+            var nw = N16;
             Push(PC);
             PC = nw;
         }
@@ -483,14 +489,11 @@ namespace Castor.Emulator.CPU
 
         public void Reti()
         {
-            _ime = IME.Enabling;
+            _ime = InterruptMasterEnable.Enabling;
             Ret();
         }
 
-        public void AddSP()
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public void Push(int i)
         {
@@ -505,54 +508,25 @@ namespace Castor.Emulator.CPU
 
         public void Di()
         {
-            _ime = IME.Disabled;
+            _ime = InterruptMasterEnable.Disabled;
         }
 
         public void Ei()
         {
-            _ime = IME.Enabling;
+            _ime = InterruptMasterEnable.Enabling;
         }
 
         public void Nop()
         {
         }
 
-        public void Add8()
-        {
-            var n8 = NB;
-            var result = (byte)(n8 + A);
+        
 
-            var h = (((A & 0xF) + (n8 & 0xF) & 0x10)) == 0x10;
-            var c = ((A + n8) & 0x100) == 0x100;
-
-            _r[Registers.Flags.Z] = result == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = h;
-            _r[Registers.Flags.C] = c;
-
-            A = result;
-        }
-
-        public void Adc8()
-        {
-            var cy = Utility.Bit.BitValue(F, Registers.Flags.C);
-            var n8 = NB;
-
-            var result = (byte)(n8 + A + cy);
-            var h = ((n8 & 0xF + A & 0xF + cy) & 0x10) == 0x10;
-            var c = ((n8 + A + cy) & 0x100) == 0x100;
-
-            A = result;
-
-            _r[Registers.Flags.Z] = result == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = h;
-            _r[Registers.Flags.C] = c;
-        }
+        
 
         public void Sub8()
         {
-            var v = NB;
+            var v = N8;
             var r = A - v;
 
             var hc = (A & 0xF) < (v & 0xF);
@@ -573,7 +547,7 @@ namespace Castor.Emulator.CPU
 
         public void And8()
         {
-            A = (byte)(A & NB);
+            A = (byte)(A & N8);
 
             _r[Registers.Flags.Z] = A == 0;
             _r[Registers.Flags.N] = false;
@@ -593,7 +567,7 @@ namespace Castor.Emulator.CPU
 
         public void Cp8()
         {
-            var v = NB;
+            var v = N8;
             var r = A - v;
 
             var hc = (A & 0xF) < (v & 0xF);

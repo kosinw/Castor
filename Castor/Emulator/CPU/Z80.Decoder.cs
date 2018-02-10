@@ -28,10 +28,10 @@ namespace Castor.Emulator.CPU
                                     switch (y)
                                     {
                                         case 0: Nop(); return;
-                                        case 1: Load(ADDR, NW, RP, sp); return;
+                                        case 1: Load(ADDR, N16, RP, sp); return;
                                         case 2: Stop(); return;
-                                        case 3: JumpRelative(); return;
-                                        case var r when r >= 4 && r <= 7: JumpRelative(y - 4); return;
+                                        case 3: JR(); return;
+                                        case var r when r >= 4 && r <= 7: JR(y - 4); return;
                                     }
 
                                     break;
@@ -76,19 +76,19 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch (q)
                                     {
-                                        case 0: Increment(RP, p); return;
-                                        case 1: Decrement(RP, p); return;
+                                        case 0: Inc(RP, p); return;
+                                        case 1: Dec(RP, p); return;
                                     }
                                     break;
                                 }
                             #endregion
 
                             #region 8-bit Increment
-                            case 4: Increment(R, y); return;
+                            case 4: Inc(R, y); return;
                             #endregion
 
                             #region 8-bit Decrement
-                            case 5: Decrement(R, y); return;
+                            case 5: Dec(R, y); return;
                             #endregion
 
                             #region 8-bit Load Immediate
@@ -165,9 +165,9 @@ namespace Castor.Emulator.CPU
                                     switch (y)
                                     {
                                         case var r when r >= 0 && r <= 3: Ret(y); return;
-                                        case 4: Load(ADDR, NB + 0xFF00, R, a); return;
+                                        case 4: Load(ADDR, N8 + 0xFF00, R, a); return;
                                         case 5: AddSP(); return;
-                                        case 6: Load(R, a, ADDR, NB + 0xFF00); return;
+                                        case 6: Load(R, a, ADDR, N8 + 0xFF00); return;
                                         case 7: LoadHL(); return;
                                     }
 
@@ -183,7 +183,7 @@ namespace Castor.Emulator.CPU
                                         case var r when r >= 0 && r <= 3: Pop(y); return;
                                         case 4: Ret(); return;
                                         case 5: Reti(); return;
-                                        case 6: JumpHL(); return;
+                                        case 6: JPHL(); return;
                                         case 7: LoadSP(); return;
                                     }
 
@@ -196,11 +196,11 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch (y)
                                     {
-                                        case var r when r >= 0 && r <= 3: JumpAbsolute(y); return;
+                                        case var r when r >= 0 && r <= 3: JP(y); return;
                                         case 4: Load(ADDR, C + 0xFF00, R, a); return;
-                                        case 5: Load(ADDR, NW, R, a); return;
+                                        case 5: Load(ADDR, N16, R, a); return;
                                         case 6: Load(R, a, ADDR, C + 0xFF00); return;
-                                        case 7: Load(R, a, ADDR, NW); return;
+                                        case 7: Load(R, a, ADDR, N16); return;
                                     }
 
                                     break;
@@ -212,7 +212,7 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch (y)
                                     {
-                                        case 0: JumpAbsolute(); return;
+                                        case 0: JP(); return;
                                         case 1: DecodeCB(); return;
                                         case 6: Di(); return;
                                         case 7: Ei(); return;

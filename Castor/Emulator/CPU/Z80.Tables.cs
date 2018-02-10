@@ -8,14 +8,19 @@ namespace Castor.Emulator.CPU
 {
     public partial class Z80
     {
-        private ushort NW
+        private ushort N16
         {
             get => ReadWord(_r.Bump(2));
         }
 
-        private byte NB
+        private byte N8
         {
             get => ReadByte(_r.Bump());
+        }
+
+        private sbyte E8
+        {
+            get => (sbyte)ReadByte(_r.Bump());
         }
 
         private ushort HLI

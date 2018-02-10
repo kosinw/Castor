@@ -74,7 +74,7 @@ namespace Castor.Emulator.CPU
         {
             get
             {
-                return ((F >> i) & 1) != 0;
+                return ((F >> i) & 1) == 1;
             }
 
             set

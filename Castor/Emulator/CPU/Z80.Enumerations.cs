@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Castor.Emulator.CPU
 {
-    public enum IME
+    public enum InterruptMasterEnable
     {
         Disabled,
         Enabled,
