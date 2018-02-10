@@ -79,21 +79,7 @@ namespace Castor.Emulator.CPU
             var ret = ReadWord(SP);
             return ret;
         }
-#endif
-
-        private void InterruptVec(byte vec, InterruptFlags flag)
-        {
-            _halted = false;
-
-            if (_ime == InterruptMasterEnable.Enabled)
-            {
-                InternalDelay(3);
-                Push(PC);
-                PC = vec;
-                _ime = InterruptMasterEnable.Disabled;
-                _d.IRQ.DisableInterrupt(flag);
-            }
-        }
+#endif        
         #endregion
 
         #region Internal Members
@@ -102,7 +88,6 @@ namespace Castor.Emulator.CPU
         private InterruptMasterEnable _ime;
 
         private int _cycles;
-        private bool _halted;
         #endregion;
 
         #region Constructor
@@ -111,7 +96,6 @@ namespace Castor.Emulator.CPU
             _d = d;
             _cycles = 0;
             _r = new Registers();
-            _halted = false;
             _ime = InterruptMasterEnable.Disabled;
         }
         #endregion
@@ -121,15 +105,8 @@ namespace Castor.Emulator.CPU
         {
             _cycles = 0;
 
-            if (!_halted)
-            {
-                DecodeStep();
-            }
-
-            else
-            {
-                HaltedStep();
-            }
+            var opcode = DecodeInstruction();
+            Decode(opcode);
 
             for (int i = 0; i < _cycles / 4; ++i)
             {
@@ -142,75 +119,107 @@ namespace Castor.Emulator.CPU
             }
 
             return _cycles;
-        }
-
-        private void HaltedStep()
-        {
-            //HandleInterrupts();
-            InternalDelay();
-        }
-
-        private void DecodeStep()
-        {
-            //HandleInterrupts();
-            var opcode = DecodeInstruction();
-            Decode(opcode);
-        }
-
-        private void HandleInterrupts()
-        {
-            if (_d.IRQ.CanServiceInterrupts) // if any interrupts are available
-            {
-                if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
-                    InterruptVec(0x40, InterruptFlags.VBL);
-                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.STAT))
-                    InterruptVec(0x48, InterruptFlags.STAT);
-                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
-                    InterruptVec(0x50, InterruptFlags.Timer);
-                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Serial))
-                    InterruptVec(0x58, InterruptFlags.Serial);
-                else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Joypad))
-                    InterruptVec(0x60, InterruptFlags.Joypad);
-            }
-        }
+        }        
         #endregion
 
         #region Instruction Implementations
-        public void Adc(int i)
+        void Adc(int i)
         {
-            AluAdd(this[R, i], true);
+            A = AluAdd(this[R, i], true);
         }
 
-        public void Adc8()
+        void Adc8()
         {
-            AluAdd(N8, true);
+            A = AluAdd(N8, true);
         }
 
-        public void Add(int i)
+        void Add(int i)
         {
-            AluAdd(this[R, i], false);
+            A = AluAdd(this[R, i], false);
         }
 
-        public void Add8()
+        void Add8()
         {
-            AluAdd(N8, false);
+            A = AluAdd(N8, false);
         }
 
-        public void AddHL(int i)
+        void AddHL(int i)
+        {
+            InternalDelay();
+            HL = AluAddHL(this[RP, i]);
+        }
+
+        void AddSP()
+        {
+            InternalDelay(2);
+            SP = AluAddSP(N8);
+        }
+
+        void And(int i)
+        {
+            A = AluAnd(this[R, i]);
+        }
+
+        void And8()
+        {
+            A = AluAnd(N8);
+        }
+
+        void Bit(int n, int i)
+        {            
+            var operand = this[R, i];
+            var result = (byte)((operand >> n) & 1);
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = true;
+        }
+
+        void Call()
         {
             InternalDelay();
 
-            AluAddHL(this[RP, i]);
+            var nw = N16;
+            Push(PC);
+            PC = nw;
         }
 
-        public void AddSP()
+        public void Call(int i)
         {
-            InternalDelay(2);
+            var nw = N16;
 
-            AluAddSP(N8);
+            if (_r.CanJump(CC[i]))
+            {
+                InternalDelay();
+                Push(PC);
+                PC = nw;
+            }
         }
 
+        public void Ccf()
+        {
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = !_r[Registers.Flags.C];
+        }
 
+        public void Cp(int i)
+        {
+            AluSub(this[R, i], false);
+        }
+
+        public void Cpl()
+        {
+            A = (byte)(~A);
+
+            _r[Registers.Flags.N] = true;
+            _r[Registers.Flags.H] = true;
+        }
+
+        public void Daa()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Load(int t1, int i1, int t2, int i2)
         {
@@ -278,9 +287,7 @@ namespace Castor.Emulator.CPU
         public void JPHL()
         {
             PC = HL;
-        }
-
-        
+        }        
 
         public void Inc(int t, int i)
         {
@@ -356,29 +363,11 @@ namespace Castor.Emulator.CPU
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = false;
         }
-
-        public void Daa()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Cpl()
-        {
-            A = (byte)(A ^ 0xFF);
-
-            _r[Registers.Flags.N] = true;
-            _r[Registers.Flags.H] = true;
-        }
-
+        
         public void Scf()
         {
             throw new NotImplementedException();
-        }
-
-        public void Ccf()
-        {
-            throw new NotImplementedException();
-        }
+        }        
 
         public void Stop()
         {
@@ -389,11 +378,7 @@ namespace Castor.Emulator.CPU
         {
             //_halted = true;
         }
-
-        
-
-        
-
+               
         public void Sub(int i)
         {
             var v = this[R, i];
@@ -414,17 +399,7 @@ namespace Castor.Emulator.CPU
         {
             throw new NotImplementedException();
         }
-
-        public void And(int i)
-        {
-            A = (byte)(A & this[R, i]);
-
-            _r[Registers.Flags.Z] = A == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = true;
-            _r[Registers.Flags.C] = false;
-        }
-
+        
         public void Xor(int i)
         {
             A = (byte)(A ^ this[R, i]);
@@ -444,32 +419,7 @@ namespace Castor.Emulator.CPU
             _r[Registers.Flags.H] = false;
             _r[Registers.Flags.C] = false;
         }
-
-        public void Cp(int i)
-        {
-            var v = this[R, i];
-            var r = A - v;
-            var hc = (A & 0xF) < (v & 0xF);
-            var c = A < v;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = true;
-            _r[Registers.Flags.H] = hc;
-            _r[Registers.Flags.C] = c;
-        }
-
-        public void Call()
-        {
-            var nw = N16;
-            Push(PC);
-            PC = nw;
-        }
-
-        public void Call(int i)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public void Ret()
         {
             InternalDelay();
@@ -492,9 +442,7 @@ namespace Castor.Emulator.CPU
             _ime = InterruptMasterEnable.Enabling;
             Ret();
         }
-
         
-
         public void Push(int i)
         {
             InternalDelay();
@@ -520,10 +468,6 @@ namespace Castor.Emulator.CPU
         {
         }
 
-        
-
-        
-
         public void Sub8()
         {
             var v = N8;
@@ -544,17 +488,7 @@ namespace Castor.Emulator.CPU
         {
             throw new NotImplementedException();
         }
-
-        public void And8()
-        {
-            A = (byte)(A & N8);
-
-            _r[Registers.Flags.Z] = A == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = true;
-            _r[Registers.Flags.C] = false;
-        }
-
+       
         public void Xor8()
         {
             throw new NotImplementedException();
@@ -651,16 +585,7 @@ namespace Castor.Emulator.CPU
         {
             throw new NotImplementedException();
         }
-
-        public void Bit(int n, int i)
-        {
-            var r = (this[R, i] >> n) & 1;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = true;
-        }
-
+        
         public void Res(int n, int i)
         {
             throw new NotImplementedException();
