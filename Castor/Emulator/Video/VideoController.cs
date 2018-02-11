@@ -307,11 +307,7 @@ namespace Castor.Emulator.Video
                         _modeclock = 0;
                         _mode = 0; // next hblank mode so techinically this is end of horiz line
 
-                        RenderScanline();
-
-                        // handle h-blank interrupt if stat bit 3
-                        if (Bit.BitValue(_stat, 3) == 1)
-                            _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
+                        RenderScanline();                        
                     }
                     break;
 
@@ -320,20 +316,7 @@ namespace Castor.Emulator.Video
                     if (_modeclock >= 204) // about 201 - 207 clocks (avg = 204)
                     {
                         _modeclock = 0;
-                        _line++; // end of hblank period means new line
-
-                        // do ly coincidence
-                        if (_line == _lyc)
-                        {
-                            // trigger lcd stat interrupt if bit 6 is set
-                            if (Bit.BitValue(_stat, 6) == 1)
-                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
-
-                            Bit.SetBit(_stat, 2);
-                        }
-                        // otherwise unset ly coincidence flag
-                        else
-                            Bit.ClearBit(_stat, 2);
+                        _line++; // end of hblank period means new line                        
 
                         if (_line == 143) // if this is last line then enter vblank
                         {
@@ -344,10 +327,6 @@ namespace Castor.Emulator.Video
                         else // otherwise just enter OAM read
                         {
                             _mode = 2;
-
-                            // handle oam interrupt if stat bit 5 is set
-                            if (Bit.BitValue(_stat, 5) == 1)
-                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
                         }
                     }
                     break;
@@ -355,18 +334,10 @@ namespace Castor.Emulator.Video
                 // Vblank period
                 case 1:
                     {
-                        // trigger stat mode 1 interrupt if stat bit 3 is set
-                        if (Bit.BitValue(_stat, 4) == 1)
-                            _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
-
                         if (_modeclock >= 456)
                         {
                             _modeclock = 0;
                             _line++; // still need to increment lines for LY reg
-
-                            // handle oam interrupt if stat bit 5 is set
-                            if (Bit.BitValue(_stat, 5) == 1)
-                                _d.IRQ.RequestInterrupt(InterruptFlags.STAT);
                         }
 
                         if (_line > 153) // lasts 4560 clocks

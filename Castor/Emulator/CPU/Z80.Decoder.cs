@@ -180,7 +180,7 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch ((q << 2 | p))
                                     {
-                                        case var r when r >= 0 && r <= 3: Pop(y); return;
+                                        case var r when r >= 0 && r <= 3: Pop(p); return;
                                         case 4: Ret(); return;
                                         case 5: Reti(); return;
                                         case 6: JPHL(); return;
@@ -268,7 +268,7 @@ namespace Castor.Emulator.CPU
                             #endregion
 
                             #region Restart
-                            case 7: Rst((ushort)(y * 8)); return;
+                            case 7: Rst(y); return;
                                 #endregion
                         }
 

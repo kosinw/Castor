@@ -24,7 +24,7 @@ namespace Castor.Emulator
             MMU = new MemoryMapper(this);
             Cartridge = null;
             GPU = new VideoController(this);
-            IRQ = new InterruptController(this);
+            IRQ = new InterruptController();
             JOYP = new InputController(this);
         }
 

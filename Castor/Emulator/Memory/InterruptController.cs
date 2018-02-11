@@ -8,18 +8,11 @@ namespace Castor.Emulator.Memory
 {
     public class InterruptController
     {
-        private Device _system;
-
         public byte IF { get => (byte)_if; set => _if = (InterruptFlags)value; }
         public byte IE { get => (byte)_ie; set => _ie = (InterruptFlags)value; }
 
         private InterruptFlags _if;
         private InterruptFlags _ie;
-
-        public InterruptController(Device system)
-        {
-            _system = system;
-        }
 
         /// <summary>
         /// This method is meant to test if the corresponding bits of an interrupt are set on IF and IE.

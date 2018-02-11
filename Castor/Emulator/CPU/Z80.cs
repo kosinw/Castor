@@ -1,10 +1,4 @@
 ﻿using Castor.Emulator.Utility;
-using System;
-using System.Collections;
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using Castor.Emulator.Memory;
 
 namespace Castor.Emulator.CPU
 {
@@ -45,7 +39,7 @@ namespace Castor.Emulator.CPU
             InternalDelay(delay);
             _d.MMU[addr] = value;
         }
-        
+
         private ushort ReadWord(int addr, int delay = 2)
         {
             InternalDelay(delay);
@@ -75,11 +69,11 @@ namespace Castor.Emulator.CPU
 #if DEBUG
         private ushort Peek()
         {
-            InternalDelay(-1);
-            var ret = ReadWord(SP);
+            var ret = ReadWord(SP, 0);
             return ret;
         }
 #endif        
+
         #endregion
 
         #region Internal Members
@@ -119,7 +113,7 @@ namespace Castor.Emulator.CPU
             }
 
             return _cycles;
-        }        
+        }
         #endregion
 
         #region Instruction Implementations
@@ -166,7 +160,7 @@ namespace Castor.Emulator.CPU
         }
 
         void Bit(int n, int i)
-        {            
+        {
             var operand = this[R, i];
             var result = (byte)((operand >> n) & 1);
 
@@ -208,6 +202,11 @@ namespace Castor.Emulator.CPU
             AluSub(this[R, i], false);
         }
 
+        public void Cp8()
+        {
+            AluSub(N8, false);
+        }
+
         public void Cpl()
         {
             A = (byte)(~A);
@@ -218,32 +217,69 @@ namespace Castor.Emulator.CPU
 
         public void Daa()
         {
-            throw new NotImplementedException();
+            var carry = false;
+
+            if (_r[Registers.Flags.H] || (A & 0xF) > 0x9)
+            {
+                A += 0x6;
+            }
+
+            if (_r[Registers.Flags.C] || (A & 0xFF) > 0x90)
+            {
+                A += 0x60;
+                carry = true;
+            }
+
+            _r[Registers.Flags.Z] = A == 0;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = carry;
         }
 
-        public void Load(int t1, int i1, int t2, int i2)
+        public void Dec(int t, int i)
         {
-            this[t1, i1] = this[t2, i2];
+            var operand = this[t, i];
+            var result = (byte)(operand - 1);
+
+            var h = ((operand & 0xF - 1) & 0x10) == 0x10;
+
+            this[t, i] = result;
+
+            if (t == R)
+            {
+                _r[Registers.Flags.Z] = result == 0;
+                _r[Registers.Flags.N] = true;
+                _r[Registers.Flags.H] = h;
+            }
         }
 
-        public void Load8(int i)
+        public void Di()
         {
-            this[R, i] = N8;
+            _ime = InterruptMasterEnable.Disabled;
         }
 
-        public void Load16(int i)
+        public void Ei()
         {
-            this[RP, i] = N16;
+            _ime = InterruptMasterEnable.Enabling;
         }
 
-        public void LoadHL()
+        public void Halt()
         {
-            throw new NotImplementedException();
+            //_halted = true;
         }
 
-        public void LoadSP()
+        public void Inc(int t, int i)
         {
-            throw new NotImplementedException();
+            var v = this[t, i];
+            var r = v + 1;
+
+            this[t, i] = r;
+
+            if (t == R)
+            {
+                _r[Registers.Flags.Z] = (byte)r == 0;
+                _r[Registers.Flags.N] = false;
+                _r[Registers.Flags.H] = (byte)r % 16 == 0;
+            }
         }
 
         public void JP()
@@ -267,7 +303,7 @@ namespace Castor.Emulator.CPU
 
         public void JR()
         {
-            sbyte r = (sbyte)N8;
+            sbyte r = E8;
 
             InternalDelay();
             PC = (ushort)(PC + r);
@@ -275,7 +311,7 @@ namespace Castor.Emulator.CPU
 
         public void JR(int i)
         {
-            sbyte r = (sbyte)N8;
+            sbyte r = E8;
 
             if (_r.CanJump(CC[i]))
             {
@@ -287,139 +323,65 @@ namespace Castor.Emulator.CPU
         public void JPHL()
         {
             PC = HL;
-        }        
-
-        public void Inc(int t, int i)
-        {
-            var v = this[t, i];
-            var r = v + 1;
-
-            this[t, i] = r;
-
-            if (t == R)
-            {
-                _r[Registers.Flags.Z] = (byte)r == 0;
-                _r[Registers.Flags.N] = false;
-                _r[Registers.Flags.H] = (byte)r % 16 == 0;
-            }
         }
 
-        public void Dec(int t, int i)
+        public void Load(int t1, int i1, int t2, int i2)
         {
-            var v = this[t, i];
-            var r = v - 1;
-
-            this[t, i] = r;
-
-            if (t == R)
-            {
-                _r[Registers.Flags.Z] = (byte)r == 0;
-                _r[Registers.Flags.N] = true;
-                _r[Registers.Flags.H] = (byte)r % 16 == 15;
-            }
+            this[t1, i1] = this[t2, i2];
         }
 
-        public void Rla()
+        public void Load8(int i)
         {
-            int r = A;
-            var bit7 = Utility.Bit.BitValue(A, 7);
-            var t = _r[Registers.Flags.C];
-
-            _r[Registers.Flags.C] = bit7 == 1;
-
-            r = r << 1;
-            r |= Convert.ToInt32(t);
-
-            A = (byte)r;
-
-            _r[Registers.Flags.Z] = false;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
+            this[R, i] = N8;
         }
 
-        public void Rlca()
+        public void Load16(int i)
         {
-            throw new NotImplementedException();
+            this[RP, i] = N16;
         }
 
-        public void Rra()
+        public void LoadHL()
         {
-            throw new NotImplementedException();
+            InternalDelay();
+
+            HL = AluAddSP(E8);
         }
 
-        public void Rrca()
+        public void LoadSP()
         {
-            int r = A;
-            var bit0 = Utility.Bit.BitValue(A, 0);
+            InternalDelay();
 
-            _r[Registers.Flags.C] = bit0 == 1;
-
-            r = r << 1;
-            r |= bit0;
-
-            A = (byte)r;
-
-            _r[Registers.Flags.Z] = false;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
-        }
-        
-        public void Scf()
-        {
-            throw new NotImplementedException();
-        }        
-
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Halt()
-        {
-            //_halted = true;
-        }
-               
-        public void Sub(int i)
-        {
-            var v = this[R, i];
-            var r = A - v;
-
-            var hc = (A & 0xF) < (v & 0xF);
-            var c = A < v;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = true;
-            _r[Registers.Flags.H] = hc;
-            _r[Registers.Flags.C] = c;
-
-            A = (byte)r;
-        }
-
-        public void Sbc(int i)
-        {
-            throw new NotImplementedException();
-        }
-        
-        public void Xor(int i)
-        {
-            A = (byte)(A ^ this[R, i]);
-
-            _r[Registers.Flags.Z] = A == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
-            _r[Registers.Flags.C] = false;
+            SP = HL;
         }
 
         public void Or(int i)
         {
-            A = (byte)(A | this[R, i]);
-
-            _r[Registers.Flags.Z] = A == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
-            _r[Registers.Flags.C] = false;
+            A = AluOr(this[R, i]);
         }
-       
+
+        public void Or8()
+        {
+            A = AluOr(N8);
+        }
+
+        public void Pop(int i)
+        {
+            this[RP2, i] = Pop();
+        }
+
+        public void Push(int i)
+        {
+            InternalDelay();
+            Push((ushort)this[RP2, i]);
+        }
+
+        public void Res(int n, int i)
+        {
+            var operand = (byte)this[R, i];
+
+            this[R, i] = Utility.Bit.SetBit(operand, n);
+        }
+
         public void Ret()
         {
             InternalDelay();
@@ -442,159 +404,179 @@ namespace Castor.Emulator.CPU
             _ime = InterruptMasterEnable.Enabling;
             Ret();
         }
-        
-        public void Push(int i)
+
+        public void Rl(int i)
         {
+            this[R, i] = AluRl(this[R, i], true);
+        }
+
+        public void Rla()
+        {
+            A = AluRl(A, true);
+            _r[Registers.Flags.Z] = false;
+        }
+
+        public void Rlc(int i)
+        {
+            this[R, i] = AluRl(this[R, i], false);
+        }
+
+        public void Rlca()
+        {
+            A = AluRl(A, false);
+            _r[Registers.Flags.Z] = false;
+        }
+
+        public void Rr(int i)
+        {
+            this[R, i] = AluRr(this[R, i], true);
+        }
+
+        public void Rrc(int i)
+        {
+            this[R, i] = AluRr(this[R, i], false);
+        }
+
+        public void Rra()
+        {
+            A = AluRr(A, true);
+            _r[Registers.Flags.Z] = false;
+        }
+
+        public void Rrca()
+        {
+            A = AluRr(A, false);
+            _r[Registers.Flags.Z] = false;
+        }
+
+        public void Rst(int addr)
+        {
+            ushort result = (ushort)(addr * 8);
+
             InternalDelay();
-            Push((ushort)this[RP2, i]);
+            Push(PC);
+            PC = result;
         }
 
-        public void Pop(int i)
+        public void Sbc(int i)
         {
-            this[RP2, i] = Pop();
+            A = AluSub(this[R, i], true);
         }
 
-        public void Di()
+        public void Sbc8()
         {
-            _ime = InterruptMasterEnable.Disabled;
+            A = AluSub(N8, true);
         }
 
-        public void Ei()
+        public void Scf()
         {
-            _ime = InterruptMasterEnable.Enabling;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = true;
+        }
+
+        public void Set(int n, int i)
+        {
+            var operand = this[R, i];
+
+            var result = Utility.Bit.SetBit((byte)operand, n);
+
+            this[R, i] = result;
+        }
+
+        public void Sla(int i)
+        {
+            var operand = this[R, i];
+
+            var shiftedBit = Utility.Bit.BitValue((byte)operand, 7);
+            var result = (byte)(this[R, i] << 1);
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = shiftedBit == 1;
+
+            this[R, i] = result;
+        }
+
+        public void Sra(int i)
+        {
+            var operand = this[R, i];
+
+            var bit7 = Utility.Bit.BitValue((byte)operand, 7);
+            var shiftedBit = Utility.Bit.BitValue((byte)operand, 0);
+            var result = (byte)((this[R, i] >> 1) | (bit7 << 7));
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = shiftedBit == 1;
+
+            this[R, i] = result;
+        }
+
+        public void Srl(int i)
+        {
+            var operand = this[R, i];
+
+            var shiftedBit = Utility.Bit.BitValue((byte)operand, 0);
+            var result = (byte)(this[R, i] >> 1);
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = shiftedBit == 1;
+
+            this[R, i] = result;
+        }
+
+        public void Stop()
+        {
+            // _halted = true;
+        }
+
+        public void Sub(int i)
+        {
+            A = AluSub(this[R, i], false);
+        }
+
+        public void Sub8()
+        {
+            A = AluSub(N8, false);
+        }
+
+        public void Swap(int i)
+        {
+            var operand = this[R, i];
+
+            var hi = (byte)(operand >> 4) & 0xF;
+            var lo = (byte)(operand >> 0) & 0xF;
+
+            var result = (byte)(lo << 4 | hi);
+
+            _r[Registers.Flags.Z] = result == 0;
+            _r[Registers.Flags.N] = false;
+            _r[Registers.Flags.H] = false;
+            _r[Registers.Flags.C] = false;
+
+            this[R, i] = result;
+        }
+
+        public void Xor(int i)
+        {
+            A = AluXor(this[R, i]);
+        }
+
+        public void Xor8()
+        {
+            A = AluXor(N8);
         }
 
         public void Nop()
         {
         }
 
-        public void Sub8()
-        {
-            var v = N8;
-            var r = A - v;
 
-            var hc = (A & 0xF) < (v & 0xF);
-            var c = A < v;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = true;
-            _r[Registers.Flags.H] = hc;
-            _r[Registers.Flags.C] = c;
-
-            A = (byte)r;
-        }
-
-        public void Sbc8()
-        {
-            throw new NotImplementedException();
-        }
-       
-        public void Xor8()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Or8()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Cp8()
-        {
-            var v = N8;
-            var r = A - v;
-
-            var hc = (A & 0xF) < (v & 0xF);
-            var c = A < v;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = true;
-            _r[Registers.Flags.H] = hc;
-            _r[Registers.Flags.C] = c;
-        }
-
-        public void Rst(ushort adr)
-        {
-            InternalDelay();
-            Push(PC);
-            PC = adr;
-        }
-
-        public void Rlc(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Rrc(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Rl(int i)
-        {
-            var r = this[R, i];
-            var bit7 = Utility.Bit.BitValue((byte)r, 7);
-            var t = _r[Registers.Flags.C];
-
-            _r[Registers.Flags.C] = bit7 == 1;
-
-            r <<= 1;
-
-            r |= Convert.ToInt32(t);
-
-            this[R, i] = r;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
-        }
-
-        public void Rr(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Sla(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Sra(int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Swap(int i)
-        {
-            var v = this[R, i];
-
-            var hi = (byte)(v >> 4) & 0xF;
-            var lo = (byte)(v >> 0) & 0xF;
-
-            var r = (lo << 4 | hi);
-
-            this[R, i] = r;
-
-            _r[Registers.Flags.Z] = (byte)r == 0;
-            _r[Registers.Flags.N] = false;
-            _r[Registers.Flags.H] = false;
-            _r[Registers.Flags.C] = false;
-        }
-
-        public void Srl(int i)
-        {
-            throw new NotImplementedException();
-        }
-        
-        public void Res(int n, int i)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Set(int n, int i)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
     }
 }

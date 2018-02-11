@@ -84,5 +84,67 @@ namespace Castor.Emulator.CPU
 
             return result;
         }
+
+        byte AluOr(int value)
+        {
+            var operand = value;
+
+            var result = (byte)(operand | A);
+
+            _r[Flags.Z] = result == 0;
+            _r[Flags.N] = false;
+            _r[Flags.H] = false;
+            _r[Flags.C] = false;
+
+            return result;
+        }
+
+        byte AluRl(int value, bool withCarry)
+        {
+            var operand = (byte)value;
+
+            var shiftedBit = BitValue(operand, 7);
+            var result = (byte)(operand << 1);
+
+            result |= withCarry ? BitValue(F, Flags.C) : shiftedBit;
+
+            _r[Flags.Z] = result == 0;
+            _r[Flags.N] = false;
+            _r[Flags.H] = false;
+            _r[Flags.C] = shiftedBit == 1;
+
+            return result;
+        }
+
+        byte AluRr(int value, bool withCarry)
+        {
+            var operand = (byte)value;
+
+            var shiftedBit = BitValue(operand, 0);
+            var result = (byte)(operand >> 1);
+
+            result |= (byte)((withCarry ? BitValue(F, Flags.C) : shiftedBit) << 7);
+
+            _r[Flags.Z] = result == 0;
+            _r[Flags.N] = false;
+            _r[Flags.H] = false;
+            _r[Flags.C] = shiftedBit == 1;
+
+            return result;
+        }
+
+        byte AluXor(int value)
+        {
+            var operand = value;
+
+            var result = (byte)(operand ^ A);
+
+            _r[Flags.Z] = result == 0;
+            _r[Flags.N] = false;
+            _r[Flags.H] = false;
+            _r[Flags.C] = false;
+
+            return result;
+        }
     }
 }
