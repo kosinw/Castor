@@ -1,4 +1,6 @@
-﻿using Castor.Emulator.Utility;
+﻿using Castor.Emulator.Memory;
+using Castor.Emulator.Utility;
+using System.Collections.Generic;
 
 namespace Castor.Emulator.CPU
 {
@@ -82,6 +84,7 @@ namespace Castor.Emulator.CPU
         private InterruptMasterEnable _ime;
 
         private int _cycles;
+        private Queue<int> _lyHistory = new Queue<int>();
         #endregion;
 
         #region Constructor
@@ -101,6 +104,23 @@ namespace Castor.Emulator.CPU
 
             var opcode = DecodeInstruction();
             Decode(opcode);
+
+            if (_d.IRQ.CanServiceInterrupts)
+            {
+                // TODO: Add halted code
+
+                if (_ime == InterruptMasterEnable.Enabled)
+                {
+                    if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
+                    {
+                        InternalDelay(3);
+                        Push(PC);
+                        _ime = InterruptMasterEnable.Disabled;
+                        _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
+                        PC = 0x40;
+                    }
+                }
+            }
 
             for (int i = 0; i < _cycles / 4; ++i)
             {
@@ -178,7 +198,7 @@ namespace Castor.Emulator.CPU
             PC = nw;
         }
 
-        public void Call(int i)
+        void Call(int i)
         {
             var nw = N16;
 
@@ -190,24 +210,24 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void Ccf()
+        void Ccf()
         {
             _r[Registers.Flags.N] = false;
             _r[Registers.Flags.H] = false;
             _r[Registers.Flags.C] = !_r[Registers.Flags.C];
         }
 
-        public void Cp(int i)
+        void Cp(int i)
         {
             AluSub(this[R, i], false);
         }
 
-        public void Cp8()
+        void Cp8()
         {
             AluSub(N8, false);
         }
 
-        public void Cpl()
+        void Cpl()
         {
             A = (byte)(~A);
 
@@ -215,7 +235,7 @@ namespace Castor.Emulator.CPU
             _r[Registers.Flags.H] = true;
         }
 
-        public void Daa()
+        void Daa()
         {
             var carry = false;
 
@@ -235,7 +255,7 @@ namespace Castor.Emulator.CPU
             _r[Registers.Flags.C] = carry;
         }
 
-        public void Dec(int t, int i)
+        void Dec(int t, int i)
         {
             var operand = this[t, i];
             var result = (byte)(operand - 1);
@@ -252,22 +272,22 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void Di()
+        void Di()
         {
             _ime = InterruptMasterEnable.Disabled;
         }
 
-        public void Ei()
+        void Ei()
         {
             _ime = InterruptMasterEnable.Enabling;
         }
 
-        public void Halt()
+        void Halt()
         {
             //_halted = true;
         }
 
-        public void Inc(int t, int i)
+        void Inc(int t, int i)
         {
             var v = this[t, i];
             var r = v + 1;
@@ -282,7 +302,7 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void JP()
+        void JP()
         {
             ushort a = N16;
 
@@ -290,7 +310,7 @@ namespace Castor.Emulator.CPU
             PC = a;
         }
 
-        public void JP(int i)
+        void JP(int i)
         {
             ushort a = N16;
 
@@ -301,7 +321,7 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void JR()
+        void JR()
         {
             sbyte r = E8;
 
@@ -309,7 +329,7 @@ namespace Castor.Emulator.CPU
             PC = (ushort)(PC + r);
         }
 
-        public void JR(int i)
+        void JR(int i)
         {
             sbyte r = E8;
 
@@ -320,75 +340,75 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void JPHL()
+        void JPHL()
         {
             PC = HL;
         }
 
-        public void Load(int t1, int i1, int t2, int i2)
+        void Load(int t1, int i1, int t2, int i2)
         {
             this[t1, i1] = this[t2, i2];
         }
 
-        public void Load8(int i)
+        void Load8(int i)
         {
             this[R, i] = N8;
         }
 
-        public void Load16(int i)
+        void Load16(int i)
         {
             this[RP, i] = N16;
         }
 
-        public void LoadHL()
+        void LoadHL()
         {
             InternalDelay();
 
             HL = AluAddSP(E8);
         }
 
-        public void LoadSP()
+        void LoadSP()
         {
             InternalDelay();
 
             SP = HL;
         }
 
-        public void Or(int i)
+        void Or(int i)
         {
             A = AluOr(this[R, i]);
         }
 
-        public void Or8()
+        void Or8()
         {
             A = AluOr(N8);
         }
 
-        public void Pop(int i)
+        void Pop(int i)
         {
             this[RP2, i] = Pop();
         }
 
-        public void Push(int i)
+        void Push(int i)
         {
             InternalDelay();
             Push((ushort)this[RP2, i]);
         }
 
-        public void Res(int n, int i)
+        void Res(int n, int i)
         {
             var operand = (byte)this[R, i];
 
             this[R, i] = Utility.Bit.SetBit(operand, n);
         }
 
-        public void Ret()
+        void Ret()
         {
             InternalDelay();
             PC = Pop();
         }
 
-        public void Ret(int i)
+        void Ret(int i)
         {
             InternalDelay();
 
@@ -399,35 +419,35 @@ namespace Castor.Emulator.CPU
             }
         }
 
-        public void Reti()
+        void Reti()
         {
-            _ime = InterruptMasterEnable.Enabling;
+            _ime = InterruptMasterEnable.Enabled;
             Ret();
         }
 
-        public void Rl(int i)
+        void Rl(int i)
         {
             this[R, i] = AluRl(this[R, i], true);
         }
 
-        public void Rla()
+        void Rla()
         {
             A = AluRl(A, true);
             _r[Registers.Flags.Z] = false;
         }
 
-        public void Rlc(int i)
+        void Rlc(int i)
         {
             this[R, i] = AluRl(this[R, i], false);
         }
 
-        public void Rlca()
+        void Rlca()
         {
             A = AluRl(A, false);
             _r[Registers.Flags.Z] = false;
         }
 
-        public void Rr(int i)
+        void Rr(int i)
         {
             this[R, i] = AluRr(this[R, i], true);
         }

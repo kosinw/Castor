@@ -27,7 +27,7 @@ namespace Castor.Emulator.Cartridge
                 if (idx < 0x4000)
                     return _bytecode[idx];
                 if (idx < 0x8000)
-                    return _bytecode[idx + (_currentRomBank * 0x4000)];
+                    return _bytecode[idx + (_currentRomBank - 1 * 0x4000)];
 
                 throw new Exception("These addresses are not readable.");
             }

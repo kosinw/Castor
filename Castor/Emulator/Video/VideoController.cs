@@ -1,6 +1,7 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System;
+using System.Diagnostics;
 
 namespace Castor.Emulator.Video
 {
@@ -50,6 +51,7 @@ namespace Castor.Emulator.Video
         private int _wy;
 
         private Device _d;
+        private bool _vblankTriggered = false;
         #endregion
 
         #region IO Registers
@@ -320,9 +322,7 @@ namespace Castor.Emulator.Video
 
                         if (_line == 143) // if this is last line then enter vblank
                         {
-                            _mode = 1;
-
-                            _d.IRQ.RequestInterrupt(InterruptFlags.VBL);
+                            _mode = 1;                            
                         }
                         else // otherwise just enter OAM read
                         {
@@ -340,11 +340,18 @@ namespace Castor.Emulator.Video
                             _line++; // still need to increment lines for LY reg
                         }
 
+                        if (_line == 144 && !_vblankTriggered)
+                        {
+                            _d.IRQ.RequestInterrupt(InterruptFlags.VBL);
+                            _vblankTriggered = true;
+                        }
+
                         if (_line > 153) // lasts 4560 clocks
                         {
                             _modeclock = 0;
                             _line = 0; // reset line
                             _mode = 2; // reenter oam read
+                            _vblankTriggered = false;
                         }
                     }
                     break;

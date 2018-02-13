@@ -14,7 +14,9 @@ namespace Castor.GL
         static void Main()
         {
             using (var game = new DesktopView())
+            {
                 game.Run();
+            }
         }
     }
 }

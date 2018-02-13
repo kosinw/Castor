@@ -103,7 +103,7 @@ namespace Castor.Emulator.CPU
                                         case 0: Rlca(); return;
                                         case 1: Rrca(); return;
                                         case 2: Rla(); return;
-                                        case 3: Rrca(); return;
+                                        case 3: Rra(); return;
                                         case 4: Daa(); return;
                                         case 5: Cpl(); return;
                                         case 6: Scf(); return;
@@ -121,7 +121,7 @@ namespace Castor.Emulator.CPU
                 case 1:
                     {
                         #region Halt 
-                        if (z == 6)
+                        if (z == 6 && y == 6)
                         {
                             Halt();
                             return;

@@ -82,15 +82,16 @@ namespace Castor.GL
         protected override void Update(GameTime gameTime)
         {
             GamePadState gps = GamePad.GetState(PlayerIndex.One);
+            KeyboardState kps = Keyboard.GetState();
 
-            _emulator.JOYP[InputController.Index.A] = gps.IsButtonDown(Buttons.A);
-            _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B);
-            _emulator.JOYP[InputController.Index.UP] = gps.IsButtonDown(Buttons.DPadUp);
-            _emulator.JOYP[InputController.Index.DOWN] = gps.IsButtonDown(Buttons.DPadDown);
-            _emulator.JOYP[InputController.Index.LEFT] = gps.IsButtonDown(Buttons.DPadLeft);
-            _emulator.JOYP[InputController.Index.RIGHT] = gps.IsButtonDown(Buttons.DPadRight);
-            _emulator.JOYP[InputController.Index.START] = gps.IsButtonDown(Buttons.Start);
-            _emulator.JOYP[InputController.Index.SELECT] = gps.IsButtonDown(Buttons.Back);
+            _emulator.JOYP[InputController.Index.A] = gps.IsButtonDown(Buttons.A) || kps.IsKeyDown(Keys.Z);
+            _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B) || kps.IsKeyDown(Keys.C);
+            _emulator.JOYP[InputController.Index.UP] = gps.IsButtonDown(Buttons.DPadUp) || kps.IsKeyDown(Keys.Up);
+            _emulator.JOYP[InputController.Index.DOWN] = gps.IsButtonDown(Buttons.DPadDown) || kps.IsKeyDown(Keys.Down);
+            _emulator.JOYP[InputController.Index.LEFT] = gps.IsButtonDown(Buttons.DPadLeft) || kps.IsKeyDown(Keys.Left);
+            _emulator.JOYP[InputController.Index.RIGHT] = gps.IsButtonDown(Buttons.DPadRight) || kps.IsKeyDown(Keys.Right);
+            _emulator.JOYP[InputController.Index.START] = gps.IsButtonDown(Buttons.Start) || kps.IsKeyDown(Keys.Enter);
+            _emulator.JOYP[InputController.Index.SELECT] = gps.IsButtonDown(Buttons.Back) || kps.IsKeyDown(Keys.Back);
 
             if (_backbuffer != null)
             {
