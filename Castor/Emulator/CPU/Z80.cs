@@ -1,6 +1,7 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Castor.Emulator.CPU
 {
@@ -84,7 +85,6 @@ namespace Castor.Emulator.CPU
         private InterruptMasterEnable _ime;
 
         private int _cycles;
-        private Queue<int> _lyHistory = new Queue<int>();
         #endregion;
 
         #region Constructor
@@ -113,11 +113,9 @@ namespace Castor.Emulator.CPU
                 {
                     if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
                     {
-                        InternalDelay(3);
-                        Push(PC);
+                        Rst(0x08);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
-                        PC = 0x40;
                     }
                 }
             }

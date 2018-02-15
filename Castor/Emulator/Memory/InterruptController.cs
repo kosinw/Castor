@@ -2,8 +2,17 @@
 {
     public class InterruptController
     {
-        public byte IF { get => (byte)_if; set => _if = (InterruptFlags)value; }
-        public byte IE { get => (byte)_ie; set => _ie = (InterruptFlags)value; }
+        public byte IF
+        {
+            get => (byte)_if;
+            set => _if = (InterruptFlags)value;
+        }
+
+        public byte IE
+        {
+            get => (byte)_ie;
+            set => _ie = (InterruptFlags)value;
+        }
 
         private InterruptFlags _if;
         private InterruptFlags _ie;

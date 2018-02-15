@@ -30,6 +30,14 @@ namespace Castor.Emulator.Video
         private byte[] _oam;
         private byte[] _framebuffer;
 
+        // Pallete Tables
+        private const int White = 255;
+        private const int LightGray = 196;
+        private const int DarkGray = 97;
+        private const int Black = 0;
+
+        private byte[] _bgpallete = new byte[] { White, LightGray, DarkGray, Black };
+
         // Register stuff
         private byte _stat;
         private byte _lcdc;
@@ -88,8 +96,22 @@ namespace Castor.Emulator.Video
 
         public byte BGP
         {
-            get => _bgp;
-            set => _bgp = value;
+            get
+            {
+                return (byte)(
+                    IndexFromShade(_bgpallete[3]) << 6 |
+                    IndexFromShade(_bgpallete[2]) << 4 |
+                    IndexFromShade(_bgpallete[1]) << 2 |
+                    IndexFromShade(_bgpallete[0]) << 0);
+            }
+
+            set
+            {
+                _bgpallete[3] = (byte)ShadeFromIndex((value >> 6) & 3);
+                _bgpallete[2] = (byte)ShadeFromIndex((value >> 4) & 3);
+                _bgpallete[1] = (byte)ShadeFromIndex((value >> 2) & 3);
+                _bgpallete[0] = (byte)ShadeFromIndex((value >> 0) & 3);
+            }
         }
 
         public byte OBP0
@@ -205,6 +227,56 @@ namespace Castor.Emulator.Video
         {
         }
 
+        private int IndexFromShade(int shade)
+        {
+            if (shade == White)
+            {
+                return 0;
+            }
+
+            else if (shade == LightGray)
+            {
+                return 1;
+            }
+
+            else if (shade == DarkGray)
+            {
+                return 2;
+            }
+
+            else if (shade == Black)
+            {
+                return 3;
+            }
+
+            return 0;
+        }
+
+        private int ShadeFromIndex(int idx)
+        {
+            if (idx == 0)
+            {
+                return White;
+            }
+
+            else if (idx == 1)
+            {
+                return LightGray;
+            }
+
+            else if (idx == 2)
+            {
+                return DarkGray;
+            }
+
+            else if (idx == 3)
+            {
+                return Black;
+            }
+
+            return 0;
+        }
+
         private void RenderBackground()
         {
             // Here check which data set is being used
@@ -275,7 +347,7 @@ namespace Castor.Emulator.Video
                 int currentBit = 7 - (xPosition % 8); // the most significant bit is the first bit rendered
                 int colorValue = 2 * Bit.BitValue(b1, currentBit) + Bit.BitValue(b2, currentBit);
 
-                _framebuffer[_line * 160 + x] = Utility.Video.GetGrayShade(colorValue, _bgp);
+                _framebuffer[_line * 160 + x] = _bgpallete[colorValue];
             }
         }
 

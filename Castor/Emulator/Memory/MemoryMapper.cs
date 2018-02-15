@@ -68,12 +68,7 @@ namespace Castor.Emulator.Memory
                         case 0xFF43:
                             return _d.GPU.SCX;
                         case 0xFF44:
-                            var g = _d.GPU.LY;
-                            if (g >= 145)
-                            {
-                                //return 145;
-                            }
-                            return g;
+                            return _d.GPU.LY;
                         case 0xFF45:
                             return _d.GPU.LYC;
                         case 0xFF47:
