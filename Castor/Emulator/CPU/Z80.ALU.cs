@@ -7,12 +7,13 @@ namespace Castor.Emulator.CPU
     {
         byte AluAdd(int value, bool withCarry)
         {
-            var addend = value + (withCarry ? BitValue(F, Flags.C) : 0);
+            var addend = value;
+            var cy = (withCarry ? BitValue(F, Flags.C) : 0);
 
-            var hc = ((addend & 0xF + A & 0xF) & 0x10) == 0x10;
-            var c = ((addend & 0xFF + A & 0xFF) & 0x100) == 0x100;
+            var hc = ((addend & 0xF) + (A & 0xF) + cy) > 0x0F;
+            var c = addend + A + cy > 0xFF;
 
-            var result = (byte)(addend + A);
+            var result = (byte)(addend + A + cy);
 
             _r[Flags.Z] = result == 0;
             _r[Flags.N] = false;
@@ -30,7 +31,7 @@ namespace Castor.Emulator.CPU
             var c = ((addend & 0xFFFF + HL & 0xFFFF) & 0x10000) == 0x10000;
 
             var result = (ushort)(addend + HL);
-            
+
             _r[Flags.N] = false;
             _r[Flags.H] = hc;
             _r[Flags.C] = c;
@@ -71,11 +72,12 @@ namespace Castor.Emulator.CPU
 
         byte AluSub(int value, bool cy)
         {
-            var operand = value + (cy ? BitValue(F, Flags.C) : 0);
+            var operand = value;
+            var carry = (cy ? BitValue(F, Flags.C) : 0);
 
-            var result = (byte)(A - operand);
-            var h = ((A & 0xF) - (operand & 0xF)) < 0;
-            var c = (operand & 0xFF) > (A & 0xFF);            
+            var result = (byte)(A - operand - carry);
+            var h = ((A & 0xF) - (operand & 0xF) - carry) < 0;
+            var c = (ushort)(A - operand - carry) > 0xFF;
 
             _r[Flags.Z] = result == 0;
             _r[Flags.N] = true;
