@@ -1,7 +1,6 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System;
-using System.Diagnostics;
 
 namespace Castor.Emulator.Video
 {
@@ -90,7 +89,6 @@ namespace Castor.Emulator.Video
                 }
 
                 _lcdc = value;
-                _mode = 2;
             }
         }
 
@@ -215,7 +213,7 @@ namespace Castor.Emulator.Video
             {
                 for (int i = 0; i < _framebuffer.Length; ++i)
                 {
-                    _framebuffer[i] = 255;
+                    _framebuffer[i] = 0xFF;
                 }
             }
 
@@ -279,6 +277,11 @@ namespace Castor.Emulator.Video
 
         private void RenderBackground()
         {
+            if (_line == 144)
+            {
+                return;
+            }
+
             // Here check which data set is being used
             // For 0x8000 the tile indices are numbered from 0 to 255
             // For 0x8800 the tile indices are numbered from -128 to 127
@@ -339,7 +342,7 @@ namespace Castor.Emulator.Video
                     tileLocation += tileIdx * 16;
 
                 int vline = yPosition % 8; // Each tile is 8 pixels high
-                vline *= 2; // Each line takes up two bytes
+                vline *= 2; // Each line takes up two /*bytes*/
 
                 byte b1 = _d.MMU[tileDataZero + tileLocation + vline]; // read the first half of the line
                 byte b2 = _d.MMU[tileDataZero + tileLocation + vline + 1]; // read the second half of the line
@@ -381,7 +384,7 @@ namespace Castor.Emulator.Video
                         _modeclock = 0;
                         _mode = 0; // next hblank mode so techinically this is end of horiz line
 
-                        RenderScanline();                        
+                        RenderScanline();
                     }
                     break;
 
@@ -390,11 +393,11 @@ namespace Castor.Emulator.Video
                     if (_modeclock >= 204) // about 201 - 207 clocks (avg = 204)
                     {
                         _modeclock = 0;
-                        _line++; // end of hblank period means new line                        
+                        _line++; // end of hblank period means new line
 
                         if (_line == 143) // if this is last line then enter vblank
                         {
-                            _mode = 1;                            
+                            _mode = 1;
                         }
                         else // otherwise just enter OAM read
                         {

@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Castor.GL
@@ -33,14 +32,14 @@ namespace Castor.GL
             Window.Title = "Castor";
             IsMouseVisible = true;
         }
-        
+
         protected override void Initialize()
-        {            
+        {
             base.Initialize();
         }
-        
+
         protected override void LoadContent()
-        {            
+        {
             _spritebatch = new SpriteBatch(GraphicsDevice);
 
             _backbuffer = new Texture2D(GraphicsDevice, 160, 144);
@@ -69,16 +68,16 @@ namespace Castor.GL
                 if (_emulatorthread != null)
                     _emulatorthread.Abort();
 
-                System.Environment.Exit(0);
+                Exit();
             }
         }
-        
+
         protected override void UnloadContent()
         {
             if (_emulatorthread != null)
                 _emulatorthread.Abort();
         }
-        
+
         protected override void Update(GameTime gameTime)
         {
             GamePadState gps = GamePad.GetState(PlayerIndex.One);
@@ -101,7 +100,7 @@ namespace Castor.GL
 
             base.Update(gameTime);
         }
-        
+
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
@@ -146,8 +145,8 @@ namespace Castor.GL
                 elapsedTime = watch.Elapsed;
 
                 if (elapsedTime < dt)
-                {                    
-                    Thread.Sleep(dt - elapsedTime);                    
+                {
+                    Thread.Sleep(dt - elapsedTime);
                 }
             }
         }

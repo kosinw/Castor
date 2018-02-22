@@ -1,9 +1,5 @@
-﻿using Castor.Emulator.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Castor.Emulator.Memory
 {
@@ -15,6 +11,24 @@ namespace Castor.Emulator.Memory
         private BootROM _bootROM = new BootROM();
 
         public bool _enableBIOS = true;
+
+        private List<byte> _sbString = new List<byte>();
+
+        private byte _sb;
+        private byte _sc;
+
+        private byte SB
+        {
+            get => _sb;
+            set
+            {
+                _sb = value;
+                if (_sc == 0x81)
+                {                    
+                    _sbString.Add(value);
+                }
+            }
+        }
 
         public MemoryMapper(Device system)
         {
@@ -49,6 +63,10 @@ namespace Castor.Emulator.Memory
                     {
                         case 0xFF00:
                             return _d.JOYP.P1;
+                        case 0xFF01:
+                            return SB;
+                        case 0xFF02:
+                            return _sc;
                         case 0xFF04:
                             return 0;
                         case 0xFF05:
@@ -114,6 +132,12 @@ namespace Castor.Emulator.Memory
                         case 0xFF00:
                             _d.JOYP.P1 = value;
                             break;
+                        case 0xFF01:
+                            SB = value;
+                            break;
+                        case 0xFF02:
+                            _sc = value;
+                            break;
                         case 0xFF04:
                             //_d.TIM.DIV = value;
                             break;
@@ -142,7 +166,6 @@ namespace Castor.Emulator.Memory
                             _d.GPU.SCX = value;
                             break;
                         case 0xFF44:
-                            // this is supposed to write to LY, but ignore it
                             break;
                         case 0xFF45:
                             _d.GPU.LYC = value;

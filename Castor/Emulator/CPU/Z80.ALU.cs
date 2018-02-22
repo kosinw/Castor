@@ -73,9 +73,9 @@ namespace Castor.Emulator.CPU
         {
             var operand = value + (cy ? BitValue(F, Flags.C) : 0);
 
-            var h = (operand & 0xF) > (A & 0xF);
-            var c = (operand & 0xFF) > (A & 0xFF);
             var result = (byte)(A - operand);
+            var h = ((A & 0xF) - (operand & 0xF)) < 0;
+            var c = (operand & 0xFF) > (A & 0xFF);            
 
             _r[Flags.Z] = result == 0;
             _r[Flags.N] = true;

@@ -1,7 +1,7 @@
 ﻿using Castor.Emulator.Memory;
 using Castor.Emulator.Utility;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Text;
 
 namespace Castor.Emulator.CPU
 {
@@ -9,7 +9,14 @@ namespace Castor.Emulator.CPU
     {
         #region References
         public ref byte A => ref _r.A;
-        public ref byte F => ref _r.F;
+        public ref byte F
+        {
+            get
+            {
+                _r.F &= 0xF0;
+                return ref _r.F;
+            }
+        }
         public ref byte B => ref _r.B;
         public ref byte C => ref _r.C;
         public ref byte D => ref _r.D;
@@ -17,7 +24,15 @@ namespace Castor.Emulator.CPU
         public ref byte H => ref _r.H;
         public ref byte L => ref _r.L;
 
-        public ref ushort AF => ref _r.AF;
+        public ref ushort AF
+        {
+            get
+            {
+                _r.F &= 0xF0;
+                return ref _r.AF;
+            }
+        }
+
         public ref ushort BC => ref _r.BC;
         public ref ushort DE => ref _r.DE;
         public ref ushort HL => ref _r.HL;
@@ -75,7 +90,14 @@ namespace Castor.Emulator.CPU
             var ret = ReadWord(SP, 0);
             return ret;
         }
-#endif        
+#endif
+
+#if DEBUG
+        private string ConstructString(List<byte> bytearray)
+        {
+            return Encoding.ASCII.GetString(bytearray.ToArray());
+        }
+#endif
 
         #endregion
 
@@ -90,6 +112,7 @@ namespace Castor.Emulator.CPU
         #region Constructor
         public Z80(Device d)
         {
+            PC = 0x100;
             _d = d;
             _cycles = 0;
             _r = new Registers();
@@ -107,8 +130,6 @@ namespace Castor.Emulator.CPU
 
             if (_d.IRQ.CanServiceInterrupts)
             {
-                // TODO: Add halted code
-
                 if (_ime == InterruptMasterEnable.Enabled)
                 {
                     if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
@@ -235,22 +256,37 @@ namespace Castor.Emulator.CPU
 
         void Daa()
         {
-            var carry = false;
+            int a = A;
 
-            if (_r[Registers.Flags.H] || (A & 0xF) > 0x9)
+            if (!_r[Registers.Flags.N])
             {
-                A += 0x6;
+                if (_r[Registers.Flags.H] || (a & 0xF) > 0x09)
+                    a += 0x06;
+
+                if (_r[Registers.Flags.C] || a > 0x9F)
+                    a += 0x60;
+            }
+            else
+            {
+                if (_r[Registers.Flags.H])
+                    a = (a - 0x6) & 0xFF;
+
+                if (_r[Registers.Flags.C])
+                    a -= 0x60;
             }
 
-            if (_r[Registers.Flags.C] || (A & 0xFF) > 0x90)
-            {
-                A += 0x60;
-                carry = true;
-            }
-
-            _r[Registers.Flags.Z] = A == 0;
             _r[Registers.Flags.H] = false;
-            _r[Registers.Flags.C] = carry;
+            _r[Registers.Flags.Z] = false;
+
+            if ((a & 0x100) == 0x100)
+                _r[Registers.Flags.C] = true;
+
+            a &= 0xFF;
+
+            if (a == 0)
+                _r[Registers.Flags.Z] = true;
+
+            A = (byte)a;
         }
 
         void Dec(int t, int i)
@@ -258,15 +294,13 @@ namespace Castor.Emulator.CPU
             var operand = this[t, i];
             var result = (byte)(operand - 1);
 
-            var h = ((operand & 0xF - 1) & 0x10) == 0x10;
-
             this[t, i] = result;
 
             if (t == R)
             {
                 _r[Registers.Flags.Z] = result == 0;
                 _r[Registers.Flags.N] = true;
-                _r[Registers.Flags.H] = h;
+                _r[Registers.Flags.H] = result % 16 == 15;
             }
         }
 
@@ -384,6 +418,11 @@ namespace Castor.Emulator.CPU
 
         void Pop(int i)
         {
+            if (i == af && ReadByte(PC) == 0xF5)
+            {
+                ;
+            }
+
             this[RP2, i] = Pop();
         }
 

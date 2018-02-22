@@ -6,9 +6,11 @@ namespace Castor.Emulator.Cartridge
     public class MBC1 : ICartridge
     {
         private byte[] _bytecode;
+        private byte[] _ram;
 
         private int _currentRomBank;
         private int _romSize;
+        private int _ramSize;
         private int _numberOfRomBanks;
 
         public MBC1(byte[] bytecode)
@@ -27,7 +29,7 @@ namespace Castor.Emulator.Cartridge
                 if (idx < 0x4000)
                     return _bytecode[idx];
                 if (idx < 0x8000)
-                    return _bytecode[idx + (_currentRomBank - 1 * 0x4000)];
+                    return _bytecode[(0x4000 * _currentRomBank) + idx % 0x4000];
 
                 throw new Exception("These addresses are not readable.");
             }
