@@ -138,6 +138,13 @@ namespace Castor.Emulator.CPU
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
                     }
+
+                    else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
+                    {
+                        Rst(0x0A);
+                        _ime = InterruptMasterEnable.Disabled;
+                        _d.IRQ.DisableInterrupt(InterruptFlags.Timer);
+                    }
                 }
             }
 
@@ -292,7 +299,7 @@ namespace Castor.Emulator.CPU
         void Dec(int t, int i)
         {
             var operand = this[t, i];
-            var result = (byte)(operand - 1);
+            var result = (ushort)(operand - 1);
 
             this[t, i] = result;
 
