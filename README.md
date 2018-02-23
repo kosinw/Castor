@@ -4,8 +4,7 @@ Castor is a Gameboy interpreter written using C# and Monogame. The primary purpo
 
 # Screenshot(s)
 
-![Nintendo Logo](Screenshot_1.png)
-![Tetris Credits](Screenshot_2.png)
+![Nintendo Logo](Screenshot_1.png) ![Tetris Credits](Screenshot_2.png)
 
 # Implemented Features
 * partial CPU decoding
