@@ -43,10 +43,10 @@ namespace Castor.Emulator.CPU
         {
             var addend = value;
 
-            var hc = ((addend & 0xF + SP & 0xF) & 0x10) == 0x10;
-            var c = ((addend & 0xFF + SP & 0xFF) & 0x100) == 0x100;
+            var hc = ((addend & 0xF) + (SP & 0xF)) > 0xF;
+            var c = ((addend & 0xFF) + (SP & 0xFF)) > 0xFF;
 
-            var result = (ushort)(value + addend);
+            var result = (ushort)(SP + addend);
 
             _r[Flags.Z] = false;
             _r[Flags.N] = false;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 
 namespace Castor.Emulator.Memory
 {
@@ -24,7 +26,7 @@ namespace Castor.Emulator.Memory
             {
                 _sb = value;
                 if (_sc == 0x81)
-                {                    
+                {
                     _sbString.Add(value);
                 }
             }

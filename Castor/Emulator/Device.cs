@@ -31,6 +31,8 @@ namespace Castor.Emulator
         public void LoadROM(byte[] bytecode)
         {
             Cartridge = CartridgeFactory.CreateCartridge(bytecode);
+
+            CPU.PC = 0x100;
         }
 
         /// <summary>

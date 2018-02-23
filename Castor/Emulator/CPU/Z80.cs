@@ -112,7 +112,6 @@ namespace Castor.Emulator.CPU
         #region Constructor
         public Z80(Device d)
         {
-            PC = 0x100;
             _d = d;
             _cycles = 0;
             _r = new Registers();
@@ -139,11 +138,32 @@ namespace Castor.Emulator.CPU
                         _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
                     }
 
+                    else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.STAT))
+                    {
+                        Rst(0x09);
+                        _ime = InterruptMasterEnable.Disabled;
+                        _d.IRQ.DisableInterrupt(InterruptFlags.STAT);
+                    }                    
+
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
                     {
                         Rst(0x0A);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Timer);
+                    }
+
+                    else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Serial))
+                    {
+                        Rst(0x0B);
+                        _ime = InterruptMasterEnable.Disabled;
+                        _d.IRQ.DisableInterrupt(InterruptFlags.Serial);
+                    }
+
+                    else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Joypad))
+                    {
+                        Rst(0x0C);
+                        _ime = InterruptMasterEnable.Disabled;
+                        _d.IRQ.DisableInterrupt(InterruptFlags.Joypad);
                     }
                 }
             }
@@ -192,7 +212,7 @@ namespace Castor.Emulator.CPU
         void AddSP()
         {
             InternalDelay(2);
-            SP = AluAddSP(N8);
+            SP = AluAddSP(E8);
         }
 
         void And(int i)
@@ -425,11 +445,6 @@ namespace Castor.Emulator.CPU
 
         void Pop(int i)
         {
-            if (i == af && ReadByte(PC) == 0xF5)
-            {
-                ;
-            }
-
             this[RP2, i] = Pop();
         }
 
