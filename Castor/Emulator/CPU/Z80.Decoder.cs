@@ -23,7 +23,7 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch (y)
                                     {
-                                        case 0: Nop(); return;
+                                        case 0: Nop(); return;  
                                         case 1: Load(ADDR, N16, RP, sp); return;
                                         case 2: Stop(); return;
                                         case 3: JR(); return;
@@ -264,7 +264,7 @@ namespace Castor.Emulator.CPU
                             #endregion
 
                             #region Restart
-                            case 7: Rst(y); return;
+                            case 7: Rst(y * 8); return;
                                 #endregion
                         }
 

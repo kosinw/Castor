@@ -133,35 +133,35 @@ namespace Castor.Emulator.CPU
                 {
                     if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
                     {
-                        Rst(0x08);
+                        Rst(0x40);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.STAT))
                     {
-                        Rst(0x09);
+                        Rst(0x48);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.STAT);
                     }                    
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
                     {
-                        Rst(0x0A);
+                        Rst(0x50);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Timer);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Serial))
                     {
-                        Rst(0x0B);
+                        Rst(0x58);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Serial);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Joypad))
                     {
-                        Rst(0x0C);
+                        Rst(0x60);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Joypad);
                     }
@@ -530,7 +530,7 @@ namespace Castor.Emulator.CPU
 
         public void Rst(int addr)
         {
-            ushort result = (ushort)(addr * 8);
+            ushort result = (ushort)(addr);
 
             InternalDelay();
             Push(PC);
