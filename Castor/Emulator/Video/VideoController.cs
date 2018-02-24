@@ -40,8 +40,7 @@ namespace Castor.Emulator.Video
         // Register stuff
         private byte _stat;
         private byte _lcdc;
-
-        private byte _bgp;
+        
         private byte _scx;
         private byte _scy;
         private byte _obp0;

@@ -71,13 +71,13 @@ namespace Castor.Emulator.CPU
             _d.MMU[addr + 1] = value.MSB();
         }
 
-        private void Push(ushort value)
+        private void PushWord(ushort value)
         {
             SP -= 2;
             WriteWord(SP, value);
         }
 
-        private ushort Pop()
+        private ushort PopWord()
         {
             var ret = ReadWord(SP);
             SP += 2;
@@ -133,49 +133,44 @@ namespace Castor.Emulator.CPU
                 {
                     if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
                     {
-                        Rst(0x40);
+                        Restart(0x40);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.VBL);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.STAT))
                     {
-                        Rst(0x48);
+                        Restart(0x48);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.STAT);
-                    }                    
+                    }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Timer))
                     {
-                        Rst(0x50);
+                        Restart(0x50);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Timer);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Serial))
                     {
-                        Rst(0x58);
+                        Restart(0x58);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Serial);
                     }
 
                     else if (_d.IRQ.CanHandleInterrupt(InterruptFlags.Joypad))
                     {
-                        Rst(0x60);
+                        Restart(0x60);
                         _ime = InterruptMasterEnable.Disabled;
                         _d.IRQ.DisableInterrupt(InterruptFlags.Joypad);
                     }
                 }
             }
 
-            for (int i = 0; i < _cycles / 4; ++i)
+            if (_cycles >= 4 && _ime == InterruptMasterEnable.Enabling)
             {
-                switch (_ime)
-                {
-                    case InterruptMasterEnable.Enabling:
-                        _ime = InterruptMasterEnable.Enabled;
-                        break;
-                }
+                _ime = InterruptMasterEnable.Enabled;
             }
 
             return _cycles;
@@ -239,20 +234,22 @@ namespace Castor.Emulator.CPU
         {
             InternalDelay();
 
-            var nw = N16;
-            Push(PC);
-            PC = nw;
+            var address = N16;
+
+            PushWord(PC);
+
+            PC = address;
         }
 
         void Call(int i)
         {
-            var nw = N16;
+            var address = N16;
 
             if (_r.CanJump(CC[i]))
             {
                 InternalDelay();
-                Push(PC);
-                PC = nw;
+                PushWord(PC);
+                PC = address;
             }
         }
 
@@ -445,26 +442,26 @@ namespace Castor.Emulator.CPU
 
         void Pop(int i)
         {
-            this[RP2, i] = Pop();
+            this[RP2, i] = PopWord();
         }
 
         void Push(int i)
         {
             InternalDelay();
-            Push((ushort)this[RP2, i]);
+            PushWord((ushort)this[RP2, i]);
         }
 
         void Res(int n, int i)
         {
             var operand = (byte)this[R, i];
 
-            this[R, i] = Utility.Bit.SetBit(operand, n);
+            this[R, i] = Utility.Bit.ClearBit(operand, n);
         }
 
         void Ret()
         {
             InternalDelay();
-            PC = Pop();
+            PC = PopWord();
         }
 
         void Ret(int i)
@@ -474,7 +471,7 @@ namespace Castor.Emulator.CPU
             if (_r.CanJump(CC[i]))
             {
                 InternalDelay();
-                PC = Pop();
+                PC = PopWord();
             }
         }
 
@@ -528,12 +525,12 @@ namespace Castor.Emulator.CPU
             _r[Registers.Flags.Z] = false;
         }
 
-        public void Rst(int addr)
+        public void Restart(int addr)
         {
-            ushort result = (ushort)(addr);
+            ushort result = (ushort)addr;
 
             InternalDelay();
-            Push(PC);
+            PushWord(PC);
             PC = result;
         }
 

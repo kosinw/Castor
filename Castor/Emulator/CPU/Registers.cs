@@ -52,9 +52,9 @@ namespace Castor.Emulator.CPU
                 case Cond.NC: return !this[Flags.C];
                 case Cond.Z: return this[Flags.Z];
                 case Cond.NZ: return !this[Flags.Z];
+            }
 
-                default: return false;
-            }            
+            return false;
         }
 
         public static class Flags

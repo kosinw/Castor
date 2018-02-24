@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Castor.Emulator.CPU
+﻿namespace Castor.Emulator.CPU
 {
     public partial class Z80
     {
@@ -37,7 +31,8 @@ namespace Castor.Emulator.CPU
         const int R = 0;
         const int RP = 1;
         const int RP2 = 2;
-        const int ADDR = 6;
+        const int ADR8 = 6;
+        const int ADR16 = 12;
 
         const int b = 0;
         const int c = 1;
@@ -117,7 +112,7 @@ namespace Castor.Emulator.CPU
                             }
                         }
 
-                    case ADDR: return ReadByte(index);
+                    case ADR8: return ReadByte(index);
                 }
 
                 return 0;
@@ -201,7 +196,8 @@ namespace Castor.Emulator.CPU
                             break;
                         }
 
-                    case ADDR: WriteByte(index, (byte)value); break;
+                    case ADR8: WriteByte(index, (byte)value); break;
+                    case ADR16: WriteWord(index, (ushort)value); break;
                 }
             }
         }

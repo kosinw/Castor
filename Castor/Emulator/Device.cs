@@ -16,6 +16,7 @@ namespace Castor.Emulator
         public InterruptController IRQ;
         public DMAController DMA;
         public InputController JOYP;
+        public TimerController TIM;
 
         public Device()
         {
@@ -25,6 +26,7 @@ namespace Castor.Emulator
             Cartridge = null;
             GPU = new VideoController(this);
             IRQ = new InterruptController();
+            TIM = new TimerController(this);
             JOYP = new InputController(this);
         }
 
@@ -45,6 +47,7 @@ namespace Castor.Emulator
                 int cycles = CPU.Step();
                 GPU.Step(cycles);
                 DMA.Step(cycles);
+                TIM.Step(cycles);
 
                 _counter += cycles; // need to add the cycles used up
             }            

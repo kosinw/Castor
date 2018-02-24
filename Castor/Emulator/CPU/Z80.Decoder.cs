@@ -24,7 +24,7 @@ namespace Castor.Emulator.CPU
                                     switch (y)
                                     {
                                         case 0: Nop(); return;  
-                                        case 1: Load(ADDR, N16, RP, sp); return;
+                                        case 1: Load(ADR16, N16, RP, sp); return;
                                         case 2: Stop(); return;
                                         case 3: JR(); return;
                                         case var r when r >= 4 && r <= 7: JR(y - 4); return;
@@ -52,15 +52,15 @@ namespace Castor.Emulator.CPU
                                 {
                                     switch ((q << 2 | p))
                                     {
-                                        case 0: Load(ADDR, BC, R, a); return;
-                                        case 1: Load(ADDR, DE, R, a); return;
-                                        case 2: Load(ADDR, HLI, R, a); return;
-                                        case 3: Load(ADDR, HLD, R, a); return;
+                                        case 0: Load(ADR8, BC, R, a); return;
+                                        case 1: Load(ADR8, DE, R, a); return;
+                                        case 2: Load(ADR8, HLI, R, a); return;
+                                        case 3: Load(ADR8, HLD, R, a); return;
 
-                                        case 4: Load(R, a, ADDR, BC); return;
-                                        case 5: Load(R, a, ADDR, DE); return;
-                                        case 6: Load(R, a, ADDR, HLI); return;
-                                        case 7: Load(R, a, ADDR, HLD); return;
+                                        case 4: Load(R, a, ADR8, BC); return;
+                                        case 5: Load(R, a, ADR8, DE); return;
+                                        case 6: Load(R, a, ADR8, HLI); return;
+                                        case 7: Load(R, a, ADR8, HLD); return;
                                     }
 
                                     break;
@@ -161,9 +161,9 @@ namespace Castor.Emulator.CPU
                                     switch (y)
                                     {
                                         case var r when r >= 0 && r <= 3: Ret(y); return;
-                                        case 4: Load(ADDR, N8 + 0xFF00, R, a); return;
+                                        case 4: Load(ADR8, N8 + 0xFF00, R, a); return;
                                         case 5: AddSP(); return;
-                                        case 6: Load(R, a, ADDR, N8 + 0xFF00); return;
+                                        case 6: Load(R, a, ADR8, N8 + 0xFF00); return;
                                         case 7: LoadHL(); return;
                                     }
 
@@ -193,10 +193,10 @@ namespace Castor.Emulator.CPU
                                     switch (y)
                                     {
                                         case var r when r >= 0 && r <= 3: JP(y); return;
-                                        case 4: Load(ADDR, C + 0xFF00, R, a); return;
-                                        case 5: Load(ADDR, N16, R, a); return;
-                                        case 6: Load(R, a, ADDR, C + 0xFF00); return;
-                                        case 7: Load(R, a, ADDR, N16); return;
+                                        case 4: Load(ADR8, C + 0xFF00, R, a); return;
+                                        case 5: Load(ADR8, N16, R, a); return;
+                                        case 6: Load(R, a, ADR8, C + 0xFF00); return;
+                                        case 7: Load(R, a, ADR8, N16); return;
                                     }
 
                                     break;
@@ -264,7 +264,7 @@ namespace Castor.Emulator.CPU
                             #endregion
 
                             #region Restart
-                            case 7: Rst(y * 8); return;
+                            case 7: Restart(y * 8); return;
                                 #endregion
                         }
 
