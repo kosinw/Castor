@@ -107,6 +107,7 @@ namespace Castor.Emulator.CPU
         private InterruptMasterEnable _ime;
 
         private int _cycles;
+        private bool _halted;
         #endregion;
 
         #region Constructor
@@ -116,6 +117,7 @@ namespace Castor.Emulator.CPU
             _cycles = 0;
             _r = new Registers();
             _ime = InterruptMasterEnable.Disabled;
+            _halted = false;
         }
         #endregion
 
@@ -124,11 +126,21 @@ namespace Castor.Emulator.CPU
         {
             _cycles = 0;
 
-            var opcode = DecodeInstruction();
-            Decode(opcode);
+            if (!_halted)
+            {
+                var opcode = DecodeInstruction();
+                Decode(opcode);
+            }
+
+            else
+            {
+                InternalDelay();
+            }
 
             if (_d.IRQ.CanServiceInterrupts)
             {
+                _halted = false;
+
                 if (_ime == InterruptMasterEnable.Enabled)
                 {
                     if (_d.IRQ.CanHandleInterrupt(InterruptFlags.VBL))
@@ -340,7 +352,7 @@ namespace Castor.Emulator.CPU
 
         void Halt()
         {
-            //_halted = true;
+            _halted = true;
         }
 
         void Inc(int t, int i)

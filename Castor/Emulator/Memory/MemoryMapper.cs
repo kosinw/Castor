@@ -70,7 +70,7 @@ namespace Castor.Emulator.Memory
                         case 0xFF04:
                             return _d.TIM.DIV;
                         case 0xFF05:
-                            return _d.TIM.TIMA;
+                            return (byte)_d.TIM.TIMA;
                         case 0xFF06:
                             return _d.TIM.TMA;
                         case 0xFF07:

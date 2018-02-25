@@ -32,20 +32,20 @@
             }
         }
 
-        public byte TIMA
+        public int TIMA
         {
             get => _timer;
             set
             {
-                if (value <= byte.MaxValue)                
-                {
-                    _timer = value;
-                }
-                
-                else
+                if (value > byte.MaxValue)
                 {
                     _d.IRQ.RequestInterrupt(InterruptFlags.Timer);
                     _timer = TMA;
+                }
+
+                else
+                {
+                    _timer = (byte)value;
                 }
             }
         }
@@ -79,28 +79,31 @@
                 int temp = _internalCounter;
                 _internalCounter = (ushort)value;
                 int temp2 = 0;
-                switch (_tac)
+                if (timerEnable)
                 {
-                    case TimerFrequency.Clocks_1024:
-                        temp &= ~1023;
-                        temp2 = (_internalCounter - temp) / 1024;
-                        TIMA += (byte)temp2;
-                        break;
-                    case TimerFrequency.Clocks_16:
-                        temp &= ~15;
-                        temp2 = (_internalCounter - temp) / 16;
-                        TIMA += (byte)temp2;
-                        break;
-                    case TimerFrequency.Clocks_256:
-                        temp &= ~255;
-                        temp2 = (_internalCounter - temp) / 256;
-                        TIMA += (byte)temp2;
-                        break;
-                    case TimerFrequency.Clocks_64:
-                        temp &= ~63;
-                        temp2 = (_internalCounter - temp) / 64;
-                        TIMA += (byte)temp2;
-                        break;
+                    switch (_tac)
+                    {
+                        case TimerFrequency.Clocks_1024:
+                            temp &= ~1023;
+                            temp2 = (_internalCounter - temp) / 1024;
+                            TIMA += (byte)temp2;
+                            break;
+                        case TimerFrequency.Clocks_16:
+                            temp &= ~15;
+                            temp2 = (_internalCounter - temp) / 16;
+                            TIMA += (byte)temp2;
+                            break;
+                        case TimerFrequency.Clocks_256:
+                            temp &= ~255;
+                            temp2 = (_internalCounter - temp) / 256;
+                            TIMA += (byte)temp2;
+                            break;
+                        case TimerFrequency.Clocks_64:
+                            temp &= ~63;
+                            temp2 = (_internalCounter - temp) / 64;
+                            TIMA += (byte)temp2;
+                            break;
+                    }
                 }
             }
         }
