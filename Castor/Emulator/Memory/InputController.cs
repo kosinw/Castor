@@ -37,17 +37,17 @@ namespace Castor.Emulator.Memory
 
                 var b4 = Convert.ToUInt32(_directionSelect) << 4;
 
-                var b3 = (Convert.ToUInt32(_keys[Index.DOWN]) |
-                    Convert.ToUInt32(_keys[Index.START])) << 3;
+                var b3 = (Convert.ToUInt32(_keys[Index.DOWN] && _directionSelect) |
+                    Convert.ToUInt32(_keys[Index.START] && _buttonSelect)) << 3;
 
-                var b2 = (Convert.ToUInt32(_keys[Index.UP]) |
-                    Convert.ToUInt32(_keys[Index.SELECT])) << 2;
+                var b2 = (Convert.ToUInt32(_keys[Index.UP] && _directionSelect) |
+                    Convert.ToUInt32(_keys[Index.SELECT] && _buttonSelect)) << 2;
 
-                var b1 = (Convert.ToUInt32(_keys[Index.LEFT]) |
-                    Convert.ToUInt32(_keys[Index.B])) << 1;
+                var b1 = (Convert.ToUInt32(_keys[Index.LEFT] && _directionSelect) |
+                    Convert.ToUInt32(_keys[Index.B] && _buttonSelect)) << 1;
 
-                var b0 = (Convert.ToUInt32(_keys[Index.RIGHT]) |
-                    Convert.ToUInt32(_keys[Index.A])) << 0;
+                var b0 = (Convert.ToUInt32(_keys[Index.RIGHT] && _directionSelect) |
+                    Convert.ToUInt32(_keys[Index.A] && _buttonSelect)) << 0;
 
                 return (byte)~(b5 | b4 | b3 | b2 | b1 | b0);
             }

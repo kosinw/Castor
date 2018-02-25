@@ -84,7 +84,7 @@ namespace Castor.GL
             KeyboardState kps = Keyboard.GetState();
 
             _emulator.JOYP[InputController.Index.A] = gps.IsButtonDown(Buttons.A) || kps.IsKeyDown(Keys.Z);
-            _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B) || kps.IsKeyDown(Keys.C);
+            _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B) || kps.IsKeyDown(Keys.X);
             _emulator.JOYP[InputController.Index.UP] = gps.IsButtonDown(Buttons.DPadUp) || kps.IsKeyDown(Keys.Up);
             _emulator.JOYP[InputController.Index.DOWN] = gps.IsButtonDown(Buttons.DPadDown) || kps.IsKeyDown(Keys.Down);
             _emulator.JOYP[InputController.Index.LEFT] = gps.IsButtonDown(Buttons.DPadLeft) || kps.IsKeyDown(Keys.Left);

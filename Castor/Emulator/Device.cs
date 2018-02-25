@@ -7,7 +7,7 @@ namespace Castor.Emulator
 {
     public class Device
     {
-        const int MAX_CYCLES = 4_194_304;
+        const int VSYNC = 70_224;
 
         public Z80 CPU;
         public MemoryMapper MMU;
@@ -42,7 +42,7 @@ namespace Castor.Emulator
         /// </summary>
         public void Frame()
         {
-            for (int _counter = 0; _counter < MAX_CYCLES / 60;)
+            for (int _counter = 0; _counter < VSYNC;)
             {
                 int cycles = CPU.Step();
                 GPU.Step(cycles);

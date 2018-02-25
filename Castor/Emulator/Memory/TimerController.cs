@@ -76,33 +76,30 @@
 
             set
             {
+                int temp = _internalCounter;
                 _internalCounter = (ushort)value;
-
+                int temp2 = 0;
                 switch (_tac)
                 {
                     case TimerFrequency.Clocks_1024:
-                        if (_internalCounter % 1024 == 0)
-                        {
-                            TIMA += 1;
-                        }
+                        temp &= ~1023;
+                        temp2 = (_internalCounter - temp) / 1024;
+                        TIMA += (byte)temp2;
                         break;
                     case TimerFrequency.Clocks_16:
-                        if (_internalCounter % 16 == 0)
-                        {
-                            TIMA += 1;
-                        }
+                        temp &= ~15;
+                        temp2 = (_internalCounter - temp) / 16;
+                        TIMA += (byte)temp2;
                         break;
                     case TimerFrequency.Clocks_256:
-                        if (_internalCounter % 256 == 0)
-                        {
-                            TIMA += 1;
-                        }
+                        temp &= ~255;
+                        temp2 = (_internalCounter - temp) / 256;
+                        TIMA += (byte)temp2;
                         break;
                     case TimerFrequency.Clocks_64:
-                        if (_internalCounter % 64 == 0)
-                        {
-                            TIMA += 1;
-                        }
+                        temp &= ~63;
+                        temp2 = (_internalCounter - temp) / 64;
+                        TIMA += (byte)temp2;
                         break;
                 }
             }
