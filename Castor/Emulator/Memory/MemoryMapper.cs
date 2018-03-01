@@ -96,7 +96,7 @@ namespace Castor.Emulator.Memory
                         case 0xFF49:
                             return _d.GPU.OBP1;
                         default:
-                            throw new Exception("You may not read to this memory location.");
+                            return 0;
                     }
                 }
                 else if (idx < 0xFF80)

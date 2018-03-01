@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Castor.Emulator.Video
+﻿namespace Castor.Emulator.Video
 {
     public class DMAController
     {
@@ -41,7 +35,7 @@ namespace Castor.Emulator.Video
 
             while ((_cycles / 4) - 1 >= _bytescopied)
             {
-                _system.MMU[_zeroAddress + _bytescopied] = _system.MMU[_zeroAddress + _bytescopied];
+                _system.MMU[0xFE00 + _bytescopied] = _system.MMU[_zeroAddress + _bytescopied];
                 _bytescopied++;
             }
 

@@ -18,6 +18,12 @@ namespace Castor.GL
         Texture2D _backbuffer;
         Device _emulator = new Device();
 
+#if (GREENSCALE)
+        Color tintColor = new Color(0xE1, 0xF8, 0xD1);
+#else
+        Color tintColor = Color.White;
+#endif
+
 
         public DesktopView()
         {
@@ -124,7 +130,7 @@ namespace Castor.GL
             }
 
             _spritebatch.Begin(samplerState: SamplerState.PointClamp);
-            _spritebatch.Draw(_backbuffer, bounds, Color.White);
+            _spritebatch.Draw(_backbuffer, bounds, tintColor);
             _spritebatch.End();
 
             base.Draw(gameTime);
