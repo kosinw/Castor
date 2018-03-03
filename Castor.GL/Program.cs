@@ -7,7 +7,7 @@ namespace Castor.GL
         [STAThread]
         static void Main()
         {
-            using (var game = new DesktopView())
+            using (var game = new CastorGame())
             {
                 game.Run();
             }

@@ -7,7 +7,7 @@ namespace Castor.Emulator
 {
     public class Device
     {
-        const int VSYNC = 70_224;
+        const int VSYNC = 69_905;
 
         public Z80 CPU;
         public MemoryMapper MMU;

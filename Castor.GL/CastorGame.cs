@@ -9,12 +9,11 @@ using System.Threading;
 
 namespace Castor.GL
 {
-    public class DesktopView : Game
+    public class CastorGame : Game
     {
         GraphicsDeviceManager _graphics;
         SpriteBatch _spritebatch;
 
-        Thread _emulatorthread;
         Texture2D _backbuffer;
         Device _emulator = new Device();
 
@@ -25,18 +24,21 @@ namespace Castor.GL
 #endif
 
 
-        public DesktopView()
+        public CastorGame()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
             _graphics.PreferredBackBufferWidth = 800;
             _graphics.PreferredBackBufferHeight = 720;
+            _graphics.SynchronizeWithVerticalRetrace = false;
             _graphics.ApplyChanges();
 
             Window.AllowUserResizing = true;
             Window.Title = "Castor";
             IsMouseVisible = true;
+            IsFixedTimeStep = true;
+            TargetElapsedTime = System.TimeSpan.FromMilliseconds(1000.0f / 59.7f);
         }
 
         protected override void Initialize()
@@ -48,7 +50,7 @@ namespace Castor.GL
         {
             _spritebatch = new SpriteBatch(GraphicsDevice);
 
-            _backbuffer = new Texture2D(GraphicsDevice, 160, 144);
+            _backbuffer = new RenderTarget2D(GraphicsDevice, 160, 144);
 
             System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog
             {
@@ -64,28 +66,13 @@ namespace Castor.GL
 
                 byte[] bytecode = File.ReadAllBytes(filename);
                 _emulator.LoadROM(bytecode);
-
-                _emulatorthread = new Thread(new ThreadStart(EmulatorCoroutine));
-                _emulatorthread.Start();
             }
-
-            else
-            {
-                if (_emulatorthread != null)
-                    _emulatorthread.Abort();
-
-                Exit();
-            }
-        }
-
-        protected override void UnloadContent()
-        {
-            if (_emulatorthread != null)
-                _emulatorthread.Abort();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            _emulator.Frame();
+
             GamePadState gps = GamePad.GetState(PlayerIndex.One);
             KeyboardState kps = Keyboard.GetState();
 
@@ -97,6 +84,11 @@ namespace Castor.GL
             _emulator.JOYP[InputController.Index.RIGHT] = gps.IsButtonDown(Buttons.DPadRight) || kps.IsKeyDown(Keys.Right);
             _emulator.JOYP[InputController.Index.START] = gps.IsButtonDown(Buttons.Start) || kps.IsKeyDown(Keys.Enter);
             _emulator.JOYP[InputController.Index.SELECT] = gps.IsButtonDown(Buttons.Back) || kps.IsKeyDown(Keys.Back);
+
+            if (kps.IsKeyDown(Keys.Escape))
+            {
+                Exit();
+            }
 
             if (_backbuffer != null)
             {
@@ -136,25 +128,5 @@ namespace Castor.GL
             base.Draw(gameTime);
         }
 
-        private void EmulatorCoroutine()
-        {
-            Stopwatch watch = Stopwatch.StartNew();
-            System.TimeSpan dt = System.TimeSpan.FromSeconds(1.0 / 60.0);
-            System.TimeSpan elapsedTime = System.TimeSpan.Zero;
-
-            while (true)
-            {
-                watch.Restart();
-
-                _emulator.Frame();
-
-                elapsedTime = watch.Elapsed;
-
-                if (elapsedTime < dt)
-                {
-                    Thread.Sleep(dt - elapsedTime);
-                }
-            }
-        }
     }
 }

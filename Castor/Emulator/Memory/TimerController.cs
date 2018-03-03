@@ -79,6 +79,7 @@
                 int temp = _internalCounter;
                 _internalCounter = (ushort)value;
                 int temp2 = 0;
+
                 if (timerEnable)
                 {
                     switch (_tac)
