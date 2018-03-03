@@ -5,17 +5,17 @@ Castor is a Gameboy interpreter written using C# and Monogame. The primary purpo
 # Passing Tests
 
 * Blargg's cpu_instrs
-    * [ ] 01 - special
-    * [ ] 02 - interrupts
-    * [ ] 03 - op sp,hl
-    * [ ] 04 - op r,imm
-    * [ ] 05 - op rp
-    * [ ] 06 - ld r,r
-    * [ ] 07 - jr,jp,call,ret,rst
-    * [ ] 08 - misc instrs
-    * [ ] 09 - op r,r
-    * [ ] 10 - bit ops
-    * [ ] 11 - op a,(hl)
+    * [x] 01 - special
+    * [x] 02 - interrupts
+    * [x] 03 - op sp,hl
+    * [x] 04 - op r,imm
+    * [x] 05 - op rp
+    * [x] 06 - ld r,r
+    * [x] 07 - jr,jp,call,ret,rst
+    * [x] 08 - misc instrs
+    * [x] 09 - op r,r
+    * [x] 10 - bit ops
+    * [x] 11 - op a,(hl)
 
 * Blargg's dmg_sound [ ]
 
