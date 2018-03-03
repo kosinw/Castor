@@ -14,8 +14,6 @@ namespace Castor.Emulator.Cartridge
                     return new MBC0(bytecode);
                 case 0x01:
                     return new MBC1(bytecode);
-                case 0x013:
-                    return new MBC1(bytecode);
                 default:
                     throw new Exception("Unsupported MBC Type was found!");
             }

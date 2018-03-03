@@ -64,6 +64,7 @@ namespace Castor.GL
 
                 byte[] bytecode = File.ReadAllBytes(filename);
                 _emulator.LoadROM(bytecode);
+                Window.Title = "Castor - " + _emulator.Cartridge.Title;
             }
         }
 
@@ -104,7 +105,7 @@ namespace Castor.GL
             Rectangle bounds = GraphicsDevice.Viewport.Bounds;
 
             float asp = GraphicsDevice.Viewport.Width / (float)GraphicsDevice.Viewport.Height;
-            float targetAsp = 160.0f / 144.0f;
+            float targetAsp = Emulator.Video.VideoController.RENDER_WIDTH / Emulator.Video.VideoController.RENDER_HEIGHT;
 
             if (asp > targetAsp)
             {

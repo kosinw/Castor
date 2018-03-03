@@ -12,23 +12,8 @@ namespace Castor.Emulator.Memory
 
         public bool _enableBIOS = true;
 
-        private List<byte> _sbString = new List<byte>();
-
         private byte _sb;
         private byte _sc;
-
-        private byte SB
-        {
-            get => _sb;
-            set
-            {
-                _sb = value;
-                if (_sc == 0x81)
-                {
-                    _sbString.Add(value);
-                }
-            }
-        }
 
         public MemoryMapper(Device system)
         {
@@ -64,7 +49,7 @@ namespace Castor.Emulator.Memory
                         case 0xFF00:
                             return _d.JOYP.P1;
                         case 0xFF01:
-                            return SB;
+                            return _sb;
                         case 0xFF02:
                             return _sc;
                         case 0xFF04:
@@ -133,7 +118,7 @@ namespace Castor.Emulator.Memory
                             _d.JOYP.P1 = value;
                             break;
                         case 0xFF01:
-                            SB = value;
+                            _sb = value;
                             break;
                         case 0xFF02:
                             _sc = value;

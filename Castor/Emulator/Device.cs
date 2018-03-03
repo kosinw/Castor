@@ -42,15 +42,18 @@ namespace Castor.Emulator
         /// </summary>
         public void Frame()
         {
-            for (int _counter = 0; _counter < VSYNC;)
+            if (Cartridge != null)
             {
-                int cycles = CPU.Step();
-                GPU.Step(cycles);
-                DMA.Step(cycles);
-                TIM.Step(cycles);
+                for (int _counter = 0; _counter < VSYNC;)
+                {
+                    int cycles = CPU.Step();
+                    GPU.Step(cycles);
+                    DMA.Step(cycles);
+                    TIM.Step(cycles);
 
-                _counter += cycles; // need to add the cycles used up
-            }            
+                    _counter += cycles; // need to add the cycles used up
+                }
+            }
         }
     }
 }

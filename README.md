@@ -1,10 +1,12 @@
-# Castor
+Castor
+=====
 
 Castor is a Gameboy interpreter written using C# and Monogame. The primary purpose of this project is to learn about emulator systems and low-level operations.
 
-# Passing Tests
+## Passing Tests
 
-* Blargg's cpu_instrs
+### Blargg's test roms
+* [x] cpu_instrs
     * [x] 01 - special
     * [x] 02 - interrupts
     * [x] 03 - op sp,hl
@@ -17,30 +19,31 @@ Castor is a Gameboy interpreter written using C# and Monogame. The primary purpo
     * [x] 10 - bit ops
     * [x] 11 - op a,(hl)
 
-* Blargg's dmg_sound [ ]
+* [ ] dmg_sound
 
-* Blargg's instr_timing [ ]
+* [ ] instr_timing
 
-* Blargg's interrupt_time [ ]
+* [ ] interrupt_time
 
-* Blargg's mem_timing [ ]
+* [ ] mem_timing
 
-* Blargg's mem_timing-2 [ ]
+* [ ] Blargg's mem_timing-2
 
-* Blargg's oam_bug [ ]
+* [ ] Blargg's oam_bug
 
-* Blargg's halt_bug [ ]
+* [ ] Blargg's halt_bug
 
-# Screenshot(s)
+## Screenshot(s)
 
 <img src="Screenshots/Screenshot_1.png" width="320" height="288" />&nbsp;&nbsp;
 <img src="Screenshots/Screenshot_2.png" width="320" height="288" />&nbsp;&nbsp;
 <img src="Screenshots/Screenshot_3.png" width="320" height="288" />&nbsp;&nbsp;
 <img src="Screenshots/Screenshot_4.png" width="320" height="288" />&nbsp;&nbsp;
 
-# Resources used:
+## Resources used:
 * [The Ultimate Game Boy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI&t=2247s) - A talk attempting to communicate "everything about the Game Boy".
 * [Gameboy Development Wiki](http://gbdev.gg8.se/wiki/articles/Main_Page) - A wiki containing technical documents, emulators, debuggers, and other tools that have to do with gameboy development.
 * [Instruction Manual](https://rednex.github.io/rgbds/gbz80.7.html) - An online instruction manual on how each instruction should be implemented.
 * [GBZ80 Decoding Manual](References/decoding_gz80.html) - A manual on how to algorithmically decode gameboy instructions as opposed to writing one huge switch-case statement for over 500 instructions.
 * [Emulation accuracy](https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown) - Documentation talking about questions about certain ambiguities of the gameboy.
+* [simias/gb-rs](https://github.com/simias/gb-rs) - A reference point for my emulator, it is a Game Boy emulator written in Rust.

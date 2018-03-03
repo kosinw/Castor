@@ -54,11 +54,8 @@ namespace Castor.Emulator.Memory
 
             set
             {
-                var b5 = !Convert.ToBoolean((value >> 5) & 1);
-                var b4 = !Convert.ToBoolean((value >> 4) & 1);
-
-                _buttonSelect = b5;
-                _directionSelect = b4;
+                _buttonSelect = (value & 0x20) == 0;
+                _directionSelect = (value & 0x10) == 0;
             }
         }
 

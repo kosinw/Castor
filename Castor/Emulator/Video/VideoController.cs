@@ -6,8 +6,16 @@ namespace Castor.Emulator.Video
 {
     public partial class VideoController
     {
-        public const int RENDER_WIDTH = 160;
-        public const int RENDER_HEIGHT = 144;
+        // Public Constants
+        public const float RENDER_WIDTH = 160.0f;
+        public const float RENDER_HEIGHT = 144.0f;
+
+        // Pallete Constants
+        private const int White = 255;
+        private const int LightGray = 196;
+        private const int DarkGray = 97;
+        private const int Black = 0;
+        private const int Transparent = 1;
 
         /// <summary>
         /// Fetches the VideoController's generated screen buffer.
@@ -31,14 +39,7 @@ namespace Castor.Emulator.Video
         // GPU Data Stuff
         private byte[] _vram;
         private byte[] _oam;
-        private byte[] _framebuffer;
-
-        // Pallete Constants
-        private const int White = 255;
-        private const int LightGray = 196;
-        private const int DarkGray = 97;
-        private const int Black = 0;
-        private const int Transparent = 1;
+        private byte[] _framebuffer;        
 
         // Pallete Data
         private byte[] _bgpallete = new byte[] { White, LightGray, DarkGray, Black };
