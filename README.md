@@ -33,12 +33,10 @@ Castor is a Gameboy interpreter written using C# and Monogame. The primary purpo
 
 # Screenshot(s)
 
-<img src="Screenshots/Screenshot_1.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp; 
-<img src="Screenshots/Screenshot_2.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="Screenshots/Screenshot_3.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
-<br/>
-<br/>
-<img src="Screenshots/Screenshot_4.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="Screenshots/Screenshot_1.png" width="320" height="288" />&nbsp;&nbsp;
+<img src="Screenshots/Screenshot_2.png" width="320" height="288" />&nbsp;&nbsp;
+<img src="Screenshots/Screenshot_3.png" width="320" height="288" />&nbsp;&nbsp;
+<img src="Screenshots/Screenshot_4.png" width="320" height="288" />&nbsp;&nbsp;
 
 # Resources used:
 * [The Ultimate Game Boy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI&t=2247s) - A talk attempting to communicate "everything about the Game Boy".
