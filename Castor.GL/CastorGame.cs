@@ -3,9 +3,7 @@ using Castor.Emulator.Memory;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Diagnostics;
 using System.IO;
-using System.Threading;
 
 namespace Castor.GL
 {
@@ -18,9 +16,9 @@ namespace Castor.GL
         Device _emulator = new Device();
 
 #if (GREENSCALE)
-        Color tintColor = new Color(0xE1, 0xF8, 0xD1);
+        Color _tintColor = new Color(0xE1, 0xF8, 0xD1);
 #else
-        Color tintColor = Color.White;
+        Color _tintColor = Color.White;
 #endif
 
 
@@ -31,7 +29,7 @@ namespace Castor.GL
 
             _graphics.PreferredBackBufferWidth = 800;
             _graphics.PreferredBackBufferHeight = 720;
-            _graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = true;
             _graphics.ApplyChanges();
 
             Window.AllowUserResizing = true;
@@ -50,7 +48,7 @@ namespace Castor.GL
         {
             _spritebatch = new SpriteBatch(GraphicsDevice);
 
-            _backbuffer = new RenderTarget2D(GraphicsDevice, 160, 144);
+            _backbuffer = new Texture2D(GraphicsDevice, 160, 144);
 
             System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog
             {
@@ -71,10 +69,10 @@ namespace Castor.GL
 
         protected override void Update(GameTime gameTime)
         {
-            _emulator.Frame();
-
             GamePadState gps = GamePad.GetState(PlayerIndex.One);
             KeyboardState kps = Keyboard.GetState();
+
+            _emulator.Frame();
 
             _emulator.JOYP[InputController.Index.A] = gps.IsButtonDown(Buttons.A) || kps.IsKeyDown(Keys.Z);
             _emulator.JOYP[InputController.Index.B] = gps.IsButtonDown(Buttons.B) || kps.IsKeyDown(Keys.X);
@@ -121,12 +119,11 @@ namespace Castor.GL
                 bounds.Height = targetHeight;
             }
 
-            _spritebatch.Begin(samplerState: SamplerState.PointClamp);
-            _spritebatch.Draw(_backbuffer, bounds, tintColor);
+            _spritebatch.Begin(samplerState: SamplerState.PointClamp, sortMode: SpriteSortMode.Texture);
+            _spritebatch.Draw(_backbuffer, bounds, _tintColor);
             _spritebatch.End();
 
             base.Draw(gameTime);
         }
-
     }
 }

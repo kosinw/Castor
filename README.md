@@ -2,37 +2,47 @@
 
 Castor is a Gameboy interpreter written using C# and Monogame. The primary purpose of this project is to learn about emulator systems and low-level operations.
 
+# Passing Tests
+
+* Blargg's cpu_instrs
+    * [ ] 01 - special
+    * [ ] 02 - interrupts
+    * [ ] 03 - op sp,hl
+    * [ ] 04 - op r,imm
+    * [ ] 05 - op rp
+    * [ ] 06 - ld r,r
+    * [ ] 07 - jr,jp,call,ret,rst
+    * [ ] 08 - misc instrs
+    * [ ] 09 - op r,r
+    * [ ] 10 - bit ops
+    * [ ] 11 - op a,(hl)
+
+* Blargg's dmg_sound [ ]
+
+* Blargg's instr_timing [ ]
+
+* Blargg's interrupt_time [ ]
+
+* Blargg's mem_timing [ ]
+
+* Blargg's mem_timing-2 [ ]
+
+* Blargg's oam_bug [ ]
+
+* Blargg's halt_bug [ ]
+
 # Screenshot(s)
 
-Nintendo Logo              |  Tetris Credits
-:-------------------------:|:-------------------------:
-![](Screenshot_1.png)      |  ![](Screenshot_2.png)
-
-
-# Implemented Features
-* partial CPU decoding
-* background rendering
-* working ui using monogame
-* oam dma support
-* functional bootrom
-* window rendering
-* input
-* interrupt support
-
-# Unimplemented Features
-* complete CPU decoding
-* any type of testing   
-* timers
-* cartridge types
-* oam support (sprites)
-* audio
+<img src="Screenshots/Screenshot_1.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp; 
+<img src="Screenshots/Screenshot_2.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="Screenshots/Screenshot_3.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>
+<br/>
+<img src="Screenshots/Screenshot_4.png" width="320" height="288" />&nbsp;&nbsp;&nbsp;&nbsp;
 
 # Resources used:
 * [The Ultimate Game Boy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI&t=2247s) - A talk attempting to communicate "everything about the Game Boy".
-* [Pan Docs](http://bgb.bircd.org/pandocs.htm) - Everything you wanted to know about the GAMEBOY, but were afraid to ask.
-* [The Cycle Accurate Game Boy Document](https://github.com/AntonioND/giibiiadvance/blob/master/docs/TCAGBD.pdf) - A cycle-accurate documentation on the Gameboy's inner workings like
-* [Gameboy CPU instruction set](http://pastraiser.com/cpu/gameboy/gameboy_opcodes.html) - A table of all of the legal gameboy opcodes.
-* [Gameboy Bootstrap ROM](http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM) - A dissassembly of the Gameboy's boot rom.
-* [Mooneye GB](https://github.com/Gekkio/mooneye-gb) - A Game Boy research project and emulator written in Rust.
-* [Emulation accuracy](https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown) - A markdown talking about questions about certain specifics of the gameboy.
-* [GameBoy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Assembly Language Commands, Timings and Opcodes, and everything you always wanted to know about GB but were afraid to ask.
+* [Gameboy Development Wiki](http://gbdev.gg8.se/wiki/articles/Main_Page) - A wiki containing technical documents, emulators, debuggers, and other tools that have to do with gameboy development.
+* [Instruction Manual](https://rednex.github.io/rgbds/gbz80.7.html) - An online instruction manual on how each instruction should be implemented.
+* [GBZ80 Decoding Manual](References/decoding_gz80.html) - A manual on how to algorithmically decode gameboy instructions as opposed to writing one huge switch-case statement for over 500 instructions.
+* [Emulation accuracy](https://github.com/Gekkio/mooneye-gb/blob/master/docs/accuracy.markdown) - Documentation talking about questions about certain ambiguities of the gameboy.
