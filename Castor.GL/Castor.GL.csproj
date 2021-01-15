@@ -110,6 +110,7 @@
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="ROMs\dmg.rom" />
+    <None Include="ROMs\drmario.gb" />
     <None Include="ROMs\gb-test-roms\cgb_sound\cgb_sound.gb" />
     <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\01-registers.gb" />
     <None Include="ROMs\gb-test-roms\cgb_sound\rom_singles\02-len ctr.gb" />
